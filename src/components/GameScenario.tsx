@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Shield, AlertTriangle } from "lucide-react";
+import { Shield, AlertTriangle, Mail, Lock, Users, Wifi, Download, DollarSign, Eye, Gamepad2, Phone, Home } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface GameScenarioProps {
   scenario: {
@@ -13,6 +14,8 @@ interface GameScenarioProps {
     };
     correctChoice: 'secure' | 'surrender';
     explanation: string;
+    category: 'phishing' | 'password' | 'social' | 'network' | 'malware' | 'privacy' | 'scam' | 'gaming';
+    difficulty: 'easy' | 'medium' | 'hard';
   };
   onChoice: (choice: 'secure' | 'surrender') => void;
   showFeedback: boolean;
@@ -27,10 +30,64 @@ export default function GameScenario({
 }: GameScenarioProps) {
   const isCorrect = userChoice === scenario.correctChoice;
 
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'phishing': return Mail;
+      case 'password': return Lock;
+      case 'social': return Users;
+      case 'network': return Wifi;
+      case 'malware': return Download;
+      case 'privacy': return Eye;
+      case 'scam': return DollarSign;
+      case 'gaming': return Gamepad2;
+      default: return Shield;
+    }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'phishing': return 'bg-red-500/10 text-red-500 border-red-500/20';
+      case 'password': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+      case 'social': return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
+      case 'network': return 'bg-green-500/10 text-green-500 border-green-500/20';
+      case 'malware': return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+      case 'privacy': return 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20';
+      case 'scam': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+      case 'gaming': return 'bg-pink-500/10 text-pink-500 border-pink-500/20';
+      default: return 'bg-primary/10 text-primary border-primary/20';
+    }
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'easy': return 'bg-green-500/10 text-green-500 border-green-500/20';
+      case 'medium': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+      case 'hard': return 'bg-red-500/10 text-red-500 border-red-500/20';
+      default: return 'bg-muted text-muted-foreground border-border';
+    }
+  };
+
+  const CategoryIcon = getCategoryIcon(scenario.category);
+
   return (
     <div className="w-full max-w-4xl mx-auto">
       <Card className="bg-card border-border shadow-lg overflow-hidden">
         <CardHeader className="text-center pb-4 bg-gradient-to-r from-primary/10 to-accent/10">
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div className={`p-3 rounded-xl ${getCategoryColor(scenario.category)}`}>
+              <CategoryIcon className="h-6 w-6" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className={getCategoryColor(scenario.category)}>
+                  {scenario.category.toUpperCase()}
+                </Badge>
+                <Badge variant="outline" className={getDifficultyColor(scenario.difficulty)}>
+                  {scenario.difficulty.toUpperCase()}
+                </Badge>
+              </div>
+            </div>
+          </div>
           <CardTitle className="text-2xl font-bold text-foreground mb-2">
             Episode #{scenario.id}
           </CardTitle>

@@ -14,7 +14,7 @@ export default function DataDefenderGame() {
   const [gameStarted, setGameStarted] = useState(false);
   const { toast } = useToast();
 
-  const totalRounds = gameScenarios.length;
+  const totalRounds = 10; // Increased from 5 to 10
   const currentScenario = gameScenarios[currentRound];
 
   const handleChoice = (choice: 'secure' | 'surrender') => {
@@ -77,8 +77,9 @@ export default function DataDefenderGame() {
           <div className="bg-card border border-border rounded-lg p-8 mb-8 shadow-cyber">
             <h2 className="text-2xl font-semibold mb-4 text-primary">How to Play:</h2>
             <ul className="text-left space-y-2 text-muted-foreground">
-              <li>• You'll face 5 real-world cybersecurity scenarios</li>
+              <li>• You'll face 10 diverse cybersecurity scenarios</li>
               <li>• Choose between ✅ <strong>SECURE</strong> (safe choice) or ❌ <strong>SURRENDER</strong> (risky choice)</li>
+              <li>• Experience different threat categories: phishing, passwords, social engineering, and more</li>
               <li>• Get instant feedback and learn from each decision</li>
               <li>• Aim for the highest score to become a Data Defender!</li>
             </ul>
