@@ -61,7 +61,28 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				'cyber-glow': 'hsl(var(--cyber-glow))',
+				'neon-purple': 'hsl(var(--neon-purple))',
+				'matrix-green': 'hsl(var(--matrix-green))'
+			},
+			backgroundImage: {
+				'gradient-cyber': 'var(--gradient-cyber)',
+				'gradient-danger': 'var(--gradient-danger)', 
+				'gradient-success': 'var(--gradient-success)'
+			},
+			boxShadow: {
+				'cyber': 'var(--shadow-cyber)',
+				'success': 'var(--shadow-success)',
+				'danger': 'var(--shadow-danger)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
