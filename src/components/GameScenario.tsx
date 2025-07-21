@@ -136,7 +136,7 @@ export default function GameScenario({
                         <div className="p-2 rounded-lg bg-success/20">
                           <Shield className="h-6 w-6 text-success" />
                         </div>
-                        <span className="text-lg font-bold text-success">SECURE CHOICE</span>
+                        <span className="text-lg font-bold text-success">SECURE</span>
                       </div>
                       <p className="text-foreground leading-relaxed">
                         {scenario.choices.secure}
@@ -160,7 +160,7 @@ export default function GameScenario({
                         <div className="p-2 rounded-lg bg-destructive/20">
                           <AlertTriangle className="h-6 w-6 text-destructive" />
                         </div>
-                        <span className="text-lg font-bold text-destructive">RISKY CHOICE</span>
+                        <span className="text-lg font-bold text-destructive">SURRENDER</span>
                       </div>
                       <p className="text-foreground leading-relaxed">
                         {scenario.choices.surrender}
