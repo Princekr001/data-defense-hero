@@ -8,7 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Zap, Shield, Star, Award } from "lucide-react";
+import { Trophy, Zap, Shield, Star, Award, Crown } from "lucide-react";
+import { getLevelData, getNextLevelData, calculateLevel, getLevelProgress } from "@/data/levels";
 
 export default function DataDefenderGame() {
   const [currentRound, setCurrentRound] = useState(0);
@@ -26,10 +27,17 @@ export default function DataDefenderGame() {
   const totalRounds = 10;
   const currentScenario = gameScenarios[currentRound];
   
-  // Gamification calculations
-  const xpToNextLevel = level * 100;
-  const currentLevelXp = xp % 100;
-  const levelProgress = (currentLevelXp / xpToNextLevel) * 100;
+  // Enhanced level calculations
+  const currentLevel = calculateLevel(xp);
+  const currentLevelData = getLevelData(currentLevel);
+  const nextLevelData = getNextLevelData(currentLevel);
+  const levelProgress = getLevelProgress(xp, currentLevel);
+  
+  // XP bonus calculation based on level
+  const getXpBonus = (baseXp: number): number => {
+    const bonusPercentage = Math.max(0, (currentLevel - 1) * 5); // 5% per level above 1
+    return Math.floor(baseXp * (bonusPercentage / 100));
+  };
   
   const checkAchievements = (newScore: number, newStreak: number, newXp: number) => {
     const newAchievements = [...achievements];
@@ -76,9 +84,10 @@ export default function DataDefenderGame() {
       const baseXp = 50;
       const difficultyMultiplier = currentScenario.difficulty === 'hard' ? 2 : currentScenario.difficulty === 'medium' ? 1.5 : 1;
       const streakBonus = Math.min(newStreak * 10, 50);
-      const earnedXp = Math.floor(baseXp * difficultyMultiplier + streakBonus);
+      const levelBonus = getXpBonus(baseXp);
+      const earnedXp = Math.floor(baseXp * difficultyMultiplier + streakBonus + levelBonus);
       const newXp = xp + earnedXp;
-      const newLevel = Math.floor(newXp / 100) + 1;
+      const newLevel = calculateLevel(newXp);
       
       setScore(newScore);
       setStreak(newStreak);
@@ -86,19 +95,32 @@ export default function DataDefenderGame() {
       setXp(newXp);
       
       if (newLevel > level) {
+        const newLevelData = getLevelData(newLevel);
         setLevel(newLevel);
         toast({
-          title: "🎊 LEVEL UP!",
-          description: `Congratulations! You reached Level ${newLevel}!`,
-          duration: 4000,
+          title: `🎊 LEVEL UP! ${newLevelData.icon}`,
+          description: `${newLevelData.title} - ${newLevelData.rank} Rank Achieved!`,
+          duration: 5000,
         });
+        
+        // Show rewards
+        if (newLevelData.rewards.length > 0) {
+          setTimeout(() => {
+            toast({
+              title: "🎁 New Rewards Unlocked!",
+              description: newLevelData.rewards.join(", "),
+              duration: 4000,
+            });
+          }, 1500);
+        }
       }
       
       checkAchievements(newScore, newStreak, newXp);
       
+      const bonusText = levelBonus > 0 ? ` (+${levelBonus} level bonus)` : '';
       toast({
         title: "Correct! 🎉",
-        description: `+${earnedXp} XP earned! ${streakBonus > 0 ? `(+${streakBonus} streak bonus)` : ''}`,
+        description: `+${earnedXp} XP earned! ${streakBonus > 0 ? `(+${streakBonus} streak)` : ''}${bonusText}`,
         duration: 3000,
       });
     } else {
@@ -216,23 +238,28 @@ export default function DataDefenderGame() {
             totalRounds={totalRounds} 
           />
           
-          {/* Player Stats Dashboard */}
+          {/* Enhanced Player Stats Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+            <Card className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 relative overflow-hidden">
               <CardContent className="p-0">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Level</p>
-                    <p className="text-2xl font-bold text-primary">{level}</p>
+                    <p className="text-sm text-muted-foreground">Level {currentLevel}</p>
+                    <p className="text-lg font-bold" style={{ color: currentLevelData.color.replace('text-', '') }}>
+                      {currentLevelData.icon} {currentLevelData.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{currentLevelData.rank}</p>
                   </div>
-                  <Trophy className="h-8 w-8 text-primary" />
+                  <Crown className="h-8 w-8 text-primary" />
                 </div>
                 <div className="mt-2">
                   <Progress value={levelProgress} className="h-2" />
                   <p className="text-xs text-muted-foreground mt-1">
-                    {currentLevelXp}/{xpToNextLevel} XP
+                    {nextLevelData ? `${Math.floor(levelProgress)}% to ${nextLevelData.title}` : 'Max Level!'}
                   </p>
                 </div>
+                {/* Level background decoration */}
+                <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-full -translate-y-8 translate-x-8"></div>
               </CardContent>
             </Card>
             
@@ -276,20 +303,54 @@ export default function DataDefenderGame() {
             </Card>
           </div>
           
+          {/* Level Benefits Display */}
+          {currentLevel > 1 && (
+            <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20">
+              <CardContent className="p-0">
+                <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                  <Star className="h-5 w-5 text-purple-500" />
+                  Current Level Benefits
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {currentLevelData.rewards.map((reward, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="outline" 
+                      className="bg-purple-500/10 border-purple-500/30 text-purple-700"
+                    >
+                      {reward}
+                    </Badge>
+                  ))}
+                </div>
+                {nextLevelData && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Next: {nextLevelData.title} ({nextLevelData.xpRequired - xp} XP needed)
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+          
           {/* Achievement Badges */}
           {achievements.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {achievements.map((achievement, index) => (
-                <Badge 
-                  key={index} 
-                  variant="outline" 
-                  className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30 text-yellow-700 px-3 py-1"
-                >
-                  {achievement === 'first-defender' && '🏆 First Defender'}
-                  {achievement === 'streak-master' && '🔥 Streak Master'}
-                  {achievement === 'xp-warrior' && '⚡ XP Warrior'}
-                </Badge>
-              ))}
+            <div className="space-y-2">
+              <h3 className="font-semibold text-lg flex items-center gap-2">
+                <Award className="h-5 w-5 text-yellow-500" />
+                Achievements
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {achievements.map((achievement, index) => (
+                  <Badge 
+                    key={index} 
+                    variant="outline" 
+                    className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30 text-yellow-700 px-3 py-1"
+                  >
+                    {achievement === 'first-defender' && '🏆 First Defender'}
+                    {achievement === 'streak-master' && '🔥 Streak Master'}
+                    {achievement === 'xp-warrior' && '⚡ XP Warrior'}
+                  </Badge>
+                ))}
+              </div>
             </div>
           )}
         </div>

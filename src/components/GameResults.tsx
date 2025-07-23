@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Shield, AlertTriangle, RotateCcw, Zap, Award, Star } from "lucide-react";
+import { Trophy, Shield, AlertTriangle, RotateCcw, Zap, Award, Star, Crown } from "lucide-react";
+import { getLevelData } from "@/data/levels";
 
 interface GameResultsProps {
   score: number;
@@ -23,6 +24,7 @@ export default function GameResults({
   onRestart 
 }: GameResultsProps) {
   const percentage = Math.round((score / totalRounds) * 100);
+  const finalLevelData = getLevelData(level);
   
   const getResultMessage = () => {
     if (percentage >= 80) {
@@ -86,12 +88,17 @@ export default function GameResults({
               </div>
               <div className="text-sm text-muted-foreground">Total XP</div>
             </div>
-            <div className="text-center p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
+            <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20 relative overflow-hidden">
               <div className="flex items-center justify-center gap-1 mb-2">
-                <Trophy className="h-6 w-6 text-purple-600" />
-                <div className="text-3xl font-bold text-purple-600">{level}</div>
+                <Crown className="h-6 w-6 text-primary" />
+                <div className="text-3xl font-bold text-primary">{level}</div>
               </div>
               <div className="text-sm text-muted-foreground">Final Level</div>
+              <div className="text-xs font-semibold text-primary mt-1">
+                {finalLevelData.icon} {finalLevelData.title}
+              </div>
+              <div className="text-xs text-muted-foreground">{finalLevelData.rank}</div>
+              <div className="absolute top-0 right-0 w-12 h-12 bg-primary/10 rounded-full -translate-y-6 translate-x-6"></div>
             </div>
           </div>
 
