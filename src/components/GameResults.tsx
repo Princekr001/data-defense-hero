@@ -1,14 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Shield, AlertTriangle, RotateCcw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Shield, AlertTriangle, RotateCcw, Zap, Award, Star } from "lucide-react";
 
 interface GameResultsProps {
   score: number;
   totalRounds: number;
+  xp?: number;
+  level?: number;
+  maxStreak?: number;
+  achievements?: string[];
   onRestart: () => void;
 }
 
-export default function GameResults({ score, totalRounds, onRestart }: GameResultsProps) {
+export default function GameResults({ 
+  score, 
+  totalRounds, 
+  xp = 0, 
+  level = 1, 
+  maxStreak = 0, 
+  achievements = [], 
+  onRestart 
+}: GameResultsProps) {
   const percentage = Math.round((score / totalRounds) * 100);
   
   const getResultMessage = () => {
@@ -56,16 +69,69 @@ export default function GameResults({ score, totalRounds, onRestart }: GameResul
             <p className="text-lg leading-relaxed mb-4">{result.message}</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">{score}</div>
+          {/* Final Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
+              <div className="text-3xl font-bold text-primary mb-2">{score}</div>
               <div className="text-sm text-muted-foreground">Correct Answers</div>
             </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-secondary mb-2">{percentage}%</div>
+            <div className="text-center p-4 bg-secondary/10 rounded-lg border border-secondary/20">
+              <div className="text-3xl font-bold text-secondary mb-2">{percentage}%</div>
               <div className="text-sm text-muted-foreground">Success Rate</div>
             </div>
+            <div className="text-center p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+              <div className="flex items-center justify-center gap-1 mb-2">
+                <Zap className="h-6 w-6 text-yellow-600" />
+                <div className="text-3xl font-bold text-yellow-600">{xp}</div>
+              </div>
+              <div className="text-sm text-muted-foreground">Total XP</div>
+            </div>
+            <div className="text-center p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
+              <div className="flex items-center justify-center gap-1 mb-2">
+                <Trophy className="h-6 w-6 text-purple-600" />
+                <div className="text-3xl font-bold text-purple-600">{level}</div>
+              </div>
+              <div className="text-sm text-muted-foreground">Final Level</div>
+            </div>
           </div>
+
+          {/* Additional Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
+              <div className="text-2xl font-bold text-orange-600 mb-2">🔥 {maxStreak}</div>
+              <div className="text-sm text-muted-foreground">Best Streak</div>
+            </div>
+            <div className="text-center p-4 bg-green-500/10 rounded-lg border border-green-500/20">
+              <div className="flex items-center justify-center gap-1 mb-2">
+                <Award className="h-5 w-5 text-green-600" />
+                <div className="text-2xl font-bold text-green-600">{achievements.length}</div>
+              </div>
+              <div className="text-sm text-muted-foreground">Achievements</div>
+            </div>
+          </div>
+
+          {/* Achievement Showcase */}
+          {achievements.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Star className="h-5 w-5 text-yellow-500" />
+                Achievements Unlocked
+              </h3>
+              <div className="flex flex-wrap justify-center gap-2">
+                {achievements.map((achievement, index) => (
+                  <Badge 
+                    key={index} 
+                    variant="outline" 
+                    className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-500/30 text-yellow-700 px-4 py-2"
+                  >
+                    {achievement === 'first-defender' && '🏆 First Defender'}
+                    {achievement === 'streak-master' && '🔥 Streak Master'}
+                    {achievement === 'xp-warrior' && '⚡ XP Warrior'}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="bg-muted p-4 rounded-lg">
             <h3 className="font-semibold text-lg mb-2">Remember:</h3>
