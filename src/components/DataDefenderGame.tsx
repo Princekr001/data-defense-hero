@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import GameHeader from "./GameHeader";
 import GameScenario from "./GameScenario";
 import GameResults from "./GameResults";
+import CharacterSelect, { Character } from "./CharacterSelect";
+import GameTimer from "./GameTimer";
+import PenaltyModal from "./PenaltyModal";
 import { gameScenarios } from "@/data/scenarios";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Zap, Shield, Star, Award, Crown } from "lucide-react";
+import { Trophy, Zap, Shield, Star, Award, Crown, Clock, AlertTriangle } from "lucide-react";
 import { getLevelData, getNextLevelData, calculateLevel, getLevelProgress } from "@/data/levels";
 
 export default function DataDefenderGame() {
@@ -19,9 +22,13 @@ export default function DataDefenderGame() {
   const [streak, setStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
   const [achievements, setAchievements] = useState<string[]>([]);
-  const [gameState, setGameState] = useState<'playing' | 'feedback' | 'finished'>('playing');
+  const [gameState, setGameState] = useState<'character-select' | 'playing' | 'feedback' | 'finished' | 'penalty'>('character-select');
   const [userChoice, setUserChoice] = useState<'secure' | 'surrender' | null>(null);
-  const [gameStarted, setGameStarted] = useState(false);
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+  const [timerActive, setTimerActive] = useState(false);
+  const [timerKey, setTimerKey] = useState(0);
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
+  const [penaltyReason, setPenaltyReason] = useState<'wrong-answer' | 'timeout'>('wrong-answer');
   const { toast } = useToast();
 
   const totalRounds = 10;
@@ -73,6 +80,7 @@ export default function DataDefenderGame() {
   };
 
   const handleChoice = (choice: 'secure' | 'surrender') => {
+    setTimerActive(false);
     setUserChoice(choice);
     setGameState('feedback');
 
@@ -124,14 +132,32 @@ export default function DataDefenderGame() {
         duration: 3000,
       });
     } else {
-      setStreak(0);
-      toast({
-        title: "Incorrect 😬",
-        description: "Streak broken! Learn from this mistake.",
-        variant: "destructive",
-        duration: 2000,
-      });
+      // HARSH PENALTY: Wrong answer = restart from level 1
+      handlePenalty('wrong-answer');
     }
+  };
+
+  const handleTimeout = () => {
+    setTimerActive(false);
+    // HARSH PENALTY: Timeout = restart from level 1
+    handlePenalty('timeout');
+  };
+
+  const handlePenalty = (reason: 'wrong-answer' | 'timeout') => {
+    const lostLevel = level - 1;
+    const lostXp = xp;
+    
+    setPenaltyReason(reason);
+    setShowPenaltyModal(true);
+    
+    // Reset everything to level 1
+    setScore(0);
+    setXp(0);
+    setLevel(1);
+    setStreak(0);
+    setCurrentRound(0);
+    setAchievements([]);
+    setGameState('penalty');
   };
 
   const handleNext = () => {
@@ -139,6 +165,8 @@ export default function DataDefenderGame() {
       setCurrentRound(currentRound + 1);
       setGameState('playing');
       setUserChoice(null);
+      setTimerActive(true);
+      setTimerKey(prev => prev + 1); // Force timer reset
     } else {
       setGameState('finished');
     }
@@ -152,63 +180,38 @@ export default function DataDefenderGame() {
     setStreak(0);
     setMaxStreak(0);
     setAchievements([]);
-    setGameState('playing');
+    setGameState('character-select');
     setUserChoice(null);
-    setGameStarted(false);
+    setSelectedCharacter(null);
+    setTimerActive(false);
+    setShowPenaltyModal(false);
+    setTimerKey(prev => prev + 1);
   };
 
-  const startGame = () => {
-    setGameStarted(true);
+  const handleCharacterSelect = (character: Character) => {
+    setSelectedCharacter(character);
+    setGameState('playing');
+    setTimerActive(true);
+    setTimerKey(prev => prev + 1);
   };
 
-  if (!gameStarted) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="text-center max-w-2xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-5xl font-bold bg-gradient-cyber bg-clip-text text-transparent mb-4">
-              SOS: Secure or Surrender
-            </h1>
-            <p className="text-xl text-muted-foreground mb-6">
-              Test your cybersecurity knowledge and learn to defend against online threats!
-            </p>
-          </div>
+  const handlePenaltyRestart = () => {
+    setShowPenaltyModal(false);
+    setGameState('character-select');
+    setSelectedCharacter(null);
+    setTimerActive(false);
+    setTimerKey(prev => prev + 1);
+  };
 
-          <div className="bg-card border border-border rounded-lg p-8 mb-8 shadow-cyber">
-            <h2 className="text-2xl font-semibold mb-4 text-primary">🎮 Game Features:</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-              <div className="space-y-2">
-                <h3 className="font-semibold text-lg">🎯 Core Gameplay</h3>
-                <ul className="space-y-1 text-muted-foreground text-sm">
-                  <li>• 10 cybersecurity scenarios</li>
-                  <li>• Choose SECURE or SURRENDER</li>
-                  <li>• Multiple threat categories</li>
-                  <li>• Instant feedback & learning</li>
-                </ul>
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-semibold text-lg">⚡ Gamification</h3>
-                <ul className="space-y-1 text-muted-foreground text-sm">
-                  <li>• Earn XP points for correct answers</li>
-                  <li>• Level up your defender rank</li>
-                  <li>• Build scoring streaks</li>
-                  <li>• Unlock achievements</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+  // Character-based effects
+  useEffect(() => {
+    if (gameState === 'playing' && !timerActive) {
+      setTimerActive(true);
+    }
+  }, [gameState]);
 
-          <Button 
-            variant="cyber" 
-            size="xl" 
-            onClick={startGame}
-            className="text-xl px-12 py-6"
-          >
-            Start Challenge
-          </Button>
-        </div>
-      </div>
-    );
+  if (gameState === 'character-select') {
+    return <CharacterSelect onCharacterSelect={handleCharacterSelect} />;
   }
 
   if (gameState === 'finished') {
@@ -237,6 +240,30 @@ export default function DataDefenderGame() {
             round={currentRound + 1} 
             totalRounds={totalRounds} 
           />
+          
+          {/* Character Info & Timer */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {selectedCharacter && (
+              <Card className="p-4 bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20">
+                <CardContent className="p-0">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">{selectedCharacter.avatar}</div>
+                    <div>
+                      <p className="font-bold text-secondary">{selectedCharacter.name}</p>
+                      <p className="text-sm text-muted-foreground">{selectedCharacter.title}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            <GameTimer
+              key={timerKey}
+              duration={30}
+              onTimeUp={handleTimeout}
+              isActive={timerActive && gameState === 'playing'}
+            />
+          </div>
           
           {/* Enhanced Player Stats Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -360,6 +387,7 @@ export default function DataDefenderGame() {
           onChoice={handleChoice}
           showFeedback={gameState === 'feedback'}
           userChoice={userChoice}
+          character={selectedCharacter}
         />
 
         {gameState === 'feedback' && (
@@ -374,6 +402,14 @@ export default function DataDefenderGame() {
             </Button>
           </div>
         )}
+        
+        <PenaltyModal
+          isOpen={showPenaltyModal}
+          onRestart={handlePenaltyRestart}
+          reason={penaltyReason}
+          lostLevel={level - 1}
+          lostXp={xp}
+        />
       </div>
     </div>
   );

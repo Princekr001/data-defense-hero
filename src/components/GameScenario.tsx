@@ -20,13 +20,18 @@ interface GameScenarioProps {
   onChoice: (choice: 'secure' | 'surrender') => void;
   showFeedback: boolean;
   userChoice: 'secure' | 'surrender' | null;
+  character?: {
+    name: string;
+    avatar: string;
+  } | null;
 }
 
 export default function GameScenario({ 
   scenario, 
   onChoice, 
   showFeedback, 
-  userChoice 
+  userChoice,
+  character
 }: GameScenarioProps) {
   const isCorrect = userChoice === scenario.correctChoice;
 
@@ -100,19 +105,19 @@ export default function GameScenario({
           {/* Character Story Section */}
           <div className="bg-gradient-to-br from-muted/50 to-muted p-6 rounded-xl border border-border relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-cyber"></div>
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="text-2xl">🧑‍💻</span>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="text-2xl">{character?.avatar || '🧑‍💻'}</span>
+                  </div>
                 </div>
-              </div>
               <div className="flex-1">
                 <p className="text-lg leading-relaxed text-foreground mb-4">
                   {scenario.description}
                 </p>
                 {!showFeedback && (
                   <p className="text-primary font-medium animate-pulse">
-                    What should Alex do? Help them make the right choice...
+                    What should {character?.name || 'Alex'} do? Help them make the right choice...
                   </p>
                 )}
               </div>
@@ -122,7 +127,7 @@ export default function GameScenario({
           {!showFeedback && (
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-center text-foreground mb-6">
-                Choose Alex's Action:
+                Choose {character?.name || 'Alex'}'s Action:
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div 
