@@ -6,15 +6,19 @@ import GameResults from "./GameResults";
 import CharacterSelect, { Character } from "./CharacterSelect";
 import GameTimer from "./GameTimer";
 import PenaltyModal from "./PenaltyModal";
+import EraMap from "./EraMap";
+import AIGuideBot from "./AIGuideBot";
 import { gameScenarios } from "@/data/scenarios";
+import { gameEras, type Era, type TimelineEvent, type FirewallEnergy } from "@/data/eras";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Zap, Shield, Star, Award, Crown, Clock, AlertTriangle } from "lucide-react";
+import { Trophy, Zap, Shield, Star, Award, Crown, Clock, AlertTriangle, History, Target } from "lucide-react";
 import { getLevelData, getNextLevelData, calculateLevel, getLevelProgress } from "@/data/levels";
 
 export default function DataDefenderGame() {
+  // Core game state
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
   const [xp, setXp] = useState(0);
@@ -22,17 +26,38 @@ export default function DataDefenderGame() {
   const [streak, setStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
   const [achievements, setAchievements] = useState<string[]>([]);
-  const [gameState, setGameState] = useState<'character-select' | 'playing' | 'feedback' | 'finished' | 'penalty'>('character-select');
+  const [gameState, setGameState] = useState<'era-map' | 'character-select' | 'playing' | 'feedback' | 'finished' | 'penalty'>('era-map');
   const [userChoice, setUserChoice] = useState<'secure' | 'surrender' | null>(null);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [timerActive, setTimerActive] = useState(false);
   const [timerKey, setTimerKey] = useState(0);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
   const [penaltyReason, setPenaltyReason] = useState<'wrong-answer' | 'timeout'>('wrong-answer');
+  
+  // Time travel game state
+  const [currentEra, setCurrentEra] = useState<Era | null>(null);
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
+  const [firewallEnergy, setFirewallEnergy] = useState<FirewallEnergy>({ current: 100, max: 100, regenRate: 5 });
+  const [dataLeaks, setDataLeaks] = useState(0);
+  const [missionStartTime, setMissionStartTime] = useState<number>(0);
+  
   const { toast } = useToast();
 
-  const totalRounds = 10;
-  const currentScenario = gameScenarios[currentRound];
+  // Get scenarios for specific era
+  const getEraScenarios = (eraId: string) => {
+    const eraFilters = {
+      'era-2005': ['phishing', 'password', 'malware'],
+      'era-2010': ['social', 'phishing', 'privacy'],
+      'era-2020': ['malware', 'network', 'scam'],
+      'era-2035': ['phishing', 'social', 'network', 'gaming'] // Future AI-driven threats
+    };
+    
+    const categories = eraFilters[eraId as keyof typeof eraFilters] || ['phishing'];
+    return gameScenarios.filter(scenario => categories.includes(scenario.category));
+  };
+
+  const totalRounds = currentEra ? getEraScenarios(currentEra.id).length : 10;
+  const currentScenario = currentEra ? getEraScenarios(currentEra.id)[currentRound] : gameScenarios[currentRound];
   
   // Enhanced level calculations
   const currentLevel = calculateLevel(xp);
@@ -87,13 +112,20 @@ export default function DataDefenderGame() {
     const isCorrect = choice === currentScenario.correctChoice;
     
     if (isCorrect) {
+      // Restore firewall energy on correct answer
+      setFirewallEnergy(prev => ({
+        ...prev,
+        current: Math.min(prev.max, prev.current + 20)
+      }));
+      
       const newScore = score + 1;
       const newStreak = streak + 1;
       const baseXp = 50;
+      const eraMultiplier = currentEra?.year === 2035 ? 2.5 : currentEra?.year === 2020 ? 2 : currentEra?.year === 2010 ? 1.5 : 1;
       const difficultyMultiplier = currentScenario.difficulty === 'hard' ? 2 : currentScenario.difficulty === 'medium' ? 1.5 : 1;
       const streakBonus = Math.min(newStreak * 10, 50);
       const levelBonus = getXpBonus(baseXp);
-      const earnedXp = Math.floor(baseXp * difficultyMultiplier + streakBonus + levelBonus);
+      const earnedXp = Math.floor(baseXp * difficultyMultiplier * eraMultiplier + streakBonus + levelBonus);
       const newXp = xp + earnedXp;
       const newLevel = calculateLevel(newXp);
       
@@ -126,12 +158,48 @@ export default function DataDefenderGame() {
       checkAchievements(newScore, newStreak, newXp);
       
       const bonusText = levelBonus > 0 ? ` (+${levelBonus} level bonus)` : '';
+      const eraBonus = eraMultiplier > 1 ? ` (+${Math.floor((eraMultiplier - 1) * 100)}% era bonus)` : '';
       toast({
-        title: "Correct! 🎉",
-        description: `+${earnedXp} XP earned! ${streakBonus > 0 ? `(+${streakBonus} streak)` : ''}${bonusText}`,
+        title: "Timeline Secured! 🎉",
+        description: `+${earnedXp} XP earned! ${streakBonus > 0 ? `(+${streakBonus} streak)` : ''}${bonusText}${eraBonus}`,
         duration: 3000,
       });
     } else {
+      // Create data leak and reduce firewall energy
+      const newDataLeaks = dataLeaks + 1;
+      setDataLeaks(newDataLeaks);
+      setFirewallEnergy(prev => ({
+        ...prev,
+        current: Math.max(0, prev.current - 30)
+      }));
+      
+      // Update timeline event
+      if (currentEra) {
+        setTimelineEvents(prev => {
+          const existingEvent = prev.find(e => e.eraId === currentEra.id);
+          if (existingEvent) {
+            return prev.map(e => 
+              e.eraId === currentEra.id 
+                ? { ...e, dataLeaks: e.dataLeaks + 1 }
+                : e
+            );
+          } else {
+            return [...prev, { 
+              eraId: currentEra.id, 
+              isRepaired: false, 
+              dataLeaks: 1, 
+              completionTime: 0 
+            }];
+          }
+        });
+      }
+      
+      toast({
+        title: "Timeline Breach! ⚠️",
+        description: `Data leak created! Firewall energy depleted. This will affect future eras...`,
+        duration: 4000,
+      });
+      
       // HARSH PENALTY: Wrong answer = restart from level 1
       handlePenalty('wrong-answer');
     }
@@ -168,7 +236,40 @@ export default function DataDefenderGame() {
       setTimerActive(true);
       setTimerKey(prev => prev + 1); // Force timer reset
     } else {
-      setGameState('finished');
+      // Era completed - update timeline
+      if (currentEra) {
+        const completionTime = Math.floor((Date.now() - missionStartTime) / 1000);
+        setTimelineEvents(prev => {
+          const existingEvent = prev.find(e => e.eraId === currentEra.id);
+          if (existingEvent) {
+            return prev.map(e => 
+              e.eraId === currentEra.id 
+                ? { ...e, isRepaired: dataLeaks === 0, completionTime }
+                : e
+            );
+          } else {
+            return [...prev, { 
+              eraId: currentEra.id, 
+              isRepaired: dataLeaks === 0, 
+              dataLeaks, 
+              completionTime 
+            }];
+          }
+        });
+        
+        toast({
+          title: dataLeaks === 0 ? "🎊 Era Secured!" : "⚠️ Era Compromised",
+          description: dataLeaks === 0 
+            ? `Perfect timeline repair in ${Math.floor(completionTime / 60)}:${(completionTime % 60).toString().padStart(2, '0')}!`
+            : `Timeline damaged with ${dataLeaks} data leaks. Future eras will be affected.`,
+          duration: 5000,
+        });
+      }
+      
+      setGameState('era-map');
+      setCurrentEra(null);
+      setCurrentRound(0);
+      setDataLeaks(0);
     }
   };
 
@@ -180,12 +281,16 @@ export default function DataDefenderGame() {
     setStreak(0);
     setMaxStreak(0);
     setAchievements([]);
-    setGameState('character-select');
+    setGameState('era-map');
     setUserChoice(null);
     setSelectedCharacter(null);
     setTimerActive(false);
     setShowPenaltyModal(false);
     setTimerKey(prev => prev + 1);
+    setCurrentEra(null);
+    setTimelineEvents([]);
+    setFirewallEnergy({ current: 100, max: 100, regenRate: 5 });
+    setDataLeaks(0);
   };
 
   const handleCharacterSelect = (character: Character) => {
@@ -197,10 +302,22 @@ export default function DataDefenderGame() {
 
   const handlePenaltyRestart = () => {
     setShowPenaltyModal(false);
-    setGameState('character-select');
+    setGameState('era-map');
     setSelectedCharacter(null);
     setTimerActive(false);
     setTimerKey(prev => prev + 1);
+    setCurrentEra(null);
+    setCurrentRound(0);
+    setDataLeaks(0);
+  };
+  
+  const handleEraSelect = (era: Era) => {
+    setCurrentEra(era);
+    setGameState('character-select');
+    setCurrentRound(0);
+    setDataLeaks(0);
+    setMissionStartTime(Date.now());
+    setFirewallEnergy({ current: 100, max: 100, regenRate: 5 });
   };
 
   // Character-based effects
@@ -210,8 +327,30 @@ export default function DataDefenderGame() {
     }
   }, [gameState]);
 
+  if (gameState === 'era-map') {
+    return (
+      <EraMap
+        currentEra={currentEra?.id || null}
+        timelineEvents={timelineEvents}
+        onEraSelect={handleEraSelect}
+        firewallEnergy={firewallEnergy}
+      />
+    );
+  }
+
   if (gameState === 'character-select') {
-    return <CharacterSelect onCharacterSelect={handleCharacterSelect} />;
+    return (
+      <div className="min-h-screen" style={{ 
+        background: currentEra 
+          ? `linear-gradient(135deg, ${currentEra.backgroundColor.replace('from-', '').replace('to-', ', ')})` 
+          : undefined 
+      }}>
+        <CharacterSelect 
+          onCharacterSelect={handleCharacterSelect} 
+          era={currentEra}
+        />
+      </div>
+    );
   }
 
   if (gameState === 'finished') {
@@ -231,8 +370,39 @@ export default function DataDefenderGame() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4" style={{ 
+      background: currentEra 
+        ? `linear-gradient(135deg, ${currentEra.backgroundColor.replace('from-', '').replace('to-', ', ')})` 
+        : undefined 
+    }}>
       <div className="container mx-auto py-8">
+        {/* Era Header */}
+        {currentEra && (
+          <Card className={`mb-6 p-4 bg-gradient-to-r ${currentEra.backgroundColor} border-${currentEra.theme}`}>
+            <CardContent className="p-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl">{currentEra.icon}</div>
+                  <div>
+                    <h1 className={`text-2xl font-bold ${currentEra.textColor}`}>
+                      {currentEra.year} - {currentEra.name}
+                    </h1>
+                    <p className="text-muted-foreground">{currentEra.description}</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setGameState('era-map')}
+                  className="flex items-center gap-2"
+                >
+                  <History className="h-4 w-4" />
+                  Timeline
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Enhanced Game Header with Gamification */}
         <div className="mb-8 space-y-4">
           <GameHeader 
@@ -265,6 +435,50 @@ export default function DataDefenderGame() {
             />
           </div>
           
+          {/* Firewall Energy & Mission Status */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <Card className="p-4 bg-gradient-to-br from-blue-500/10 to-cyan-500/5 border-blue-500/20">
+              <CardContent className="p-0">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Firewall Energy</p>
+                    <p className="text-xl font-bold text-blue-400">{firewallEnergy.current}</p>
+                  </div>
+                  <Zap className="h-6 w-6 text-blue-400" />
+                </div>
+                <Progress value={(firewallEnergy.current / firewallEnergy.max) * 100} className="mt-2 h-2" />
+              </CardContent>
+            </Card>
+            
+            <Card className="p-4 bg-gradient-to-br from-red-500/10 to-orange-500/5 border-red-500/20">
+              <CardContent className="p-0">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Data Leaks</p>
+                    <p className="text-xl font-bold text-red-400">{dataLeaks}</p>
+                  </div>
+                  <AlertTriangle className="h-6 w-6 text-red-400" />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {dataLeaks === 0 ? 'Timeline Secure' : 'Timeline Corrupted'}
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/20">
+              <CardContent className="p-0">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Mission Progress</p>
+                    <p className="text-xl font-bold text-green-400">{currentRound + 1}/{totalRounds}</p>
+                  </div>
+                  <Target className="h-6 w-6 text-green-400" />
+                </div>
+                <Progress value={((currentRound + 1) / totalRounds) * 100} className="mt-2 h-2" />
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Enhanced Player Stats Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 relative overflow-hidden">
@@ -409,6 +623,13 @@ export default function DataDefenderGame() {
           reason={penaltyReason}
           lostLevel={level - 1}
           lostXp={xp}
+        />
+        
+        <AIGuideBot
+          playerScore={score}
+          dataLeaks={dataLeaks}
+          currentEra={currentEra?.id || ''}
+          isVisible={gameState === 'playing' || gameState === 'feedback'}
         />
       </div>
     </div>

@@ -17,6 +17,16 @@ export interface Character {
 
 interface CharacterSelectProps {
   onCharacterSelect: (character: Character) => void;
+  era?: {
+    id: string;
+    year: number;
+    name: string;
+    description: string;
+    theme: string;
+    backgroundColor: string;
+    textColor: string;
+    icon: string;
+  } | null;
 }
 
 const characters: Character[] = [
@@ -72,7 +82,7 @@ const characters: Character[] = [
   }
 ];
 
-export default function CharacterSelect({ onCharacterSelect }: CharacterSelectProps) {
+export default function CharacterSelect({ onCharacterSelect, era }: CharacterSelectProps) {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
 
   const handleSelect = (character: Character) => {
@@ -89,11 +99,19 @@ export default function CharacterSelect({ onCharacterSelect }: CharacterSelectPr
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-cyber bg-clip-text text-transparent mb-4">
-            Choose Your Cyber Defender
+          {era && (
+            <div className="mb-6">
+              <Badge variant="outline" className={`text-lg px-4 py-2 ${era.textColor} border-current`}>
+                {era.icon} {era.year} - {era.name}
+              </Badge>
+              <p className="text-muted-foreground mt-2">{era.description}</p>
+            </div>
+          )}
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-4">
+            🛡️ Choose Your Cyber Agent
           </h1>
           <p className="text-xl text-muted-foreground">
-            Each character brings unique perspectives to cybersecurity scenarios
+            Select your time-traveling defender for this mission
           </p>
         </div>
 
