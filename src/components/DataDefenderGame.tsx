@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import GameHeader from "./GameHeader";
-import LearningScenario from "./LearningScenario";
+import MissionInterface from "./MissionInterface";
+import MissionBriefing from "./MissionBriefing";
 import GameResults from "./GameResults";
 import CharacterSelect, { Character } from "./CharacterSelect";
-// Removed timer and penalty systems for learning-focused approach
 import EraMap from "./EraMap";
-import AIGuideBot from "./AIGuideBot";
-import { gameScenarios } from "@/data/scenarios";
+import { missions, getMissionsByEra, cyberTools } from "@/data/missions";
 import { gameEras, type Era, type TimelineEvent, type FirewallEnergy } from "@/data/eras";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +24,9 @@ export default function DataDefenderGame() {
   const [streak, setStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
   const [achievements, setAchievements] = useState<string[]>([]);
-  const [gameState, setGameState] = useState<'era-map' | 'character-select' | 'playing' | 'feedback' | 'finished' | 'penalty'>('era-map');
+  const [gameState, setGameState] = useState<'era-map' | 'character-select' | 'mission-briefing' | 'playing' | 'finished'>('era-map');
+  const [currentMission, setCurrentMission] = useState<string | null>(null);
+  const [unlockedTools, setUnlockedTools] = useState<string[]>(['email-analyzer']);
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [learningStreak, setLearningStreak] = useState(0);
@@ -235,9 +236,15 @@ export default function DataDefenderGame() {
   const handleCharacterSelect = (character: Character) => {
     setSelectedCharacter({
       ...character,
-      name: character.name // Allow customization later
+      name: character.name
     });
-    setGameState('playing');
+    
+    // Select first mission for the era
+    const eraMissions = getMissionsByEra(currentEra?.id || '');
+    if (eraMissions.length > 0) {
+      setCurrentMission(eraMissions[0].id);
+      setGameState('mission-briefing');
+    }
   };
   
   const handleEraSelect = (era: Era) => {
