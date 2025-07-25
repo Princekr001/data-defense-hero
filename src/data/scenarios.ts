@@ -2,145 +2,214 @@ export interface Scenario {
   id: number;
   title: string;
   description: string;
-  choices: {
-    secure: string;
-    surrender: string;
+  situation: string;
+  actions: {
+    action1: { text: string; type: 'safe' | 'risky'; };
+    action2: { text: string; type: 'safe' | 'risky'; };
+    action3?: { text: string; type: 'safe' | 'risky'; };
   };
-  correctChoice: 'secure' | 'surrender';
-  explanation: string;
+  feedback: {
+    correct: string;
+    concept: string;
+    tips: string[];
+  };
   category: 'phishing' | 'password' | 'social' | 'network' | 'malware' | 'privacy' | 'scam' | 'gaming';
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: 'beginner' | 'intermediate' | 'expert';
+  xpReward: number;
+  concept: string;
 }
 
 export const gameScenarios: Scenario[] = [
   {
     id: 1,
-    title: "The Mysterious Email",
-    description: "Alex receives an urgent email that appears to be from their bank. The message says 'Your account will be suspended in 24 hours unless you verify your details immediately!' The email looks official with the bank's logo, but something feels off about the sender's address...",
-    choices: {
-      secure: "Alex contacts the bank directly using the official phone number to verify",
-      surrender: "Alex clicks the link in the email to quickly 'verify' the account"
+    title: "The Bank Email Mystery",
+    description: "Alex is checking their email during lunch break when something catches their eye.",
+    situation: "Alex receives an urgent email claiming to be from their bank: 'Your account will be suspended in 24 hours unless you verify your details immediately!' The email has the bank's logo, but the sender's address is 'security-bank@email-verify.net' instead of the official domain.",
+    actions: {
+      action1: { text: "Click the verification link in the email", type: 'risky' },
+      action2: { text: "Call the bank directly using the number on your debit card", type: 'safe' },
+      action3: { text: "Forward the email to friends to ask their opinion", type: 'risky' }
     },
-    correctChoice: 'secure',
-    explanation: "Smart move! Alex avoided a phishing trap. Real banks never ask for verification via email links. Always contact financial institutions directly through official channels.",
+    feedback: {
+      correct: "Great thinking! Calling the bank directly was the safest choice. You avoided a phishing scam that could have stolen your login credentials.",
+      concept: "Phishing Prevention: Always verify suspicious communications through official channels.",
+      tips: [
+        "Banks never ask for account verification via email links",
+        "Check sender addresses carefully - look for misspellings or wrong domains",
+        "When in doubt, contact the organization directly using official contact info"
+      ]
+    },
     category: 'phishing',
-    difficulty: 'easy'
+    difficulty: 'beginner',
+    xpReward: 100,
+    concept: "Email Verification"
   },
   {
     id: 2,
-    title: "The Password Dilemma",
-    description: "Alex is signing up for a new social media account and needs to create a password. The app suggests using a complex password, but Alex is tempted to use something simple like their birthday '12031995' because it's easy to remember and they're in a hurry...",
-    choices: {
-      secure: "Alex creates a strong, unique password using a password manager",
-      surrender: "Alex uses their birthday - it's quick and easy to remember"
+    title: "The Password Creation Challenge",
+    description: "Alex is creating an account for a new social media platform they're excited to join.",
+    situation: "The sign-up form asks for a password. Alex is thinking about using '12March1995' (their birthday) because it's easy to remember, 'AlexCool123' because it includes their name, or generating a random strong password with their password manager.",
+    actions: {
+      action1: { text: "Use birthday: '12March1995'", type: 'risky' },
+      action2: { text: "Create a unique strong password with password manager", type: 'safe' },
+      action3: { text: "Use a variation of the same password you use elsewhere", type: 'risky' }
     },
-    correctChoice: 'secure',
-    explanation: "Excellent choice! Alex protected their account with a strong password. Personal information like birthdays are easy for hackers to guess. Password managers make strong passwords simple to use.",
+    feedback: {
+      correct: "Excellent choice! Using a password manager to create unique, strong passwords is the gold standard of account security.",
+      concept: "Password Security: Strong, unique passwords are your first line of defense.",
+      tips: [
+        "Avoid personal information like birthdays, names, or addresses",
+        "Use different passwords for every account",
+        "Password managers make strong passwords easy to use and remember"
+      ]
+    },
     category: 'password',
-    difficulty: 'easy'
+    difficulty: 'beginner',
+    xpReward: 100,
+    concept: "Strong Authentication"
   },
   {
     id: 3,
-    title: "The Mysterious Friend Request",
-    description: "While scrolling through social media, Alex receives a friend request from someone named 'Jamie Wilson' who claims to go to their school. The profile has only 3 photos, 12 friends, and was created just last week. The person is messaging: 'Hey! I think we have mutual friends!'",
-    choices: {
-      secure: "Alex ignores the request and reports the suspicious profile",
-      surrender: "Alex accepts the request and starts chatting with this 'classmate'"
+    title: "The Social Media Friend Request",
+    description: "Alex receives an interesting friend request while scrolling social media.",
+    situation: "A profile named 'Jordan Smith' wants to connect, claiming they go to Alex's school. The profile was created last week, has only 5 photos, 8 friends, and sent a message saying 'Hey! I think we have mutual friends! Want to chat?'",
+    actions: {
+      action1: { text: "Accept the request and start chatting", type: 'risky' },
+      action2: { text: "Check with mutual friends first to verify", type: 'safe' },
+      action3: { text: "Ignore the request and report if suspicious", type: 'safe' }
     },
-    correctChoice: 'secure',
-    explanation: "Well done! Alex avoided a potential catfish or scammer. Fake profiles often have few photos, recent creation dates, and limited connections. Always verify someone's identity before connecting.",
+    feedback: {
+      correct: "Smart detective work! Verifying unknown contacts helps protect you from catfishing and social engineering attacks.",
+      concept: "Social Engineering Defense: Verify before you trust.",
+      tips: [
+        "Be suspicious of new profiles with few friends or photos",
+        "Verify identity through mutual connections or in person",
+        "Trust your instincts - if something feels off, it probably is"
+      ]
+    },
     category: 'social',
-    difficulty: 'medium'
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "Identity Verification"
   },
   {
     id: 4,
-    title: "The Coffee Shop Dilemma",
-    description: "Alex is at a bustling coffee shop and suddenly remembers they need to transfer money to a friend today. Their phone shows only 2% mobile data remaining. The coffee shop offers free Wi-Fi called 'CoffeeShop_FREE' with no password required. Alex opens their banking app...",
-    choices: {
-      secure: "Alex waits until getting home or uses the remaining mobile data carefully",
-      surrender: "Alex connects to the free Wi-Fi and completes the bank transfer"
+    title: "The Coffee Shop Connection",
+    description: "Alex needs to access their bank account while studying at a busy coffee shop.",
+    situation: "Alex's mobile data is running low, and they need to transfer money to a friend today. The coffee shop offers free Wi-Fi called 'CoffeeHouse_Free' with no password. Alex could also wait until getting home or use the remaining mobile data carefully.",
+    actions: {
+      action1: { text: "Connect to the free Wi-Fi and do the banking", type: 'risky' },
+      action2: { text: "Wait until getting home to use secure internet", type: 'safe' },
+      action3: { text: "Use remaining mobile data for the quick transaction", type: 'safe' }
     },
-    correctChoice: 'secure',
-    explanation: "Perfect decision! Alex protected their financial information. Public Wi-Fi networks are hunting grounds for cybercriminals who can intercept banking details. Sensitive transactions should only happen on secure, private networks.",
+    feedback: {
+      correct: "Wise decision! Protecting financial transactions on public networks prevents cybercriminals from intercepting your sensitive data.",
+      concept: "Network Security: Keep financial data on trusted, secure connections.",
+      tips: [
+        "Public Wi-Fi is a hunting ground for hackers",
+        "Use mobile data or VPN for sensitive transactions",
+        "Save banking for secure, private networks when possible"
+      ]
+    },
     category: 'network',
-    difficulty: 'medium'
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "Secure Connections"
   },
   {
     id: 5,
-    title: "The Free Game Trap",
-    description: "Alex really wants to play 'CyberRunner Pro,' a popular game that costs $4.99 in the official app store. While searching online, Alex discovers a website offering the exact same game for free download. The site says 'Skip the app store fees!' and the download button is flashing temptingly...",
-    choices: {
-      secure: "Alex saves up and buys the official version from the app store",
-      surrender: "Alex downloads the free version from the unofficial website"
+    title: "The Free Game Temptation",
+    description: "Alex really wants to play a popular mobile game that costs money in the official store.",
+    situation: "Alex discovers a website offering 'CyberRunner Pro' (normally $4.99) for free download. The site claims 'Skip the app store fees!' and shows glowing reviews. Alex could download it for free, buy the official version, or look for legitimate free alternatives.",
+    actions: {
+      action1: { text: "Download the free version from the website", type: 'risky' },
+      action2: { text: "Buy the official version from the app store", type: 'safe' },
+      action3: { text: "Look for legitimate free games instead", type: 'safe' }
     },
-    correctChoice: 'secure',
-    explanation: "Brilliant choice! Alex avoided a malware trap. 'Free' apps from unofficial sources often contain viruses, spyware, or steal personal data. The small cost of official apps is worth the security and peace of mind.",
+    feedback: {
+      correct: "Great choice! Official app stores verify software safety, protecting your device from malware and data theft.",
+      concept: "Software Safety: Stick to official sources for downloads.",
+      tips: [
+        "'Free' versions of paid apps often contain malware",
+        "Official app stores screen software for safety",
+        "The small cost of legitimate apps is worth the security"
+      ]
+    },
     category: 'malware',
-    difficulty: 'easy'
+    difficulty: 'beginner',
+    xpReward: 100,
+    concept: "Safe Downloads"
   },
   {
     id: 6,
-    title: "The Crypto Fortune",
-    description: "While watching YouTube, Alex sees an ad featuring a famous celebrity claiming they made millions from a new cryptocurrency investment. The ad says 'Join now with just $50 and become a millionaire in 30 days!' There's a countdown timer showing only 2 hours left to join this 'exclusive opportunity'...",
-    choices: {
-      secure: "Alex researches the investment thoroughly and recognizes it as a scam",
-      surrender: "Alex quickly sends $50 before the 'limited time offer' expires"
+    title: "The Crypto Investment Opportunity",
+    description: "Alex sees an enticing advertisement while browsing online.",
+    situation: "A pop-up ad features a celebrity claiming they made millions from a new cryptocurrency investment: 'Join now with just $50 and become a millionaire in 30 days!' There's a countdown timer showing only 2 hours left for this 'exclusive opportunity.'",
+    actions: {
+      action1: { text: "Invest $50 quickly before the offer expires", type: 'risky' },
+      action2: { text: "Research the investment thoroughly first", type: 'safe' },
+      action3: { text: "Close the ad and report it as suspicious", type: 'safe' }
     },
-    correctChoice: 'secure',
-    explanation: "Excellent critical thinking! Alex avoided a cryptocurrency scam. Real investments never guarantee massive returns overnight, and legitimate opportunities don't use celebrity endorsements or pressure tactics.",
+    feedback: {
+      correct: "Excellent critical thinking! You avoided a common cryptocurrency scam that preys on fear of missing out.",
+      concept: "Scam Recognition: If it sounds too good to be true, it probably is.",
+      tips: [
+        "Legitimate investments never guarantee massive quick returns",
+        "Pressure tactics and countdown timers are red flags",
+        "Real celebrities don't endorse get-rich-quick schemes"
+      ]
+    },
     category: 'scam',
-    difficulty: 'medium'
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "Investment Fraud"
   },
   {
     id: 7,
-    title: "The Privacy Settings Puzzle",
-    description: "Alex just installed a new photo editing app that's trending on social media. During setup, the app requests permission to access contacts, location, microphone, camera, and all photos. The app says these permissions are 'necessary for the best experience' but Alex only wants to edit a few vacation photos...",
-    choices: {
-      secure: "Alex denies unnecessary permissions and only grants access to photos",
-      surrender: "Alex grants all permissions to get the 'full experience'"
+    title: "The App Permissions Dilemma",
+    description: "Alex is setting up a new photo editing app that's trending on social media.",
+    situation: "During installation, the app requests permissions for contacts, location, microphone, camera, and all photos. The app claims these are 'necessary for the best experience,' but Alex only wants to edit vacation photos.",
+    actions: {
+      action1: { text: "Grant all permissions for the full experience", type: 'risky' },
+      action2: { text: "Only allow access to photos and camera", type: 'safe' },
+      action3: { text: "Deny all permissions and find a different app", type: 'safe' }
     },
-    correctChoice: 'secure',
-    explanation: "Smart privacy protection! Alex limited data exposure by only granting necessary permissions. Apps often request excessive permissions to collect user data for advertising or other purposes.",
+    feedback: {
+      correct: "Smart privacy protection! Limiting permissions reduces your data exposure and protects your personal information.",
+      concept: "Privacy Control: Only grant necessary permissions to apps.",
+      tips: [
+        "Apps often request excessive permissions for data collection",
+        "Review what each permission actually allows",
+        "You can usually change permissions later in settings"
+      ]
+    },
     category: 'privacy',
-    difficulty: 'hard'
+    difficulty: 'expert',
+    xpReward: 200,
+    concept: "Data Privacy"
   },
   {
     id: 8,
     title: "The Gaming Tournament Invitation",
-    description: "Alex receives a Discord message from someone claiming to be a tournament organizer: 'Congratulations! You've been selected for our exclusive $10,000 gaming tournament! Click this link to claim your spot and download our special tournament client.' The message includes an official-looking logo and website link...",
-    choices: {
-      secure: "Alex ignores the message and reports it as spam",
-      surrender: "Alex clicks the link and downloads the 'tournament client'"
+    description: "Alex receives an exciting message on their favorite gaming platform.",
+    situation: "A Discord user claiming to be a tournament organizer messages: 'Congratulations! You've been selected for our exclusive $10,000 gaming tournament! Click this link to claim your spot and download our special tournament client.'",
+    actions: {
+      action1: { text: "Click the link and download the tournament client", type: 'risky' },
+      action2: { text: "Ask for verification and research the tournament", type: 'safe' },
+      action3: { text: "Ignore the message and report it as spam", type: 'safe' }
     },
-    correctChoice: 'secure',
-    explanation: "Great instincts! Alex avoided a gaming-targeted malware attack. Legitimate tournaments don't randomly select players via DM, and suspicious downloads often contain keyloggers or account stealers.",
+    feedback: {
+      correct: "Great gaming instincts! You avoided a targeted malware attack designed to steal gaming accounts and personal data.",
+      concept: "Gaming Security: Verify tournaments and avoid suspicious downloads.",
+      tips: [
+        "Legitimate tournaments don't randomly select players via DM",
+        "Official tournaments use verified channels and known organizers",
+        "Suspicious downloads often contain account stealers or keyloggers"
+      ]
+    },
     category: 'gaming',
-    difficulty: 'hard'
-  },
-  {
-    id: 9,
-    title: "The Emergency Tech Support",
-    description: "Alex's computer suddenly displays a pop-up warning: 'CRITICAL SECURITY ALERT! Your computer is infected with 5 viruses! Call Microsoft Support immediately at 1-800-HELP-NOW or your data will be permanently deleted in 10 minutes!' The pop-up is flashing red and won't close easily...",
-    choices: {
-      secure: "Alex forces the browser closed and runs legitimate antivirus software",
-      surrender: "Alex panics and calls the number to get 'immediate help'"
-    },
-    correctChoice: 'secure',
-    explanation: "Perfect response! Alex avoided a tech support scam. Real security companies never use pop-up warnings or pressure tactics. These scams trick users into paying for fake fixes or installing malware.",
-    category: 'scam',
-    difficulty: 'medium'
-  },
-  {
-    id: 10,
-    title: "The Smart Home Setup",
-    description: "Alex is setting up a new smart doorbell camera at home. The default login is 'admin/admin' and the setup wizard asks if they want to change it. Alex is excited to start using the camera and thinks 'I'll change it later when I have more time.' The current password works fine for testing...",
-    choices: {
-      secure: "Alex immediately changes the default password to something strong and unique",
-      surrender: "Alex skips the password change to start using the camera right away"
-    },
-    correctChoice: 'secure',
-    explanation: "Excellent security hygiene! Alex protected their home network. Default passwords on IoT devices are publicly known and create easy entry points for hackers to access home networks and spy on families.",
-    category: 'network',
-    difficulty: 'hard'
+    difficulty: 'expert',
+    xpReward: 200,
+    concept: "Gaming Safety"
   }
 ];

@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import GameHeader from "./GameHeader";
-import GameScenario from "./GameScenario";
+import LearningScenario from "./LearningScenario";
 import GameResults from "./GameResults";
 import CharacterSelect, { Character } from "./CharacterSelect";
-import GameTimer from "./GameTimer";
-import PenaltyModal from "./PenaltyModal";
+// Removed timer and penalty systems for learning-focused approach
 import EraMap from "./EraMap";
 import AIGuideBot from "./AIGuideBot";
 import { gameScenarios } from "@/data/scenarios";
@@ -27,12 +26,10 @@ export default function DataDefenderGame() {
   const [maxStreak, setMaxStreak] = useState(0);
   const [achievements, setAchievements] = useState<string[]>([]);
   const [gameState, setGameState] = useState<'era-map' | 'character-select' | 'playing' | 'feedback' | 'finished' | 'penalty'>('era-map');
-  const [userChoice, setUserChoice] = useState<'secure' | 'surrender' | null>(null);
+  const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  const [timerActive, setTimerActive] = useState(false);
-  const [timerKey, setTimerKey] = useState(0);
-  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
-  const [penaltyReason, setPenaltyReason] = useState<'wrong-answer' | 'timeout'>('wrong-answer');
+  const [learningStreak, setLearningStreak] = useState(0);
+  const [conceptsMastered, setConceptsMastered] = useState<string[]>([]);
   
   // Time travel game state
   const [currentEra, setCurrentEra] = useState<Era | null>(null);
@@ -104,137 +101,80 @@ export default function DataDefenderGame() {
     setAchievements(newAchievements);
   };
 
-  const handleChoice = (choice: 'secure' | 'surrender') => {
-    setTimerActive(false);
-    setUserChoice(choice);
-    setGameState('feedback');
+  const handleActionSelect = (actionKey: string, isCorrect: boolean, xpEarned: number) => {
+    if (actionKey === '') {
+      // Reset for retry
+      setSelectedAction(null);
+      setGameState('playing');
+      return;
+    }
 
-    const isCorrect = choice === currentScenario.correctChoice;
+    setSelectedAction(actionKey);
+    setGameState('feedback');
     
     if (isCorrect) {
-      // Restore firewall energy on correct answer
+      // Increase learning streak
+      const newLearningStreak = learningStreak + 1;
+      setLearningStreak(newLearningStreak);
+      
+      // Add concept to mastered list
+      if (!conceptsMastered.includes(currentScenario.concept)) {
+        setConceptsMastered(prev => [...prev, currentScenario.concept]);
+      }
+      
+      // Restore some firewall energy for correct answers
       setFirewallEnergy(prev => ({
         ...prev,
-        current: Math.min(prev.max, prev.current + 20)
+        current: Math.min(prev.max, prev.current + 15)
       }));
       
       const newScore = score + 1;
-      const newStreak = streak + 1;
-      const baseXp = 50;
-      const eraMultiplier = currentEra?.year === 2035 ? 2.5 : currentEra?.year === 2020 ? 2 : currentEra?.year === 2010 ? 1.5 : 1;
-      const difficultyMultiplier = currentScenario.difficulty === 'hard' ? 2 : currentScenario.difficulty === 'medium' ? 1.5 : 1;
-      const streakBonus = Math.min(newStreak * 10, 50);
-      const levelBonus = getXpBonus(baseXp);
-      const earnedXp = Math.floor(baseXp * difficultyMultiplier * eraMultiplier + streakBonus + levelBonus);
+      const eraMultiplier = currentEra?.year === 2035 ? 2 : currentEra?.year === 2020 ? 1.8 : currentEra?.year === 2010 ? 1.5 : 1;
+      const difficultyMultiplier = currentScenario.difficulty === 'expert' ? 2 : currentScenario.difficulty === 'intermediate' ? 1.5 : 1;
+      const streakBonus = Math.min(newLearningStreak * 5, 25);
+      const earnedXp = Math.floor(xpEarned * difficultyMultiplier * eraMultiplier + streakBonus);
       const newXp = xp + earnedXp;
       const newLevel = calculateLevel(newXp);
       
       setScore(newScore);
-      setStreak(newStreak);
-      setMaxStreak(Math.max(maxStreak, newStreak));
       setXp(newXp);
       
       if (newLevel > level) {
         const newLevelData = getLevelData(newLevel);
         setLevel(newLevel);
         toast({
-          title: `🎊 LEVEL UP! ${newLevelData.icon}`,
-          description: `${newLevelData.title} - ${newLevelData.rank} Rank Achieved!`,
-          duration: 5000,
+          title: `🎊 Cyber Ninja Level Up! ${newLevelData.icon}`,
+          description: `${newLevelData.title} - You're becoming a true defender!`,
+          duration: 4000,
         });
-        
-        // Show rewards
-        if (newLevelData.rewards.length > 0) {
-          setTimeout(() => {
-            toast({
-              title: "🎁 New Rewards Unlocked!",
-              description: newLevelData.rewards.join(", "),
-              duration: 4000,
-            });
-          }, 1500);
-        }
       }
       
-      checkAchievements(newScore, newStreak, newXp);
-      
-      const bonusText = levelBonus > 0 ? ` (+${levelBonus} level bonus)` : '';
-      const eraBonus = eraMultiplier > 1 ? ` (+${Math.floor((eraMultiplier - 1) * 100)}% era bonus)` : '';
       toast({
-        title: "Timeline Secured! 🎉",
-        description: `+${earnedXp} XP earned! ${streakBonus > 0 ? `(+${streakBonus} streak)` : ''}${bonusText}${eraBonus}`,
+        title: "Concept Mastered! 🧠",
+        description: `+${earnedXp} XP earned! Your cyber awareness grows stronger.`,
         duration: 3000,
       });
     } else {
-      // Create data leak and reduce firewall energy
-      const newDataLeaks = dataLeaks + 1;
-      setDataLeaks(newDataLeaks);
-      setFirewallEnergy(prev => ({
-        ...prev,
-        current: Math.max(0, prev.current - 30)
-      }));
-      
-      // Update timeline event
-      if (currentEra) {
-        setTimelineEvents(prev => {
-          const existingEvent = prev.find(e => e.eraId === currentEra.id);
-          if (existingEvent) {
-            return prev.map(e => 
-              e.eraId === currentEra.id 
-                ? { ...e, dataLeaks: e.dataLeaks + 1 }
-                : e
-            );
-          } else {
-            return [...prev, { 
-              eraId: currentEra.id, 
-              isRepaired: false, 
-              dataLeaks: 1, 
-              completionTime: 0 
-            }];
-          }
-        });
-      }
+      // For wrong answers, still give partial XP and encourage learning
+      const newXp = xp + xpEarned;
+      setXp(newXp);
+      setLearningStreak(Math.max(0, learningStreak - 1));
       
       toast({
-        title: "Timeline Breach! ⚠️",
-        description: `Data leak created! Firewall energy depleted. This will affect future eras...`,
-        duration: 4000,
+        title: "Learning in Progress! 💡",
+        description: `+${xpEarned} XP for trying! Every attempt builds knowledge.`,
+        duration: 3000,
       });
-      
-      // HARSH PENALTY: Wrong answer = restart from level 1
-      handlePenalty('wrong-answer');
     }
   };
 
-  const handleTimeout = () => {
-    setTimerActive(false);
-    // HARSH PENALTY: Timeout = restart from level 1
-    handlePenalty('timeout');
-  };
-
-  const handlePenalty = (reason: 'wrong-answer' | 'timeout') => {
-    const lostLevel = level - 1;
-    const lostXp = xp;
-    
-    setPenaltyReason(reason);
-    setShowPenaltyModal(true);
-    
-    // Reset everything to level 1
-    setScore(0);
-    setXp(0);
-    setLevel(1);
-    setStreak(0);
-    setCurrentRound(0);
-    setAchievements([]);
-    setGameState('penalty');
-  };
+  // Removed harsh penalty system - learning should be encouraging!
 
   const handleNext = () => {
     if (currentRound < totalRounds - 1) {
       setCurrentRound(currentRound + 1);
       setGameState('playing');
-      setUserChoice(null);
-      setTimerActive(true);
-      setTimerKey(prev => prev + 1); // Force timer reset
+      setSelectedAction(null);
     } else {
       // Era completed - update timeline
       if (currentEra) {
@@ -282,11 +222,10 @@ export default function DataDefenderGame() {
     setMaxStreak(0);
     setAchievements([]);
     setGameState('era-map');
-    setUserChoice(null);
+    setSelectedAction(null);
     setSelectedCharacter(null);
-    setTimerActive(false);
-    setShowPenaltyModal(false);
-    setTimerKey(prev => prev + 1);
+    setLearningStreak(0);
+    setConceptsMastered([]);
     setCurrentEra(null);
     setTimelineEvents([]);
     setFirewallEnergy({ current: 100, max: 100, regenRate: 5 });
@@ -294,21 +233,11 @@ export default function DataDefenderGame() {
   };
 
   const handleCharacterSelect = (character: Character) => {
-    setSelectedCharacter(character);
+    setSelectedCharacter({
+      ...character,
+      name: character.name // Allow customization later
+    });
     setGameState('playing');
-    setTimerActive(true);
-    setTimerKey(prev => prev + 1);
-  };
-
-  const handlePenaltyRestart = () => {
-    setShowPenaltyModal(false);
-    setGameState('era-map');
-    setSelectedCharacter(null);
-    setTimerActive(false);
-    setTimerKey(prev => prev + 1);
-    setCurrentEra(null);
-    setCurrentRound(0);
-    setDataLeaks(0);
   };
   
   const handleEraSelect = (era: Era) => {
@@ -320,12 +249,7 @@ export default function DataDefenderGame() {
     setFirewallEnergy({ current: 100, max: 100, regenRate: 5 });
   };
 
-  // Character-based effects
-  useEffect(() => {
-    if (gameState === 'playing' && !timerActive) {
-      setTimerActive(true);
-    }
-  }, [gameState]);
+  // Removed timer-based effects for a more relaxed learning environment
 
   if (gameState === 'era-map') {
     return (
@@ -410,30 +334,27 @@ export default function DataDefenderGame() {
             round={currentRound + 1} 
             totalRounds={totalRounds} 
           />
-          
-          {/* Character Info & Timer */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* Character & Learning Status */}
             {selectedCharacter && (
               <Card className="p-4 bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20">
                 <CardContent className="p-0">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{selectedCharacter.avatar}</div>
-                    <div>
-                      <p className="font-bold text-secondary">{selectedCharacter.name}</p>
-                      <p className="text-sm text-muted-foreground">{selectedCharacter.title}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl">{selectedCharacter.avatar}</div>
+                      <div>
+                        <p className="font-bold text-secondary">{selectedCharacter.name}</p>
+                        <p className="text-sm text-muted-foreground">{selectedCharacter.title}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">Learning Streak</p>
+                      <p className="text-xl font-bold text-primary">{learningStreak}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             )}
-            
-            <GameTimer
-              key={timerKey}
-              duration={30}
-              onTimeUp={handleTimeout}
-              isActive={timerActive && gameState === 'playing'}
-            />
-          </div>
           
           {/* Firewall Energy & Mission Status */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -595,14 +516,16 @@ export default function DataDefenderGame() {
             </div>
           )}
         </div>
-        
-        <GameScenario
-          scenario={currentScenario}
-          onChoice={handleChoice}
-          showFeedback={gameState === 'feedback'}
-          userChoice={userChoice}
-          character={selectedCharacter}
-        />
+        {/* Learning Scenario */}
+        <div className="mb-8">
+          <LearningScenario
+            scenario={currentScenario}
+            onActionSelect={handleActionSelect}
+            showFeedback={gameState === 'feedback'}
+            selectedAction={selectedAction}
+            character={selectedCharacter}
+          />
+        </div>
 
         {gameState === 'feedback' && (
           <div className="text-center mt-8">
@@ -612,23 +535,31 @@ export default function DataDefenderGame() {
               onClick={handleNext}
               className="px-8 text-lg"
             >
-              {currentRound < totalRounds - 1 ? 'Next Scenario →' : 'View Final Results 🎯'}
+              {currentRound < totalRounds - 1 ? (
+                <>
+                  Continue Learning Journey
+                </>
+              ) : (
+                <>
+                  Complete Era Mission 🎯
+                </>
+              )}
             </Button>
           </div>
         )}
         
-        <PenaltyModal
-          isOpen={showPenaltyModal}
-          onRestart={handlePenaltyRestart}
-          reason={penaltyReason}
-          lostLevel={level - 1}
-          lostXp={xp}
-        />
-        
+        {/* AI Guide Bot - Now friendly and encouraging */}
         <AIGuideBot
           playerScore={score}
           dataLeaks={dataLeaks}
           currentEra={currentEra?.id || ''}
+          onHint={() => {
+            toast({
+              title: "🤖 Cyber Mentor",
+              description: "Remember: Think before you click, verify before you trust, and learn from every choice!",
+              duration: 4000,
+            });
+          }}
           isVisible={gameState === 'playing' || gameState === 'feedback'}
         />
       </div>
