@@ -58,7 +58,7 @@ export default function DataDefenderGame() {
   };
 
   const totalRounds = currentEra ? getEraScenarios(currentEra.id).length : 10;
-  const currentScenario = currentEra ? getEraScenarios(currentEra.id)[currentRound] : gameScenarios[currentRound];
+  const currentScenario = currentEra ? getEraScenarios(currentEra.id)[currentRound] : (gameScenarios && gameScenarios[currentRound]) ? gameScenarios[currentRound] : gameScenarios[0];
   
   // Enhanced level calculations
   const currentLevel = calculateLevel(xp);
