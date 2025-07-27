@@ -84,10 +84,10 @@ export default function Leaderboard({ currentPlayer, onPlayAgain }: LeaderboardP
   };
 
   const getPercentageColor = (percentage: number) => {
-    if (percentage >= 90) return 'text-green-500';
-    if (percentage >= 75) return 'text-blue-500';
-    if (percentage >= 60) return 'text-yellow-500';
-    return 'text-red-500';
+    if (percentage >= 90) return 'text-primary';
+    if (percentage >= 75) return 'text-secondary';
+    if (percentage >= 60) return 'text-accent';
+    return 'text-muted-foreground';
   };
 
   return (
@@ -181,9 +181,9 @@ export default function Leaderboard({ currentPlayer, onPlayAgain }: LeaderboardP
       </Card>
 
       {/* Motivational Message */}
-      <Card className="border-2 border-green-500/20 bg-gradient-to-br from-green-500/10 to-green-600/5">
+      <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5">
         <CardContent className="p-6 text-center">
-          <h3 className="text-xl font-bold text-green-400 mb-3">
+          <h3 className="text-xl font-bold text-primary mb-3">
             {currentPlayerRank === 1 ? '👑 Congratulations, Cyber Champion!' : 
              currentPlayerRank <= 3 ? '🥉 Excellent job, top defender!' :
              '🛡️ Keep practicing to improve your rank!'}

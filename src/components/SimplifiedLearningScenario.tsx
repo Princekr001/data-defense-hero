@@ -52,9 +52,9 @@ export default function SimplifiedLearningScenario({
 
   const getDifficultyInfo = (difficulty: string) => {
     const info = {
-      beginner: { color: 'bg-green-500/20 text-green-300 border-green-500/30', icon: '🌱', label: 'Beginner' },
-      intermediate: { color: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30', icon: '⚡', label: 'Intermediate' },
-      expert: { color: 'bg-red-500/20 text-red-300 border-red-500/30', icon: '🔥', label: 'Expert' }
+      beginner: { color: 'bg-primary/20 text-primary border-primary/30', icon: '🌱', label: 'Beginner' },
+      intermediate: { color: 'bg-secondary/20 text-secondary border-secondary/30', icon: '⚡', label: 'Intermediate' },
+      expert: { color: 'bg-accent/20 text-accent border-accent/30', icon: '🔥', label: 'Expert' }
     };
     return info[difficulty as keyof typeof info] || info.beginner;
   };
@@ -87,10 +87,7 @@ export default function SimplifiedLearningScenario({
     }
 
     if (selectedAction === actionKey) {
-      const action = scenario.actions[selectedAction as keyof typeof scenario.actions];
-      return action?.type === 'safe'
-        ? 'border-2 border-green-500 bg-green-500/10'
-        : 'border-2 border-red-500 bg-red-500/10';
+      return 'border-2 border-primary bg-primary/10';
     }
 
     return 'border-2 border-muted bg-muted/50 opacity-50';
@@ -180,27 +177,23 @@ export default function SimplifiedLearningScenario({
       {showFeedback && (
         <div className="space-y-6">
           {/* Action Result */}
-          <Card className={`border-2 ${
-            scenario.actions[selectedAction as keyof typeof scenario.actions]?.type === 'safe'
-              ? 'bg-gradient-to-br from-green-500/20 to-green-600/10 border-green-500'
-              : 'bg-gradient-to-br from-amber-500/20 to-amber-600/10 border-amber-500'
-          }`}>
+          <Card className="border-2 border-primary bg-primary/10">
             <CardContent className="p-6">
               <div className="flex items-center gap-4 mb-4">
                 {scenario.actions[selectedAction as keyof typeof scenario.actions]?.type === 'safe' ? (
                   <>
-                    <CheckCircle className="h-8 w-8 text-green-400" />
+                    <CheckCircle className="h-8 w-8 text-primary" />
                     <div>
-                      <h3 className="text-2xl font-bold text-green-300">Great Choice! 🎉</h3>
-                      <p className="text-green-400/80">You demonstrated excellent cyber awareness</p>
+                      <h3 className="text-2xl font-bold text-primary">Great Choice! 🎉</h3>
+                      <p className="text-muted-foreground">You demonstrated excellent cyber awareness</p>
                     </div>
                   </>
                 ) : (
                   <>
-                    <Lightbulb className="h-8 w-8 text-amber-400" />
+                    <Lightbulb className="h-8 w-8 text-primary" />
                     <div>
-                      <h3 className="text-2xl font-bold text-amber-300">Learning Opportunity! 💡</h3>
-                      <p className="text-amber-400/80">Let's explore a safer approach</p>
+                      <h3 className="text-2xl font-bold text-primary">Learning Opportunity! 💡</h3>
+                      <p className="text-muted-foreground">Let's explore a safer approach</p>
                     </div>
                   </>
                 )}
@@ -234,15 +227,15 @@ export default function SimplifiedLearningScenario({
 
           {/* Retry Option for Wrong Answers */}
           {showRetry && (
-            <Card className="border-2 border-blue-500 bg-gradient-to-br from-blue-500/10 to-blue-600/5">
+            <Card className="border-2 border-primary bg-primary/10">
               <CardContent className="p-6 text-center">
-                <h3 className="text-xl font-bold text-blue-300 mb-3">Want to Try Again?</h3>
+                <h3 className="text-xl font-bold text-primary mb-3">Want to Try Again?</h3>
                 <p className="text-foreground mb-4">
                   Understanding comes through practice. Feel free to explore other options!
                 </p>
                 <Button 
                   onClick={handleRetry}
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  variant="default"
                 >
                   Try Different Approach
                 </Button>
