@@ -331,16 +331,15 @@ export default function SideScrollingGame({ era, playerName, onGameComplete, onB
             </div>
 
             <div className="grid gap-4">
-              {currentScenario.actions.map((action: any) => (
+              {Object.entries(currentScenario.actions).map(([key, action]: [string, any]) => (
                 <Button
-                  key={action.key}
+                  key={key}
                   variant="outline"
                   className="p-4 h-auto text-left justify-start"
-                  onClick={() => handleScenarioResponse(action.key, action.isCorrect)}
+                  onClick={() => handleScenarioResponse(key, action.type === 'safe')}
                 >
                   <div>
                     <div className="font-medium">{action.text}</div>
-                    <div className="text-sm text-muted-foreground mt-1">{action.description}</div>
                   </div>
                 </Button>
               ))}
