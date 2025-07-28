@@ -1,7 +1,7 @@
-import DataDefenderGame from "@/components/DataDefenderGame";
+import InteractiveCyberGame from "@/components/InteractiveCyberGame";
 
 const Index = () => {
-  return <DataDefenderGame />;
+  return <InteractiveCyberGame />;
 };
 
 export default Index;
