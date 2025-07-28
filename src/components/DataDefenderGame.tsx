@@ -5,6 +5,7 @@ import EraMap from "./EraMap";
 import SimplifiedLearningScenario from "./SimplifiedLearningScenario";
 import PlayerNameInput from "./PlayerNameInput";
 import Leaderboard from "./Leaderboard";
+import SideScrollingGame from "./SideScrollingGame";
 import { gameEras, type Era, type TimelineEvent } from "@/data/eras";
 import { gameScenarios } from "@/data/scenarios";
 import { useToast } from "@/hooks/use-toast";
@@ -16,7 +17,7 @@ export default function DataDefenderGame() {
   // Core game state
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [gameState, setGameState] = useState<'era-map' | 'name-input' | 'playing' | 'feedback' | 'leaderboard'>('era-map');
+  const [gameState, setGameState] = useState<'era-map' | 'name-input' | 'side-scrolling' | 'playing' | 'feedback' | 'leaderboard'>('era-map');
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
   const [playerName, setPlayerName] = useState<string>('');
   
@@ -91,7 +92,7 @@ export default function DataDefenderGame() {
 
   const handleNameSubmit = (name: string) => {
     setPlayerName(name);
-    setGameState('playing');
+    setGameState('side-scrolling');
   };
   
   const handleEraSelect = (era: Era) => {
@@ -100,6 +101,11 @@ export default function DataDefenderGame() {
     setCurrentRound(0);
     setDataLeaks(0);
     setScore(0);
+  };
+
+  const handleGameComplete = (finalScore: number) => {
+    setScore(finalScore);
+    setGameState('leaderboard');
   };
 
   if (gameState === 'era-map') {
@@ -118,6 +124,17 @@ export default function DataDefenderGame() {
       <PlayerNameInput 
         onNameSubmit={handleNameSubmit} 
         era={currentEra}
+      />
+    );
+  }
+
+  if (gameState === 'side-scrolling' && currentEra) {
+    return (
+      <SideScrollingGame
+        era={currentEra}
+        playerName={playerName}
+        onGameComplete={handleGameComplete}
+        onBackToMap={() => setGameState('era-map')}
       />
     );
   }
