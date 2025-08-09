@@ -258,41 +258,53 @@ export default function InteractiveCyberGame() {
                 What's your move, {playerData.name}?
               </h4>
               
-              <div className="grid gap-2">
-                {Object.entries(currentScenario.actions).map(([key, action]: [string, any], index) => (
-                  <Button
-                    key={key}
-                    variant={selectedChoice === key ? (action.type === 'safe' ? "default" : "destructive") : "outline"}
-                    className={`p-3 h-auto text-left justify-start transition-all duration-300 animate-fade-in ${
-                      !selectedChoice ? 'hover:scale-105 hover:shadow-lg' : ''
-                    } ${selectedChoice === key && action.type === 'safe' ? 'bg-gradient-success shadow-success' : ''}`}
-                    style={{animationDelay: `${index * 0.1}s`}}
-                    onClick={() => !selectedChoice && processChoice(key, action.type === 'safe')}
-                    disabled={!!selectedChoice}
-                  >
-                    <div className="w-full flex items-start gap-2">
-                      {!selectedChoice && (
-                        <Target className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                      )}
-                      {selectedChoice === key && action.type === 'safe' && (
-                        <Shield className="h-4 w-4 mt-0.5 text-success-foreground animate-bounce-in" />
-                      )}
-                      {selectedChoice === key && action.type === 'risky' && (
-                        <AlertTriangle className="h-4 w-4 mt-0.5 text-destructive-foreground animate-bounce-in" />
-                      )}
-                      <div>
-                        <div className="font-medium text-sm">{action.text}</div>
-                        {showResult && selectedChoice === key && (
-                          <div className={`text-xs mt-1 animate-fade-in ${
-                            action.type === 'safe' ? 'text-success-foreground' : 'text-destructive-foreground'
-                          }`}>
-                            {action.type === 'safe' ? '✅ Smart choice!' : '⚠️ Risky move! Try again...'}
+              <div className="space-y-3">
+                {Object.entries(currentScenario.actions).map(([key, action]: [string, any], index) => {
+                  const layouts = [
+                    'justify-start text-left', // Left aligned
+                    'justify-end text-right',   // Right aligned  
+                    'justify-center text-center', // Center aligned
+                    'justify-start text-left'   // Left aligned again
+                  ];
+                  const layout = layouts[index % layouts.length];
+                  
+                  return (
+                    <div key={key} className={`flex ${layout} animate-fade-in`} style={{animationDelay: `${index * 0.15}s`}}>
+                      <Button
+                        variant={selectedChoice === key ? (action.type === 'safe' ? "default" : "destructive") : "outline"}
+                        className={`p-3 h-auto max-w-md transition-all duration-300 ${
+                          !selectedChoice ? 'hover:scale-105 hover:shadow-lg' : ''
+                        } ${selectedChoice === key && action.type === 'safe' ? 'bg-gradient-success shadow-success' : ''} ${
+                          index % 2 === 0 ? 'ml-0' : 'mr-0'
+                        }`}
+                        onClick={() => !selectedChoice && processChoice(key, action.type === 'safe')}
+                        disabled={!!selectedChoice}
+                      >
+                        <div className="w-full flex items-start gap-2">
+                          {!selectedChoice && (
+                            <Target className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                          )}
+                          {selectedChoice === key && action.type === 'safe' && (
+                            <Shield className="h-4 w-4 mt-0.5 text-success-foreground animate-bounce-in" />
+                          )}
+                          {selectedChoice === key && action.type === 'risky' && (
+                            <AlertTriangle className="h-4 w-4 mt-0.5 text-destructive-foreground animate-bounce-in" />
+                          )}
+                          <div className={layout.includes('text-right') ? 'text-right' : layout.includes('text-center') ? 'text-center' : 'text-left'}>
+                            <div className="font-medium text-sm">{action.text}</div>
+                            {showResult && selectedChoice === key && (
+                              <div className={`text-xs mt-1 animate-fade-in ${
+                                action.type === 'safe' ? 'text-success-foreground' : 'text-destructive-foreground'
+                              }`}>
+                                {action.type === 'safe' ? '✅ Smart choice!' : '⚠️ Risky move! Try again...'}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      </Button>
                     </div>
-                  </Button>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
