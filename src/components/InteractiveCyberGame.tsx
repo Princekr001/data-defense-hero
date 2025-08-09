@@ -167,7 +167,10 @@ export default function InteractiveCyberGame() {
         duration: 3000,
       });
 
-      setGameState('concept-check');
+      // Skip feedback and go directly to next scenario
+      setTimeout(() => {
+        nextScenario();
+      }, 1000);
     } else {
       setPlayerData(prev => ({ ...prev, streak: 0 }));
       setShowHint(true);
