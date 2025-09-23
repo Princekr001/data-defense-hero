@@ -1,7 +1,7 @@
-import InteractiveCyberGame from "@/components/InteractiveCyberGame";
+import EnhancedInteractiveCyberGame from "@/components/EnhancedInteractiveCyberGame";
 
 const Index = () => {
-  return <InteractiveCyberGame />;
+  return <EnhancedInteractiveCyberGame />;
 };
 
 export default Index;
