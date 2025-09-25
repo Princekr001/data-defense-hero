@@ -657,27 +657,27 @@ export default function EnhancedInteractiveCyberGame() {
             </div>
 
             <div className="grid gap-4">
-              {Object.entries(currentScenario.choices).map(([key, choice], index) => (
+              {Object.entries(currentScenario.actions).map(([key, action], index) => (
                 <Button
                   key={key}
-                  variant={selectedChoice === key ? (currentScenario.correctAnswer === key ? "success" : "destructive") : "outline"}
+                  variant={selectedChoice === key ? (action.type === 'safe' ? "secure" : "destructive") : "outline"}
                   className={`w-full justify-start ${selectedChoice ? 'cursor-not-allowed' : 'hover:shadow-md'}`}
-                  onClick={() => processChoice(key, currentScenario.correctAnswer === key)}
+                  onClick={() => processChoice(key, action.type === 'safe')}
                   disabled={showResult}
-                  aria-label={`Select option ${String.fromCharCode(65 + index)}: ${choice}`}
+                  aria-label={`Select option ${String.fromCharCode(65 + index)}: ${action.text}`}
                 >
-                  {String.fromCharCode(65 + index)}. {choice}
+                  {String.fromCharCode(65 + index)}. {action.text}
                 </Button>
               ))}
             </div>
 
             {showResult && (
-              <div className={`p-4 rounded-md border ${currentScenario.correctAnswer === selectedChoice ? 'border-success text-success-foreground bg-success/10' : 'border-destructive text-destructive-foreground bg-destructive/10'}`}>
+              <div className={`p-4 rounded-md border ${selectedChoice && Object.entries(currentScenario.actions).find(([key]) => key === selectedChoice)?.[1]?.type === 'safe' ? 'border-success text-success-foreground bg-success/10' : 'border-destructive text-destructive-foreground bg-destructive/10'}`}>
                 <div className="font-bold">
-                  {currentScenario.correctAnswer === selectedChoice ? "Correct!" : "Incorrect."}
+                  {selectedChoice && Object.entries(currentScenario.actions).find(([key]) => key === selectedChoice)?.[1]?.type === 'safe' ? "Correct!" : "Incorrect."}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {currentScenario.correctAnswer === selectedChoice ? currentScenario.correctExplanation : currentScenario.incorrectExplanation}
+                  {currentScenario.feedback.correct}
                 </div>
               </div>
             )}
@@ -724,7 +724,7 @@ export default function EnhancedInteractiveCyberGame() {
                         <td className="px-4 py-2">{entry.level}</td>
                         <td className="px-4 py-2">{entry.score}</td>
                         <td className="px-4 py-2">{entry.conceptsMastered}</td>
-                        <td className="px-4 py-2">{entry.rank} - {entry.title}</td>
+                        <td className="px-4 py-2">{entry.rank}</td>
                       </tr>
                     ))}
                   </tbody>
