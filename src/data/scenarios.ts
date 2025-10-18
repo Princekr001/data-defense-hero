@@ -1,6 +1,7 @@
 export interface Scenario {
   id: number;
   title: string;
+  character: string;
   description: string;
   situation: string;
   actions: {
@@ -23,6 +24,7 @@ export const gameScenarios: Scenario[] = [
   {
     id: 1,
     title: "The Bank Email Mystery",
+    character: "Alex Martinez",
     description: "Alex is checking their email during lunch break when something catches their eye.",
     situation: "Alex receives an urgent email claiming to be from their bank: 'Your account will be suspended in 24 hours unless you verify your details immediately!' The email has the bank's logo, but the sender's address is 'security-bank@email-verify.net' instead of the official domain.",
     actions: {
@@ -47,8 +49,9 @@ export const gameScenarios: Scenario[] = [
   {
     id: 2,
     title: "The Password Creation Challenge",
-    description: "Alex is creating an account for a new social media platform they're excited to join.",
-    situation: "The sign-up form asks for a password. Alex is thinking about using '12March1995' (their birthday) because it's easy to remember, 'AlexCool123' because it includes their name, or generating a random strong password with their password manager.",
+    character: "Sarah Chen",
+    description: "Sarah is creating an account for a new social media platform they're excited to join.",
+    situation: "The sign-up form asks for a password. Sarah is thinking about using '12March1995' (their birthday) because it's easy to remember, 'SarahCool123' because it includes their name, or generating a random strong password with their password manager.",
     actions: {
       action1: { text: "Use birthday: '12March1995'", type: 'risky' },
       action2: { text: "Create a unique strong password with password manager", type: 'safe' },
@@ -71,8 +74,9 @@ export const gameScenarios: Scenario[] = [
   {
     id: 3,
     title: "The Social Media Friend Request",
-    description: "Alex receives an interesting friend request while scrolling social media.",
-    situation: "A profile named 'Jordan Smith' wants to connect, claiming they go to Alex's school. The profile was created last week, has only 5 photos, 8 friends, and sent a message saying 'Hey! I think we have mutual friends! Want to chat?'",
+    character: "Marcus Johnson",
+    description: "Marcus receives an interesting friend request while scrolling social media.",
+    situation: "A profile named 'Jordan Smith' wants to connect, claiming they go to Marcus's school. The profile was created last week, has only 5 photos, 8 friends, and sent a message saying 'Hey! I think we have mutual friends! Want to chat?'",
     actions: {
       action1: { text: "Accept the request and start chatting", type: 'risky' },
       action2: { text: "Check with mutual friends first to verify", type: 'safe' },
@@ -95,8 +99,9 @@ export const gameScenarios: Scenario[] = [
   {
     id: 4,
     title: "The Coffee Shop Connection",
-    description: "Alex needs to access their bank account while studying at a busy coffee shop.",
-    situation: "Alex's mobile data is running low, and they need to transfer money to a friend today. The coffee shop offers free Wi-Fi called 'CoffeeHouse_Free' with no password. Alex could also wait until getting home or use the remaining mobile data carefully.",
+    character: "Emma Rodriguez",
+    description: "Emma needs to access their bank account while studying at a busy coffee shop.",
+    situation: "Emma's mobile data is running low, and they need to transfer money to a friend today. The coffee shop offers free Wi-Fi called 'CoffeeHouse_Free' with no password. Emma could also wait until getting home or use the remaining mobile data carefully.",
     actions: {
       action1: { text: "Connect to the free Wi-Fi and do the banking", type: 'risky' },
       action2: { text: "Wait until getting home to use secure internet", type: 'safe' },
@@ -119,8 +124,9 @@ export const gameScenarios: Scenario[] = [
   {
     id: 5,
     title: "The Free Game Temptation",
-    description: "Alex really wants to play a popular mobile game that costs money in the official store.",
-    situation: "Alex discovers a website offering 'CyberRunner Pro' (normally $4.99) for free download. The site claims 'Skip the app store fees!' and shows glowing reviews. Alex could download it for free, buy the official version, or look for legitimate free alternatives.",
+    character: "Tyler Kim",
+    description: "Tyler really wants to play a popular mobile game that costs money in the official store.",
+    situation: "Tyler discovers a website offering 'CyberRunner Pro' (normally $4.99) for free download. The site claims 'Skip the app store fees!' and shows glowing reviews. Tyler could download it for free, buy the official version, or look for legitimate free alternatives.",
     actions: {
       action1: { text: "Download the free version from the website", type: 'risky' },
       action2: { text: "Buy the official version from the app store", type: 'safe' },
@@ -143,7 +149,8 @@ export const gameScenarios: Scenario[] = [
   {
     id: 6,
     title: "The Crypto Investment Opportunity",
-    description: "Alex sees an enticing advertisement while browsing online.",
+    character: "Priya Patel",
+    description: "Priya sees an enticing advertisement while browsing online.",
     situation: "A pop-up ad features a celebrity claiming they made millions from a new cryptocurrency investment: 'Join now with just $50 and become a millionaire in 30 days!' There's a countdown timer showing only 2 hours left for this 'exclusive opportunity.'",
     actions: {
       action1: { text: "Invest $50 quickly before the offer expires", type: 'risky' },
@@ -167,8 +174,9 @@ export const gameScenarios: Scenario[] = [
   {
     id: 7,
     title: "The App Permissions Dilemma",
-    description: "Alex is setting up a new photo editing app that's trending on social media.",
-    situation: "During installation, the app requests permissions for contacts, location, microphone, camera, and all photos. The app claims these are 'necessary for the best experience,' but Alex only wants to edit vacation photos.",
+    character: "Jordan Lee",
+    description: "Jordan is setting up a new photo editing app that's trending on social media.",
+    situation: "During installation, the app requests permissions for contacts, location, microphone, camera, and all photos. The app claims these are 'necessary for the best experience,' but Jordan only wants to edit vacation photos.",
     actions: {
       action1: { text: "Grant all permissions for the full experience", type: 'risky' },
       action2: { text: "Only allow access to photos and camera", type: 'safe' },
@@ -191,7 +199,8 @@ export const gameScenarios: Scenario[] = [
   {
     id: 8,
     title: "The Gaming Tournament Invitation",
-    description: "Alex receives an exciting message on their favorite gaming platform.",
+    character: "Cameron Wright",
+    description: "Cameron receives an exciting message on their favorite gaming platform.",
     situation: "A Discord user claiming to be a tournament organizer messages: 'Congratulations! You've been selected for our exclusive $10,000 gaming tournament! Click this link to claim your spot and download our special tournament client.'",
     actions: {
       action1: { text: "Click the link and download the tournament client", type: 'risky' },

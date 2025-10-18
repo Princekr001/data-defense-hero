@@ -652,6 +652,11 @@ export default function EnhancedInteractiveCyberGame() {
 
             <Progress value={(currentScenarioIndex + 1) / gameScenarios.length * 100} className="h-2" />
 
+            <div className="flex items-center gap-2 mb-2">
+              <Users className="h-5 w-5 text-primary" />
+              <span className="text-xl font-bold text-primary">{currentScenario.character}</span>
+            </div>
+
             <div className="text-lg font-semibold text-muted-foreground">
               {currentScenario.description}
             </div>
