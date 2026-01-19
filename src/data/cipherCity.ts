@@ -4,6 +4,7 @@ export interface Resource {
   connections: number;
   reputation: number;
   knowledge: number;
+  energy: number;
 }
 
 export interface Character {
@@ -588,7 +589,8 @@ export const initialResources: Resource = {
   trustCrystals: 10,
   connections: 0,
   reputation: 50,
-  knowledge: 0
+  knowledge: 0,
+  energy: 100
 };
 
 export const abilities = {
