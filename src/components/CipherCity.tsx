@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { useGameAudio } from "@/hooks/useGameAudio";
+import AudioSettings from "./AudioSettings";
 import { 
   Shield, Gem, Users, Eye, Smartphone, Database, Zap, Trophy, MapPin, 
   MessageCircle, Star, GraduationCap, AlertTriangle, CheckCircle2, XCircle, 
@@ -42,13 +44,25 @@ export default function CipherCity() {
   const [characterTrust, setCharacterTrust] = useState<Record<string, number>>({});
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0);
   const [missionTimer, setMissionTimer] = useState<number | null>(null);
-  const [soundEnabled, setSoundEnabled] = useState(true);
   const [perfectMissions, setPerfectMissions] = useState(0);
   const [hoveredDistrict, setHoveredDistrict] = useState<string | null>(null);
   const [showMiniGame, setShowMiniGame] = useState(false);
   const [miniGameType, setMiniGameType] = useState<'pattern' | 'decrypt' | 'sorting' | 'quickChoice'>('pattern');
   const [dailyStreak, setDailyStreak] = useState(0);
   const { toast } = useToast();
+  
+  // Audio system
+  const {
+    soundEnabled,
+    musicEnabled,
+    soundVolume,
+    musicVolume,
+    toggleSound,
+    toggleMusic,
+    setSoundVolume,
+    setMusicVolume,
+    playSfx,
+  } = useGameAudio();
 
   useEffect(() => {
     const initialTrust: Record<string, number> = {};
@@ -76,6 +90,7 @@ export default function CipherCity() {
         const newProgress = Math.min(a.progress + progressAdd, a.maxProgress);
         const unlocked = newProgress >= a.maxProgress;
         if (unlocked) {
+          playSfx('achievement');
           toast({ title: `🏆 Achievement Unlocked!`, description: a.name });
           Object.entries(a.reward).forEach(([key, value]) => {
             setResources(r => ({ ...r, [key as keyof Resource]: r[key as keyof Resource] + (value || 0) }));
@@ -89,18 +104,22 @@ export default function CipherCity() {
 
   const startGame = () => {
     if (playerName.trim().length < 2) {
+      playSfx('error');
       toast({ title: "Name Required", description: "Please enter your name", variant: "destructive" });
       return;
     }
+    playSfx('success');
     setGameState('customization');
   };
 
   const finishCustomization = () => {
+    playSfx('transition');
     setGameState('city');
     toast({ title: `Welcome to Cipher City, ${playerName}!`, description: "Explore districts and complete missions!" });
   };
 
   const selectMission = (mission: Mission) => {
+    playSfx('missionStart');
     setCurrentMission(mission);
     setCurrentDialogueIndex(0);
     setSelectedChoice(null);
@@ -110,6 +129,7 @@ export default function CipherCity() {
   };
 
   const advanceDialogue = () => {
+    playSfx('dialogueAdvance');
     if (currentMission && currentDialogueIndex < currentMission.dialogue.length - 1) {
       setCurrentDialogueIndex(prev => prev + 1);
     } else {
@@ -118,6 +138,7 @@ export default function CipherCity() {
         const types: ('pattern' | 'decrypt' | 'sorting' | 'quickChoice')[] = ['pattern', 'decrypt', 'sorting', 'quickChoice'];
         setMiniGameType(types[Math.floor(Math.random() * types.length)]);
         setShowMiniGame(true);
+        playSfx('miniGameStart');
         setGameState('minigame');
       } else {
         setGameState('mission');
@@ -128,28 +149,41 @@ export default function CipherCity() {
   const handleMiniGameComplete = (success: boolean, score: number) => {
     setShowMiniGame(false);
     if (success) {
+      playSfx('miniGameWin');
       setResources(prev => ({ ...prev, knowledge: Math.min(100, prev.knowledge + 5), energy: Math.min(100, prev.energy + 10) }));
       updateAchievement('code_breaker');
       toast({ title: "Mini-game Won!", description: `+${score} points!` });
+    } else {
+      playSfx('miniGameLose');
     }
     setGameState('mission');
   };
 
   const makeChoice = (choice: Choice) => {
     if (choice.requiredAbility && !unlockedAbilities.includes(choice.requiredAbility)) {
+      playSfx('error');
       toast({ title: "Ability Required", description: `Need "${choice.requiredAbility}"`, variant: "destructive" });
       return;
     }
+    playSfx('choiceSelect');
     setSelectedChoice(choice);
     setShowConsequence(true);
     setMissionTimer(null);
 
     const newResources = { ...resources };
+    let hasGain = false;
+    let hasLoss = false;
     Object.keys(choice.consequence.resources).forEach(key => {
       const k = key as keyof Resource;
       const change = choice.consequence.resources[k];
-      if (change !== undefined) newResources[k] = Math.max(0, Math.min(100, newResources[k] + change));
+      if (change !== undefined) {
+        if (change > 0) hasGain = true;
+        if (change < 0) hasLoss = true;
+        newResources[k] = Math.max(0, Math.min(100, newResources[k] + change));
+      }
     });
+    if (hasGain) playSfx('resourceGain');
+    if (hasLoss) playSfx('resourceLoss');
     setResources(newResources);
 
     if (choice.consequence.unlocksAbility && !unlockedAbilities.includes(choice.consequence.unlocksAbility)) {
@@ -167,6 +201,7 @@ export default function CipherCity() {
 
   const completeMission = () => {
     if (currentMission) {
+      playSfx('missionComplete');
       setCompletedMissions(prev => [...prev, currentMission.id]);
       updateAchievement('first_steps');
       updateAchievement('guardian');
@@ -182,6 +217,7 @@ export default function CipherCity() {
   };
 
   const resetGame = () => {
+    playSfx('click');
     setGameState('intro');
     setPlayerName("");
     setResources({ ...initialResources, energy: 100 });
@@ -199,10 +235,27 @@ export default function CipherCity() {
     return icons[d] || <MapPin className="h-5 w-5" />;
   };
 
+  // Audio settings component for all screens
+  const AudioSettingsButton = () => (
+    <div className="fixed top-4 right-4 z-50">
+      <AudioSettings
+        soundEnabled={soundEnabled}
+        musicEnabled={musicEnabled}
+        soundVolume={soundVolume}
+        musicVolume={musicVolume}
+        onToggleSound={toggleSound}
+        onToggleMusic={toggleMusic}
+        onSoundVolumeChange={setSoundVolume}
+        onMusicVolumeChange={setMusicVolume}
+      />
+    </div>
+  );
+
   // INTRO SCREEN
   if (gameState === 'intro') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4 flex items-center justify-center overflow-hidden">
+        <AudioSettingsButton />
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" />
@@ -220,10 +273,11 @@ export default function CipherCity() {
               CIPHER CITY
             </CardTitle>
             <p className="text-muted-foreground">Build Trust. Guard Secrets. Shape Your Digital World.</p>
-            <div className="flex justify-center gap-2">
+            <div className="flex justify-center gap-2 flex-wrap">
               <Badge variant="outline" className="gap-1"><Gamepad2 className="h-3 w-3" />Mini-Games</Badge>
               <Badge variant="outline" className="gap-1"><Trophy className="h-3 w-3" />Achievements</Badge>
               <Badge variant="outline" className="gap-1"><User className="h-3 w-3" />Customization</Badge>
+              <Badge variant="outline" className="gap-1"><Volume2 className="h-3 w-3" />Sound Effects</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -243,25 +297,39 @@ export default function CipherCity() {
   // CUSTOMIZATION SCREEN
   if (gameState === 'customization') {
     return (
-      <CharacterProfile playerName={playerName} customization={customization} resources={resources} onUpdateCustomization={(c) => { setCustomization(c); finishCustomization(); }} onClose={finishCustomization} />
+      <>
+        <AudioSettingsButton />
+        <CharacterProfile playerName={playerName} customization={customization} resources={resources} onUpdateCustomization={(c) => { setCustomization(c); finishCustomization(); }} onClose={finishCustomization} />
+      </>
     );
   }
 
   // ACHIEVEMENTS SCREEN
   if (gameState === 'achievements') {
-    return <AchievementsPanel achievements={achievements} onClose={() => setGameState('city')} />;
+    return (
+      <>
+        <AudioSettingsButton />
+        <AchievementsPanel achievements={achievements} onClose={() => { playSfx('click'); setGameState('city'); }} />
+      </>
+    );
   }
 
   // PROFILE SCREEN
   if (gameState === 'profile') {
-    return <CharacterProfile playerName={playerName} customization={customization} resources={resources} onUpdateCustomization={setCustomization} onClose={() => setGameState('city')} />;
+    return (
+      <>
+        <AudioSettingsButton />
+        <CharacterProfile playerName={playerName} customization={customization} resources={resources} onUpdateCustomization={setCustomization} onClose={() => { playSfx('click'); setGameState('city'); }} />
+      </>
+    );
   }
 
   // MINI-GAME SCREEN
   if (gameState === 'minigame' && showMiniGame) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4 flex items-center justify-center">
-        <MiniGame type={miniGameType} difficulty={completedMissions.length} onComplete={handleMiniGameComplete} onCancel={() => { setShowMiniGame(false); setGameState('mission'); }} />
+        <AudioSettingsButton />
+        <MiniGame type={miniGameType} difficulty={completedMissions.length} onComplete={handleMiniGameComplete} onCancel={() => { playSfx('click'); setShowMiniGame(false); setGameState('mission'); }} />
       </div>
     );
   }
@@ -272,6 +340,7 @@ export default function CipherCity() {
     const speaker = getCharacterById(currentLine.speaker);
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4 flex items-center justify-center">
+        <AudioSettingsButton />
         <Card className="max-w-3xl w-full bg-card/90 backdrop-blur-xl border-primary/30 animate-fade-in">
           <CardHeader className={`bg-gradient-to-r ${districts[currentMission.district].color} text-white`}>
             <CardTitle className="flex items-center gap-2">{getDistrictIcon(currentMission.district)} {currentMission.title}</CardTitle>
@@ -305,6 +374,7 @@ export default function CipherCity() {
   if (gameState === 'city') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4">
+        <AudioSettingsButton />
         <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
           {/* Header */}
           <Card className="bg-card/90 backdrop-blur-xl border-primary/30">
@@ -366,6 +436,7 @@ export default function CipherCity() {
     const district = districts[currentMission.district];
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4">
+        <AudioSettingsButton />
         <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
           {missionTimer !== null && missionTimer > 0 && (
             <div className={`text-center ${missionTimer < 30 ? 'text-destructive animate-pulse' : 'text-yellow-400'}`}>
@@ -436,6 +507,7 @@ export default function CipherCity() {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4 flex items-center justify-center">
+        <AudioSettingsButton />
         <Card className="max-w-2xl w-full bg-card/90 backdrop-blur-xl border-primary/30 animate-fade-in">
           <CardHeader className="text-center">
             <div className="text-6xl mb-4">{rank.emoji}</div>
