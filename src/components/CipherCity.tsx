@@ -1,17 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useGameAudio } from "@/hooks/useGameAudio";
+import { useGameSave, SaveSlot } from "@/hooks/useGameSave";
 import AudioSettings from "./AudioSettings";
+import SaveLoadMenu from "./CipherCity/SaveLoadMenu";
 import { 
   Shield, Gem, Users, Eye, Smartphone, Database, Zap, Trophy, MapPin, 
   MessageCircle, Star, GraduationCap, AlertTriangle, CheckCircle2, XCircle, 
   Brain, Moon, Crown, UserCheck, Scan, Clock, Sparkles, ChevronRight, 
   Volume2, VolumeX, BookOpen, Award, TrendingUp, Lock, ArrowLeft, User,
-  Gamepad2, Target, Flame
+  Gamepad2, Target, Flame, Save, Download
 } from "lucide-react";
 import { missions, characters, districts, initialResources, abilities, evidenceCollection, Resource, Mission, Choice, Character } from "@/data/cipherCity";
 import CityMap from "./CipherCity/CityMap";
@@ -19,7 +21,7 @@ import MiniGame from "./CipherCity/MiniGames";
 import AchievementsPanel from "./CipherCity/AchievementsPanel";
 import CharacterProfile from "./CipherCity/CharacterProfile";
 import { achievementsList } from "./CipherCity/achievements";
-import { Achievement, CharacterCustomization, GameState } from "./CipherCity/types";
+import { Achievement, CharacterCustomization, GameState, GameProgress } from "./CipherCity/types";
 
 const initialCustomization: CharacterCustomization = {
   avatar: 'detective',
@@ -49,7 +51,11 @@ export default function CipherCity() {
   const [showMiniGame, setShowMiniGame] = useState(false);
   const [miniGameType, setMiniGameType] = useState<'pattern' | 'decrypt' | 'sorting' | 'quickChoice'>('pattern');
   const [dailyStreak, setDailyStreak] = useState(0);
+  const [totalPlayTime, setTotalPlayTime] = useState(0);
+  const [showSaveMenu, setShowSaveMenu] = useState(false);
+  const [saveMenuMode, setSaveMenuMode] = useState<'save' | 'load'>('save');
   const { toast } = useToast();
+  const playTimeRef = useRef<NodeJS.Timeout | null>(null);
   
   // Audio system
   const {
@@ -63,6 +69,122 @@ export default function CipherCity() {
     setMusicVolume,
     playSfx,
   } = useGameAudio();
+
+  // Save system
+  const {
+    saveSlots,
+    currentSlotId,
+    lastSaveTime,
+    createSave,
+    quickSave,
+    loadSave,
+    deleteSave,
+    hasSaves,
+    getLastPlayedSave,
+    getAllSaves,
+    exportSaves,
+    importSaves,
+    setCurrentSlotId,
+    AUTO_SAVE_INTERVAL
+  } = useGameSave();
+
+  // Track play time
+  useEffect(() => {
+    if (gameState !== 'intro' && gameState !== 'ending') {
+      playTimeRef.current = setInterval(() => {
+        setTotalPlayTime(prev => prev + 1);
+      }, 60000); // Increment every minute
+    }
+    return () => {
+      if (playTimeRef.current) clearInterval(playTimeRef.current);
+    };
+  }, [gameState]);
+
+  // Build current game progress object
+  const buildGameProgress = useCallback((): GameProgress => ({
+    playerName,
+    customization,
+    resources,
+    completedMissions,
+    unlockedAbilities,
+    collectedClues,
+    collectedEvidence,
+    characterTrust,
+    achievements,
+    dailyStreak,
+    totalPlayTime,
+    perfectMissions,
+    lastPlayed: new Date()
+  }), [playerName, customization, resources, completedMissions, unlockedAbilities, collectedClues, collectedEvidence, characterTrust, achievements, dailyStreak, totalPlayTime, perfectMissions]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (gameState === 'city' && playerName && currentSlotId !== null) {
+      const autoSaveInterval = setInterval(() => {
+        quickSave(buildGameProgress(), missions.length);
+        toast({ 
+          title: "Auto-saved", 
+          description: "Your progress has been saved",
+          duration: 2000 
+        });
+      }, AUTO_SAVE_INTERVAL);
+      return () => clearInterval(autoSaveInterval);
+    }
+  }, [gameState, playerName, currentSlotId, buildGameProgress, quickSave, toast, AUTO_SAVE_INTERVAL]);
+
+  // Load game progress from save
+  const applyLoadedProgress = useCallback((progress: GameProgress) => {
+    setPlayerName(progress.playerName);
+    setCustomization(progress.customization);
+    setResources(progress.resources);
+    setCompletedMissions(progress.completedMissions);
+    setUnlockedAbilities(progress.unlockedAbilities);
+    setCollectedClues(progress.collectedClues);
+    setCollectedEvidence(progress.collectedEvidence);
+    setCharacterTrust(progress.characterTrust);
+    setAchievements(progress.achievements);
+    setDailyStreak(progress.dailyStreak);
+    setTotalPlayTime(progress.totalPlayTime);
+    setPerfectMissions(progress.perfectMissions);
+    setGameState('city');
+  }, []);
+
+  const handleSave = useCallback((slotId: number, slotName: string) => {
+    playSfx('success');
+    createSave(slotId, slotName, buildGameProgress(), missions.length);
+    toast({ title: "Game Saved!", description: `Saved to "${slotName}"` });
+  }, [playSfx, createSave, buildGameProgress, toast]);
+
+  const handleLoad = useCallback((slotId: number) => {
+    const progress = loadSave(slotId);
+    if (progress) {
+      playSfx('success');
+      applyLoadedProgress(progress);
+      toast({ title: "Game Loaded!", description: `Welcome back, ${progress.playerName}!` });
+    } else {
+      playSfx('error');
+      toast({ title: "Load Failed", description: "Could not load save", variant: "destructive" });
+    }
+  }, [loadSave, applyLoadedProgress, playSfx, toast]);
+
+  const handleDeleteSave = useCallback((slotId: number) => {
+    if (deleteSave(slotId)) {
+      playSfx('click');
+      toast({ title: "Save Deleted", description: "Save slot has been removed" });
+    }
+  }, [deleteSave, playSfx, toast]);
+
+  const openSaveMenu = useCallback(() => {
+    playSfx('click');
+    setSaveMenuMode('save');
+    setShowSaveMenu(true);
+  }, [playSfx]);
+
+  const openLoadMenu = useCallback(() => {
+    playSfx('click');
+    setSaveMenuMode('load');
+    setShowSaveMenu(true);
+  }, [playSfx]);
 
   useEffect(() => {
     const initialTrust: Record<string, number> = {};
@@ -251,6 +373,26 @@ export default function CipherCity() {
     </div>
   );
 
+  // SAVE/LOAD MENU
+  if (showSaveMenu) {
+    return (
+      <>
+        <AudioSettingsButton />
+        <SaveLoadMenu
+          mode={saveMenuMode}
+          saveSlots={getAllSaves()}
+          currentSlotId={currentSlotId}
+          onSave={handleSave}
+          onLoad={handleLoad}
+          onDelete={handleDeleteSave}
+          onClose={() => setShowSaveMenu(false)}
+          onExport={exportSaves}
+          onImport={importSaves}
+        />
+      </>
+    );
+  }
+
   // INTRO SCREEN
   if (gameState === 'intro') {
     return (
@@ -288,6 +430,11 @@ export default function CipherCity() {
             <Button onClick={startGame} className="w-full text-lg py-6 bg-gradient-to-r from-primary via-purple-500 to-secondary" size="lg">
               Begin Your Journey <Zap className="ml-2 h-5 w-5" />
             </Button>
+            {hasSaves() && (
+              <Button onClick={openLoadMenu} variant="outline" className="w-full" size="lg">
+                <Download className="h-5 w-5 mr-2" /> Continue Saved Game
+              </Button>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -390,7 +537,9 @@ export default function CipherCity() {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
+                  <Button variant="outline" size="sm" onClick={openSaveMenu}><Save className="h-4 w-4 mr-1" />Save</Button>
+                  <Button variant="outline" size="sm" onClick={openLoadMenu}><Download className="h-4 w-4 mr-1" />Load</Button>
                   <Button variant="outline" size="sm" onClick={() => setGameState('profile')}><User className="h-4 w-4 mr-1" />Profile</Button>
                   <Button variant="outline" size="sm" onClick={() => setGameState('achievements')}><Trophy className="h-4 w-4 mr-1" />Achievements</Button>
                 </div>
