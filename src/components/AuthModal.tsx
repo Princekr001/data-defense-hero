@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogIn, UserPlus, Shield } from 'lucide-react';
+import { ForgotPasswordForm } from './ForgotPasswordForm';
 
 const loginSchema = z.object({
   email: z.string().trim().email('Invalid email address'),
@@ -38,6 +39,7 @@ interface AuthModalProps {
 export function AuthModal({ open, onOpenChange, onSignIn, onSignUp }: AuthModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { toast } = useToast();
 
   const loginForm = useForm<LoginFormData>({
@@ -97,18 +99,23 @@ export function AuthModal({ open, onOpenChange, onSignIn, onSignUp }: AuthModalP
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setShowForgotPassword(false); }}>
       <DialogContent className="sm:max-w-[425px] bg-card border-primary/20">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Shield className="h-5 w-5 text-primary" />
-            Cipher City Authentication
+            {showForgotPassword ? 'Reset Password' : 'Cipher City Authentication'}
           </DialogTitle>
           <DialogDescription>
-            Sign in to sync your progress across devices and access cloud saves.
+            {showForgotPassword
+              ? 'We\'ll send you a link to reset your password.'
+              : 'Sign in to sync your progress across devices and access cloud saves.'}
           </DialogDescription>
         </DialogHeader>
 
+        {showForgotPassword ? (
+          <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
+        ) : (
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login" className="flex items-center gap-2">
@@ -162,6 +169,15 @@ export function AuthModal({ open, onOpenChange, onSignIn, onSignUp }: AuthModalP
                       Login
                     </>
                   )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="w-full text-muted-foreground"
+                  onClick={() => setShowForgotPassword(true)}
+                >
+                  Forgot your password?
                 </Button>
               </form>
             </Form>
@@ -239,6 +255,7 @@ export function AuthModal({ open, onOpenChange, onSignIn, onSignUp }: AuthModalP
             </Form>
           </TabsContent>
         </Tabs>
+        )}
       </DialogContent>
     </Dialog>
   );
