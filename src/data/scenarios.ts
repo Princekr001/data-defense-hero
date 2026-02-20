@@ -220,5 +220,180 @@ export const gameScenarios: Scenario[] = [
     difficulty: 'expert',
     xpReward: 200,
     concept: "Gaming Safety"
+  },
+  {
+    id: 9,
+    title: "The Deepfake Video Call",
+    character: "Zara Ahmed",
+    description: "Zara gets an unexpected video call from someone who looks and sounds exactly like their school principal.",
+    situation: "The caller says the school needs Zara's parent's credit card info to pay for a 'mandatory field trip fee' right now. The video quality flickers occasionally, and the caller seems to avoid turning their head sideways. Zara's friend got a similar call last week.",
+    actions: {
+      action1: { text: "Provide the payment details — it looks real", type: 'risky' },
+      action2: { text: "Hang up and call the school office directly to verify", type: 'safe' },
+      action3: { text: "Text the principal on a known number to confirm", type: 'safe' }
+    },
+    feedback: {
+      correct: "Excellent awareness! AI-generated deepfake calls are a growing threat. Always verify through a separate, trusted channel.",
+      concept: "Deepfake Awareness: AI can mimic voices and faces — verify identity independently.",
+      tips: [
+        "Deepfakes may flicker, glitch, or avoid certain head angles",
+        "No school or employer will demand instant payment over video",
+        "Verify urgent requests through a separate, known contact method"
+      ]
+    },
+    category: 'scam',
+    difficulty: 'expert',
+    xpReward: 250,
+    concept: "Deepfake Detection"
+  },
+  {
+    id: 10,
+    title: "The QR Code Trap",
+    character: "Leo Santos",
+    description: "Leo finds a QR code on a flyer posted near the school library.",
+    situation: "The flyer says 'Scan to win free AirPods! Only 10 left — first come, first served!' The QR code sticker looks like it was placed over something else. Some students are already excitedly scanning it.",
+    actions: {
+      action1: { text: "Scan it quickly before the prizes run out", type: 'risky' },
+      action2: { text: "Inspect the URL after scanning without opening it", type: 'safe' },
+      action3: { text: "Report the suspicious flyer to school staff", type: 'safe' }
+    },
+    feedback: {
+      correct: "Smart move! Malicious QR codes can redirect you to phishing sites or download malware. Physical stickers placed over legitimate codes are a growing scam.",
+      concept: "QR Code Safety: Treat unknown QR codes like unknown links.",
+      tips: [
+        "QR code stickers placed over others are a major red flag",
+        "Preview the URL before opening — look for suspicious domains",
+        "Free giveaways with urgency pressure are almost always scams"
+      ]
+    },
+    category: 'phishing',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "QR Code Security"
+  },
+  {
+    id: 11,
+    title: "The AI Homework Helper",
+    character: "Mia Chen",
+    description: "Mia discovers a new AI chatbot website that promises to write entire essays for free.",
+    situation: "The site asks Mia to create an account using their school email and upload previous assignments 'to match their writing style.' It also wants access to their Google Drive. The site doesn't have HTTPS and the privacy policy is just one sentence.",
+    actions: {
+      action1: { text: "Sign up with school email and upload assignments", type: 'risky' },
+      action2: { text: "Use a well-known, reputable AI tool instead", type: 'safe' },
+      action3: { text: "Avoid it entirely — the data requests are excessive", type: 'safe' }
+    },
+    feedback: {
+      correct: "Good judgment! Shady AI tools harvest your personal data and schoolwork. Stick to reputable services and protect your academic identity.",
+      concept: "AI Tool Safety: Not all AI services are trustworthy — protect your data.",
+      tips: [
+        "Check for HTTPS and a real privacy policy before signing up",
+        "Never upload personal documents to unverified websites",
+        "School emails contain identifying info — use them carefully"
+      ]
+    },
+    category: 'privacy',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "AI Tool Privacy"
+  },
+  {
+    id: 12,
+    title: "The USB Drive Mystery",
+    character: "Noah Park",
+    description: "Noah finds a USB drive in the school parking lot with a label that says 'Class Photos 2025.'",
+    situation: "Noah is curious about the photos and considers plugging it into their laptop. A friend suggests they could also plug it into a school computer instead. The USB drive looks brand new.",
+    actions: {
+      action1: { text: "Plug it into your personal laptop to check", type: 'risky' },
+      action2: { text: "Turn it in to the school's IT department", type: 'safe' },
+      action3: { text: "Plug it into a school computer — it's not your device", type: 'risky' }
+    },
+    feedback: {
+      correct: "Well done! Unknown USB drives are a classic attack vector. They can contain malware that auto-executes when plugged in, stealing data or locking your files.",
+      concept: "Physical Security: Never plug in unknown devices.",
+      tips: [
+        "Attackers deliberately drop infected USB drives in public places",
+        "Malware can auto-run the moment a USB is inserted",
+        "Always hand found devices to IT — never plug them in yourself"
+      ]
+    },
+    category: 'malware',
+    difficulty: 'beginner',
+    xpReward: 100,
+    concept: "USB Security"
+  },
+  {
+    id: 13,
+    title: "The Two-Factor Bypass",
+    character: "Aisha Khan",
+    description: "Aisha gets a text message with a 2FA code she didn't request.",
+    situation: "Moments later, someone messages Aisha on Instagram: 'Hey it's me from your group project! I accidentally entered your number when logging in. Can you just forward me that code? So sorry!' Aisha doesn't recognize the account.",
+    actions: {
+      action1: { text: "Forward the code — accidents happen", type: 'risky' },
+      action2: { text: "Ignore the message and change your password immediately", type: 'safe' },
+      action3: { text: "Ask them to prove their identity first", type: 'safe' }
+    },
+    feedback: {
+      correct: "Critical save! Forwarding 2FA codes gives attackers full access to your account. A real person would never ask for your security codes.",
+      concept: "2FA Protection: Never share authentication codes with anyone, ever.",
+      tips: [
+        "2FA codes are personal — no legitimate person or service will ask for them",
+        "An unsolicited 2FA code means someone has your password already",
+        "Change your password immediately if you receive unexpected codes"
+      ]
+    },
+    category: 'social',
+    difficulty: 'expert',
+    xpReward: 200,
+    concept: "Two-Factor Authentication"
+  },
+  {
+    id: 14,
+    title: "The Smart Home Spy",
+    character: "Dylan Rivera",
+    description: "Dylan's family just set up new smart home devices — cameras, speakers, and smart locks.",
+    situation: "Dylan notices all devices are still using the default passwords shown in the manual: 'admin/admin123.' Their home Wi-Fi network is named 'Rivera_Home' and is visible to neighbors. Dylan's parent says changing it all seems too complicated.",
+    actions: {
+      action1: { text: "Leave it — the devices work fine as they are", type: 'risky' },
+      action2: { text: "Change all default passwords and rename the Wi-Fi network", type: 'safe' },
+      action3: { text: "Just change the Wi-Fi password, skip the devices", type: 'risky' }
+    },
+    feedback: {
+      correct: "Essential home security! Default passwords on IoT devices are publicly known and easy targets for hackers who can then spy on your home.",
+      concept: "IoT Security: Always change default credentials on smart devices.",
+      tips: [
+        "Default passwords for most devices are listed online",
+        "Rename your Wi-Fi to not include personal identifiers",
+        "Update smart device firmware regularly for security patches"
+      ]
+    },
+    category: 'password',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "IoT Device Security"
+  },
+  {
+    id: 15,
+    title: "The Scholarship Scam",
+    character: "Grace Okafor",
+    description: "Grace finds an email about a scholarship that covers full tuition.",
+    situation: "The email says Grace has been 'pre-selected' for a $25,000 scholarship. To claim it, she just needs to pay a $50 'processing fee' and provide her Social Security number for 'identity verification.' The deadline is tomorrow.",
+    actions: {
+      action1: { text: "Pay the fee quickly — it's a huge opportunity", type: 'risky' },
+      action2: { text: "Research the scholarship organization independently", type: 'safe' },
+      action3: { text: "Report it to a school counselor", type: 'safe' }
+    },
+    feedback: {
+      correct: "You dodged a scam! Legitimate scholarships never require upfront fees or your Social Security number via email.",
+      concept: "Financial Scam Awareness: Real opportunities don't demand money first.",
+      tips: [
+        "Legitimate scholarships never charge application or processing fees",
+        "Never share your SSN over email or unverified websites",
+        "Urgency and 'pre-selection' are classic pressure tactics in scams"
+      ]
+    },
+    category: 'scam',
+    difficulty: 'expert',
+    xpReward: 200,
+    concept: "Financial Scam Prevention"
   }
 ];
