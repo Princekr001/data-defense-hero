@@ -193,7 +193,7 @@ export default function CipherCity() {
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (missionTimer !== null && missionTimer > 0 && gameState === 'mission') {
       interval = setInterval(() => setMissionTimer(prev => prev !== null ? prev - 1 : null), 1000);
     }
