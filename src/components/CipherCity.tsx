@@ -55,7 +55,7 @@ export default function CipherCity() {
   const [showSaveMenu, setShowSaveMenu] = useState(false);
   const [saveMenuMode, setSaveMenuMode] = useState<'save' | 'load'>('save');
   const { toast } = useToast();
-  const playTimeRef = useRef<NodeJS.Timeout | null>(null);
+  const playTimeRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   // Audio system
   const {
@@ -193,7 +193,7 @@ export default function CipherCity() {
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (missionTimer !== null && missionTimer > 0 && gameState === 'mission') {
       interval = setInterval(() => setMissionTimer(prev => prev !== null ? prev - 1 : null), 1000);
     }

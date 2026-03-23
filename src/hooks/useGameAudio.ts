@@ -136,7 +136,7 @@ const playTransition = (ctx: AudioContext) => {
 class BackgroundMusicGenerator {
   private ctx: AudioContext | null = null;
   private isPlaying: boolean = false;
-  private intervalId: NodeJS.Timeout | null = null;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
   private volume: number = 0.15;
   private gainNode: GainNode | null = null;
 

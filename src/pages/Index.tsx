@@ -24,7 +24,7 @@ const Index = () => {
       </div>
       
       <Tabs defaultValue="cipher-city" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 gap-1 p-2">
+        <TabsList className="grid w-full grid-cols-2 gap-1 p-2 relative z-[60]">
           <TabsTrigger value="cipher-city">Story Mode</TabsTrigger>
           <TabsTrigger value="enhanced-game">Quiz Mode</TabsTrigger>
         </TabsList>
