@@ -395,7 +395,6 @@ export const gameScenarios: Scenario[] = [
     difficulty: 'expert',
     xpReward: 200,
     concept: "Financial Scam Prevention"
-  }
   },
   {
     id: 16,
