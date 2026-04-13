@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +9,7 @@ import { UserAuthButton } from "@/components/UserAuthButton";
 import {
   Shield, Lock, Eye, Zap, Trophy, Star, Target, Brain,
   ChevronRight, Sparkles, Users, AlertTriangle, CheckCircle2,
-  Gamepad2, Award, TrendingUp, Flame, ArrowRight
+  Gamepad2, Award, TrendingUp, Flame, ArrowRight, Sun, Moon
 } from "lucide-react";
 
 interface LandingPageProps {
@@ -149,6 +150,7 @@ const FeaturesSection = () => (
 
 const LandingPage = ({ onStart }: LandingPageProps) => {
   const [xpDemo, setXpDemo] = useState(0);
+  const { actualTheme, setTheme } = useTheme();
 
   useEffect(() => {
     const timer = setTimeout(() => setXpDemo(68), 600);
@@ -166,6 +168,17 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           </span>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setTheme(actualTheme === "dark" ? "light" : "dark")}
+            className="h-9 w-9 rounded-lg border border-border/50 flex items-center justify-center hover:bg-muted transition-colors"
+            aria-label="Toggle theme"
+          >
+            {actualTheme === "dark" ? (
+              <Sun className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Moon className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
           <UserAuthButton />
         </div>
       </nav>
