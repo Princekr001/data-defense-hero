@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -134,77 +135,12 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
       </section>
 
       {/* Problem & Solution */}
-      <section className="py-20 px-6">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-          <Card className="border-destructive/20 bg-destructive/5">
-            <CardContent className="p-8">
-              <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-                <h3 className="text-xl font-bold">The Problem</h3>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                Cybercrime costs the world <span className="text-foreground font-semibold">$10.5 trillion annually</span>.
-                Yet most students lack basic cybersecurity awareness. Traditional lectures
-                fail to engage young learners, leaving them vulnerable to phishing, identity theft,
-                and data breaches in their daily digital lives.
-              </p>
-            </CardContent>
-          </Card>
+      <ProblemSolutionSection />
 
-          <Card className="border-accent/20 bg-accent/5">
-            <CardContent className="p-8">
-              <div className="flex items-center gap-2 mb-4">
-                <CheckCircle2 className="h-6 w-6 text-accent" />
-                <h3 className="text-xl font-bold">Our Solution</h3>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                <span className="text-foreground font-semibold">Data Defense Hero</span> transforms
-                cybersecurity education into an immersive game. Students earn XP, unlock badges,
-                and level up by completing missions that teach real-world skills — from spotting
-                phishing emails to building secure passwords.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
 
       {/* Features */}
-      <section id="features" className="py-20 px-6 bg-muted/20">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <Badge variant="outline" className="mb-4 border-primary/30 text-primary">
-              <Gamepad2 className="h-3.5 w-3.5 mr-1.5" />
-              Core Features
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-              Learn by Playing
-            </h2>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-              Four interactive modules designed to build practical cybersecurity skills.
-            </p>
-          </div>
+      <FeaturesSection />
 
-          <div className="grid sm:grid-cols-2 gap-6">
-            {features.map((f, i) => (
-              <Card
-                key={f.title}
-                className="group hover:border-primary/30 transition-all duration-300 hover:shadow-cyber"
-                style={{ animationDelay: `${i * 100}ms` }}
-              >
-                <CardContent className="p-6 flex gap-4">
-                  <div className={`shrink-0 h-12 w-12 rounded-lg ${f.bg} flex items-center justify-center`}>
-                    <f.icon className={`h-6 w-6 ${f.color}`} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">{f.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Gamification Showcase */}
       <section className="py-20 px-6">
