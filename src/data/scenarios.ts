@@ -395,5 +395,187 @@ export const gameScenarios: Scenario[] = [
     difficulty: 'expert',
     xpReward: 200,
     concept: "Financial Scam Prevention"
+  },
+  {
+    id: 16,
+    title: "The Ransomware Lockdown",
+    character: "Jordan Lee",
+    description: "Jordan boots up their laptop and sees a terrifying message on screen.",
+    situation: "Jordan's computer displays a full-screen warning: 'Your files have been encrypted! Pay 0.5 Bitcoin within 48 hours or your files will be permanently deleted.' A countdown timer is ticking. Jordan has important school projects on the laptop but also has cloud backups enabled.",
+    actions: {
+      action1: { text: "Pay the ransom to get the files back quickly", type: 'risky' },
+      action2: { text: "Disconnect from the network, report it, and restore from backups", type: 'safe' },
+      action3: { text: "Try to negotiate a lower ransom amount", type: 'risky' }
+    },
+    feedback: {
+      correct: "Smart move! Disconnecting limits the spread, and restoring from backups is the safest recovery. Paying ransoms funds criminal operations and doesn't guarantee file recovery.",
+      concept: "Ransomware Response: Never pay the ransom — disconnect, report, and restore.",
+      tips: [
+        "Regular backups are your best defense against ransomware",
+        "Disconnect infected devices from the network immediately",
+        "Report ransomware attacks to IT support and law enforcement",
+        "Paying the ransom doesn't guarantee you'll get your files back"
+      ]
+    },
+    category: 'malware',
+    difficulty: 'intermediate',
+    xpReward: 175,
+    concept: "Ransomware Defense"
+  },
+  {
+    id: 17,
+    title: "The SIM Swap Attack",
+    character: "Priya Sharma",
+    description: "Priya suddenly loses cell service and starts getting alarming notifications.",
+    situation: "Priya's phone suddenly shows 'No Service.' Minutes later, she receives email alerts about password reset requests for her bank and social media accounts. A friend texts her on another platform saying someone is posting strange things from her account.",
+    actions: {
+      action1: { text: "Wait for service to come back — it's probably a network outage", type: 'risky' },
+      action2: { text: "Contact your carrier immediately from another phone and freeze affected accounts", type: 'safe' },
+      action3: { text: "Try restarting your phone multiple times", type: 'risky' }
+    },
+    feedback: {
+      correct: "Excellent response! SIM swapping is a serious attack where criminals transfer your number to their device. Contacting your carrier immediately and freezing accounts limits the damage.",
+      concept: "SIM Swap Prevention: Act fast when you unexpectedly lose service.",
+      tips: [
+        "Set up a PIN or passphrase with your mobile carrier",
+        "Use authenticator apps instead of SMS for two-factor authentication",
+        "Sudden loss of cell service combined with account alerts is a red flag",
+        "Contact your carrier immediately if you suspect a SIM swap"
+      ]
+    },
+    category: 'social',
+    difficulty: 'expert',
+    xpReward: 225,
+    concept: "SIM Swap Protection"
+  },
+  {
+    id: 18,
+    title: "The Social Media Takeover",
+    character: "Marcus Chen",
+    description: "Marcus discovers his Instagram account is posting content he never created.",
+    situation: "Marcus's friends message him asking why he's promoting a 'crypto investment opportunity' on his Instagram stories. He can still log in, but notices his email was changed to an unknown address. His bio now has a suspicious link, and DMs are being sent to all his followers.",
+    actions: {
+      action1: { text: "Just delete the suspicious posts and hope it stops", type: 'risky' },
+      action2: { text: "Change password, enable 2FA, revoke all sessions, and alert followers", type: 'safe' },
+      action3: { text: "Create a new account and abandon the old one", type: 'risky' }
+    },
+    feedback: {
+      correct: "Perfect! Securing the account immediately, enabling 2FA, revoking other sessions, and warning followers prevents further damage and protects your community.",
+      concept: "Account Recovery: Secure, verify, and communicate when compromised.",
+      tips: [
+        "Enable two-factor authentication on all social media accounts",
+        "Use unique passwords for each platform",
+        "Regularly review connected third-party apps",
+        "Warn your followers immediately so they don't fall for scams posted from your account"
+      ]
+    },
+    category: 'social',
+    difficulty: 'intermediate',
+    xpReward: 175,
+    concept: "Account Security"
+  },
+  {
+    id: 19,
+    title: "The Credential Stuffing Blitz",
+    character: "Olivia Torres",
+    description: "Olivia gets a flood of 'new login' alerts from multiple services overnight.",
+    situation: "Olivia wakes up to 12 emails: login alerts from her streaming service, online shopping accounts, and a gaming platform — all from locations she's never been. She used the same password ('OliviaT2024!') across all these accounts after a major data breach was reported in the news last week.",
+    actions: {
+      action1: { text: "Ignore the alerts — it's probably just a glitch", type: 'risky' },
+      action2: { text: "Change all passwords to unique ones and enable 2FA on every account", type: 'safe' },
+      action3: { text: "Only change the password on the most important account", type: 'risky' }
+    },
+    feedback: {
+      correct: "Exactly right! Credential stuffing uses leaked passwords to break into multiple accounts. Unique passwords for each service and 2FA stops attackers cold.",
+      concept: "Credential Stuffing Defense: One password per service, always.",
+      tips: [
+        "Never reuse passwords across different services",
+        "Use a password manager to generate and store unique passwords",
+        "Check haveibeenpwned.com to see if your credentials were leaked",
+        "Enable 2FA on every account that supports it"
+      ]
+    },
+    category: 'password',
+    difficulty: 'intermediate',
+    xpReward: 175,
+    concept: "Password Hygiene"
+  },
+  {
+    id: 20,
+    title: "The Ransomware Email Attachment",
+    character: "David Kim",
+    description: "David receives an email with an attachment from what looks like his professor.",
+    situation: "David gets an email that appears to be from his professor with the subject 'Updated Syllabus - URGENT.' The attachment is named 'Syllabus_Updated.pdf.exe'. The email says 'Please review the attached updated syllabus before tomorrow's class.' David notices the professor's email is slightly misspelled.",
+    actions: {
+      action1: { text: "Download and open the attachment — it's from a professor", type: 'risky' },
+      action2: { text: "Verify with the professor through a separate channel before opening", type: 'safe' },
+      action3: { text: "Forward it to classmates to check if they got it too", type: 'risky' }
+    },
+    feedback: {
+      correct: "Great instinct! The '.pdf.exe' double extension is a classic ransomware delivery trick. Always verify unexpected attachments through a separate communication channel.",
+      concept: "Malware Prevention: Verify before you click, especially with double extensions.",
+      tips: [
+        "Files ending in .exe, .bat, or .scr are executable — never open unexpected ones",
+        "Double extensions like .pdf.exe are a red flag for malware",
+        "Verify unexpected attachments by contacting the sender through another channel",
+        "Keep your antivirus software updated and active"
+      ]
+    },
+    category: 'malware',
+    difficulty: 'beginner',
+    xpReward: 125,
+    concept: "Email Attachment Safety"
+  },
+  {
+    id: 21,
+    title: "The Fake Customer Support",
+    character: "Aisha Johnson",
+    description: "Aisha searches online for tech support and finds a number that seems helpful.",
+    situation: "Aisha's laptop is running slowly, so she Googles 'Microsoft support phone number.' She calls the first result, and the 'technician' asks her to install remote access software and provide her login credentials to 'run diagnostics.' They sound professional and claim her computer has '47 critical viruses.'",
+    actions: {
+      action1: { text: "Install the remote access software — they sound like real support", type: 'risky' },
+      action2: { text: "Hang up, find support through the official Microsoft website only", type: 'safe' },
+      action3: { text: "Give them limited access just to check for viruses", type: 'risky' }
+    },
+    feedback: {
+      correct: "Well done! Tech support scams are extremely common. Legitimate companies never cold-call or ask you to install remote access tools. Always use official websites for support.",
+      concept: "Tech Support Scam Awareness: Real support never asks for remote access unsolicited.",
+      tips: [
+        "Never call tech support numbers from search engine ads",
+        "Microsoft and Apple will never ask you to install remote access tools",
+        "Scammers create urgency with fake virus counts and warnings",
+        "Always navigate directly to official support websites"
+      ]
+    },
+    category: 'scam',
+    difficulty: 'beginner',
+    xpReward: 125,
+    concept: "Tech Support Scam Prevention"
+  },
+  {
+    id: 22,
+    title: "The Public Charging Trap",
+    character: "Noah Williams",
+    description: "Noah's phone is at 5% battery at the airport with hours until his flight.",
+    situation: "Noah spots a free charging station at the airport with USB cables already plugged in. A sign says 'Free Fast Charging.' His phone has sensitive work emails and banking apps. He also has a portable battery pack in his bag, but it only has 30% charge left.",
+    actions: {
+      action1: { text: "Use the free USB cable — it's just charging", type: 'risky' },
+      action2: { text: "Use your own portable battery or find an AC outlet for your own charger", type: 'safe' },
+      action3: { text: "Use the USB cable but turn off your phone first", type: 'risky' }
+    },
+    feedback: {
+      correct: "Smart choice! 'Juice jacking' uses compromised USB ports to steal data or install malware. Always use your own charger and cable with a regular power outlet.",
+      concept: "Juice Jacking Prevention: Never trust public USB charging ports.",
+      tips: [
+        "Public USB ports can transfer data, not just power",
+        "Carry a portable battery pack or your own charging cable",
+        "Use AC power outlets with your own adapter when possible",
+        "Consider a USB data blocker if you must use public ports"
+      ]
+    },
+    category: 'network',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "Physical Security"
   }
 ];
