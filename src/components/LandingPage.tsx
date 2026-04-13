@@ -147,7 +147,7 @@ const FeaturesSection = () => (
   </section>
 );
 
-
+const LandingPage = ({ onStart }: LandingPageProps) => {
   const [xpDemo, setXpDemo] = useState(0);
 
   useEffect(() => {
