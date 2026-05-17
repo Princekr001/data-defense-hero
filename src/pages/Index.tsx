@@ -1,7 +1,5 @@
 import { useState } from "react";
-import CipherCity from "@/components/CipherCity";
-import EnhancedInteractiveCyberGame from "@/components/EnhancedInteractiveCyberGame";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import HackGame from "@/components/HackGame";
 import { UserAuthButton } from "@/components/UserAuthButton";
 import LandingPage from "@/components/LandingPage";
 
@@ -13,30 +11,19 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex items-center justify-between p-2 border-b border-border/50">
-        <div className="flex items-center gap-2">
-          <button onClick={() => setStarted(false)} className="text-lg font-bold text-primary hover:opacity-80 transition-opacity">
-            ← Data Defense Hero
-          </button>
-        </div>
+    <div className="relative min-h-screen bg-background">
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+        <button
+          onClick={() => setStarted(false)}
+          className="pointer-events-auto text-xs font-bold tracking-wider text-white/80 hover:text-white bg-black/40 backdrop-blur border border-white/10 rounded-full px-4 py-1.5 transition"
+        >
+          ← DATA DEFENSE HERO
+        </button>
+      </div>
+      <div className="absolute top-3 right-3 z-50">
         <UserAuthButton />
       </div>
-      
-      <Tabs defaultValue="cipher-city" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 gap-1 p-2 relative z-[60]">
-          <TabsTrigger value="cipher-city">Story Mode</TabsTrigger>
-          <TabsTrigger value="enhanced-game">Quiz Mode</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="cipher-city" className="mt-0">
-          <CipherCity />
-        </TabsContent>
-
-        <TabsContent value="enhanced-game" className="mt-0">
-          <EnhancedInteractiveCyberGame />
-        </TabsContent>
-      </Tabs>
+      <HackGame />
     </div>
   );
 };
