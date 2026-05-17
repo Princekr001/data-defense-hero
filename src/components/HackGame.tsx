@@ -1,0 +1,169 @@
+import { useState } from "react";
+import { useHackProgress } from "@/hooks/useHackProgress";
+import { hackLevels, hackTiers } from "@/data/hackTargets";
+import type { HackLevel } from "@/data/hackTargets";
+import HackGrid3D from "./hack/HackGrid3D";
+import MissionScene3D from "./hack/MissionScene3D";
+import PasswordCracker from "./hackGames/PasswordCracker";
+import PacketInspector from "./hackGames/PacketInspector";
+import FirewallBypass from "./hackGames/FirewallBypass";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+type View = "grid" | "briefing" | "mission" | "result";
+
+export default function HackGame() {
+  const { completed, xp, isUnlocked, isComplete, completeLevel, reset } = useHackProgress();
+  const [view, setView] = useState<View>("grid");
+  const [active, setActive] = useState<HackLevel | null>(null);
+  const [result, setResult] = useState<"success" | "fail" | null>(null);
+  const { toast } = useToast();
+
+  const tierColor = (lvl: HackLevel | null) =>
+    lvl ? hackTiers.find((t) => t.tier === lvl.tier)?.color ?? "#22d3ee" : "#22d3ee";
+
+  const handleSelect = (lvl: HackLevel) => {
+    setActive(lvl);
+    setResult(null);
+    setView("briefing");
+  };
+
+  const handleSuccess = () => {
+    if (!active) return;
+    completeLevel(active.id);
+    setResult("success");
+    setView("result");
+    toast({ title: `Hack successful — +${active.xpReward} XP`, description: active.name });
+  };
+  const handleFail = () => {
+    setResult("fail");
+    setView("result");
+  };
+
+  const renderMiniGame = () => {
+    if (!active) return null;
+    const props = { tier: active.tier, onSuccess: handleSuccess, onFail: handleFail };
+    if (active.miniGame === "password") return <PasswordCracker {...props} />;
+    if (active.miniGame === "packet") return <PacketInspector {...props} />;
+    return <FirewallBypass {...props} />;
+  };
+
+  return (
+    <div className="relative w-full h-[100dvh] overflow-hidden bg-[#06070f] text-foreground">
+      {/* HUD */}
+      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-3 sm:p-4 pointer-events-none">
+        <div className="pointer-events-auto flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => { setView("grid"); setActive(null); }} className="bg-black/40 backdrop-blur border-white/10">
+            <ArrowLeft className="h-4 w-4" /> Hack Grid
+          </Button>
+        </div>
+        <div className="pointer-events-auto flex items-center gap-2 bg-black/40 backdrop-blur border border-white/10 rounded-full px-3 py-1.5 text-xs">
+          <Trophy className="h-3.5 w-3.5 text-yellow-400" />
+          <span className="font-mono text-white">{xp} XP</span>
+          <span className="text-white/40">·</span>
+          <span className="text-white/70">{completed.length}/{hackLevels.length}</span>
+          <button onClick={reset} className="ml-2 opacity-60 hover:opacity-100" title="Reset progress">
+            <RotateCw className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+
+      {/* 3D layer */}
+      <div className="absolute inset-0">
+        {view === "grid" ? (
+          <HackGrid3D isUnlocked={isUnlocked} isComplete={isComplete} onSelect={handleSelect} />
+        ) : (
+          <MissionScene3D accent={tierColor(active)} />
+        )}
+      </div>
+
+      {/* Overlays */}
+      {view === "grid" && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-center">
+          <p className="text-white/70 text-xs sm:text-sm bg-black/40 backdrop-blur px-4 py-2 rounded-full border border-white/10">
+            <Target className="inline h-3 w-3 mr-1.5" />
+            Click a glowing node to begin a hack · drag to orbit
+          </p>
+        </div>
+      )}
+
+      {view === "briefing" && active && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <Card className="w-full max-w-md border-white/10 bg-black/70 text-white">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="border-white/20 text-white">
+                  Tier {active.tier} · {hackTiers.find((t) => t.tier === active.tier)?.name}
+                </Badge>
+                <span className="text-xs text-white/60 font-mono">+{active.xpReward} XP</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">{active.name}</h2>
+                <p className="text-sm text-white/60 mt-1 flex items-center gap-1.5">
+                  <Terminal className="h-3.5 w-3.5" /> Target: {active.target}
+                </p>
+              </div>
+              <p className="text-sm text-white/80 leading-relaxed">{active.briefing}</p>
+              <p className="text-xs text-white/50 italic">Objective: {active.objective}</p>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1 border-white/20 text-white hover:bg-white/10" onClick={() => setView("grid")}>
+                  Abort
+                </Button>
+                <Button variant="cyber" className="flex-1" onClick={() => setView("mission")}>
+                  <Zap className="h-4 w-4" /> Begin Hack
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {view === "mission" && active && (
+        <div className="absolute inset-0 z-30 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
+          <Card className="w-full sm:max-w-md border-white/10 bg-black/80 text-white pointer-events-auto rounded-b-none sm:rounded-lg animate-slide-in-right">
+            <CardContent className="p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-sm tracking-wide uppercase">{active.name}</h3>
+                <Badge variant="outline" className="border-white/20 text-white text-[10px]">LIVE</Badge>
+              </div>
+              {renderMiniGame()}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {view === "result" && active && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+          <Card className={`w-full max-w-md border bg-black/80 text-white ${result === "success" ? "border-accent/50" : "border-destructive/50"}`}>
+            <CardContent className="p-6 space-y-4 text-center">
+              <div className="text-5xl">{result === "success" ? "🛡️" : "🚨"}</div>
+              <h2 className="text-2xl font-bold">
+                {result === "success" ? "Hack Successful" : "Detected & Blocked"}
+              </h2>
+              <p className="text-sm text-white/70 leading-relaxed">
+                {result === "success" ? active.successStory : "The defenses held this time. Analyse what went wrong and try again."}
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1 border-white/20 text-white hover:bg-white/10" onClick={() => { setView("grid"); setActive(null); }}>
+                  Back to Grid
+                </Button>
+                {result === "fail" ? (
+                  <Button variant="cyber" className="flex-1" onClick={() => setView("mission")}>
+                    <RotateCw className="h-4 w-4" /> Retry
+                  </Button>
+                ) : (
+                  <Button variant="cyber" className="flex-1" onClick={() => { setView("grid"); setActive(null); }}>
+                    Next Target <ChevronRight className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}
