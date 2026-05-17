@@ -18,40 +18,40 @@ interface LandingPageProps {
 
 const features = [
   {
-    icon: Eye,
-    title: "Phishing Detection Game",
-    description: "Spot fake emails, suspicious links, and social engineering attacks before they trick you.",
+    icon: Lock,
+    title: "Password Cracker",
+    description: "Break weak credentials under time pressure and learn what makes a password actually strong.",
     color: "text-primary",
     bg: "bg-primary/10",
   },
   {
-    icon: Lock,
-    title: "Password Strength Checker",
-    description: "Learn to create unbreakable passwords and understand what makes credentials secure.",
+    icon: Eye,
+    title: "Packet Inspector",
+    description: "Sift live network traffic to flag phishing payloads and exfiltration attempts.",
     color: "text-accent",
     bg: "bg-accent/10",
   },
   {
     icon: Brain,
-    title: "Privacy Quiz",
-    description: "Test your knowledge on data privacy, digital footprints, and safe online behavior.",
+    title: "Firewall Bypass",
+    description: "Route signals through layered defenses without tripping intrusion detection.",
     color: "text-secondary",
     bg: "bg-secondary/10",
   },
   {
     icon: AlertTriangle,
-    title: "Cyber Attack Scenarios",
-    description: "Navigate real-world attack simulations — ransomware, data breaches, and identity theft.",
+    title: "Tiered Hack Targets",
+    description: "Progress from café WiFi to critical infrastructure across three escalating difficulty tiers.",
     color: "text-warning",
     bg: "bg-warning/10",
   },
 ];
 
 const stats = [
-  { label: "Missions", value: "12+", icon: Target },
-  { label: "Mini-Games", value: "4 Types", icon: Gamepad2 },
-  { label: "Levels", value: "12", icon: TrendingUp },
-  { label: "Badges", value: "20+", icon: Award },
+  { label: "Hack Targets", value: "9", icon: Target },
+  { label: "Mini-Games", value: "3 Types", icon: Gamepad2 },
+  { label: "Tiers", value: "3", icon: TrendingUp },
+  { label: "Dimension", value: "3D", icon: Award },
 ];
 
 const ScrollRevealCard = ({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) => {
@@ -217,7 +217,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
               className="group animate-pulse-glow"
             >
               <Zap className="h-5 w-5" />
-              Start Mission
+              Enter Hack Grid
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button size="lg" variant="outline" onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}>
