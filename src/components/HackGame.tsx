@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useHackProgress } from "@/hooks/useHackProgress";
 import { hackLevels, hackTiers, hackCategories } from "@/data/hackTargets";
 import type { HackCategory, HackLevel } from "@/data/hackTargets";
@@ -18,7 +18,21 @@ type View = "grid" | "briefing" | "mission" | "result";
 export default function HackGame() {
   const { completed, xp, isUnlocked, isComplete, completeLevel, reset } = useHackProgress();
   const [view, setView] = useState<View>("grid");
-  const [activeCategory, setActiveCategory] = useState<HackCategory | "all">("all");
+  const [activeCategory, setActiveCategory] = useState<HackCategory | "all">(() => {
+    try {
+      const saved = localStorage.getItem("ddh.hackCategory.v1");
+      if (saved && ["all", "passwords", "phishing", "privacy"].includes(saved)) {
+        return saved as HackCategory | "all";
+      }
+    } catch {}
+    return "all";
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("ddh.hackCategory.v1", activeCategory);
+    } catch {}
+  }, [activeCategory]);
   const [active, setActive] = useState<HackLevel | null>(null);
   const [result, setResult] = useState<"success" | "fail" | null>(null);
   const { toast } = useToast();
