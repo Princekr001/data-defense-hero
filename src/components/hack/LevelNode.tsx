@@ -69,7 +69,7 @@ export default function LevelNode({ level, position, color, unlocked, completed,
         <ringGeometry args={[0.75, 0.82, 48]} />
         <meshBasicMaterial color={baseColor} transparent opacity={ringOpacity} />
       </mesh>
-      <Html distanceFactor={8} center position={[0, -1.05, 0]} style={{ pointerEvents: "none" }}>
+      <Html distanceFactor={8} center position={[0, -1.05, 0]} style={{ pointerEvents: "none", opacity: dimmed ? 0.25 : 1, transition: "opacity 250ms" }}>
         <div className="text-center whitespace-nowrap">
           <div className="text-white text-xs font-bold tracking-wide drop-shadow-lg">{level.name}</div>
           <div className="text-[10px] opacity-70 text-white">
