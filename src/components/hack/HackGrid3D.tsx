@@ -9,10 +9,11 @@ interface Props {
   isUnlocked: (id: number) => boolean;
   isComplete: (id: number) => boolean;
   onSelect: (level: HackLevel) => void;
+  onDimmedClick?: (level: HackLevel) => void;
   activeCategory: HackCategory | "all";
 }
 
-function TierRow({ tierIndex, yOffset, isUnlocked, isComplete, onSelect, activeCategory }: any) {
+function TierRow({ tierIndex, yOffset, isUnlocked, isComplete, onSelect, onDimmedClick, activeCategory }: any) {
   const tier = hackTiers[tierIndex];
   const levels = levelsByTier(tier.tier);
   const spacing = 2.6;
