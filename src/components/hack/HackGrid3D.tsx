@@ -74,6 +74,7 @@ export default function HackGrid3D({ isUnlocked, isComplete, onSelect, activeCat
             isUnlocked={isUnlocked}
             isComplete={isComplete}
             onSelect={onSelect}
+            activeCategory={activeCategory}
           />
         ))}
       </Suspense>
