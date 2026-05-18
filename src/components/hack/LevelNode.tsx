@@ -16,7 +16,7 @@ interface Props {
 
 export default function LevelNode({ level, position, color, unlocked, completed, dimmed = false, onSelect }: Props) {
 
-export default function LevelNode({ level, position, color, unlocked, completed, onSelect }: Props) {
+
   const ref = useRef<Mesh>(null);
   const hoverRef = useRef(false);
 
