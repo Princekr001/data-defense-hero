@@ -248,6 +248,37 @@ export default function HackGame() {
               <p className="text-sm text-white/70 leading-relaxed">
                 {result === "success" ? active.successStory : "The defenses held this time. Analyse what went wrong and try again."}
               </p>
+
+              {/* Category breakdown */}
+              <div className="rounded-md border border-white/10 bg-white/5 p-3 text-left">
+                <div className="text-[10px] uppercase tracking-wider text-white/50 mb-2 flex items-center gap-1.5">
+                  <Target className="h-3 w-3" /> Category breakdown
+                </div>
+                <ul className="space-y-1.5">
+                  {hackCategories.filter((c) => c.id !== "all").map((cat) => {
+                    const total = hackLevels.filter((l) => l.category === cat.id).length;
+                    const done = hackLevels.filter((l) => l.category === cat.id && completed.includes(l.id)).length;
+                    const pct = total ? (done / total) * 100 : 0;
+                    const isActive = active.category === cat.id;
+                    return (
+                      <li key={cat.id} className="text-xs">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className={`${isActive ? "text-accent font-semibold" : "text-white/80"}`}>
+                            {cat.label}{isActive && " ←"}
+                          </span>
+                          <span className="font-mono text-white/60">{done}/{total}</span>
+                        </div>
+                        <div className="h-1 rounded-full bg-white/10 overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${isActive ? "bg-accent" : "bg-white/40"}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1 border-white/20 text-white hover:bg-white/10" onClick={() => { setView("grid"); setActive(null); }}>
                   Back to Grid
