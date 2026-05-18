@@ -75,7 +75,7 @@ export default function HackGame() {
       {/* 3D layer */}
       <div className="absolute inset-0">
         {view === "grid" ? (
-          <HackGrid3D isUnlocked={isUnlocked} isComplete={isComplete} onSelect={handleSelect} />
+          <HackGrid3D isUnlocked={isUnlocked} isComplete={isComplete} onSelect={handleSelect} activeCategory={activeCategory} />
         ) : (
           <MissionScene3D accent={tierColor(active)} />
         )}
@@ -83,10 +83,33 @@ export default function HackGame() {
 
       {/* Overlays */}
       {view === "grid" && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none text-center">
-          <p className="text-white/70 text-xs sm:text-sm bg-black/40 backdrop-blur px-4 py-2 rounded-full border border-white/10">
-            <Target className="inline h-3 w-3 mr-1.5" />
-            Click a glowing node to begin a hack · drag to orbit
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 px-3 w-full max-w-[min(100vw,640px)]">
+          <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-1.5 bg-black/40 backdrop-blur border border-white/10 rounded-full p-1">
+            {hackCategories.map((cat) => {
+              const count =
+                cat.id === "all"
+                  ? hackLevels.length
+                  : hackLevels.filter((l) => l.category === cat.id).length;
+              const isActive = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`text-[11px] sm:text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-cyber"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  {cat.label}
+                  <span className={`ml-1.5 text-[10px] ${isActive ? "opacity-80" : "opacity-50"}`}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="pointer-events-none text-white/60 text-[11px] sm:text-xs bg-black/30 backdrop-blur px-3 py-1 rounded-full border border-white/5">
+            <Target className="inline h-3 w-3 mr-1" />
+            Click a glowing node to begin · drag to orbit
           </p>
         </div>
       )}
