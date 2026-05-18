@@ -9,10 +9,11 @@ interface Props {
   isUnlocked: (id: number) => boolean;
   isComplete: (id: number) => boolean;
   onSelect: (level: HackLevel) => void;
+  onDimmedClick?: (level: HackLevel) => void;
   activeCategory: HackCategory | "all";
 }
 
-function TierRow({ tierIndex, yOffset, isUnlocked, isComplete, onSelect, activeCategory }: any) {
+function TierRow({ tierIndex, yOffset, isUnlocked, isComplete, onSelect, onDimmedClick, activeCategory }: any) {
   const tier = hackTiers[tierIndex];
   const levels = levelsByTier(tier.tier);
   const spacing = 2.6;
@@ -42,13 +43,14 @@ function TierRow({ tierIndex, yOffset, isUnlocked, isComplete, onSelect, activeC
           completed={isComplete(lvl.id)}
           dimmed={activeCategory !== "all" && lvl.category !== activeCategory}
           onSelect={() => onSelect(lvl)}
+          onDimmedClick={() => onDimmedClick?.(lvl)}
         />
       ))}
     </group>
   );
 }
 
-export default function HackGrid3D({ isUnlocked, isComplete, onSelect, activeCategory }: Props) {
+export default function HackGrid3D({ isUnlocked, isComplete, onSelect, onDimmedClick, activeCategory }: Props) {
   const rows = useMemo(() => [3.2, 0, -3.2], []);
 
   return (
@@ -74,6 +76,7 @@ export default function HackGrid3D({ isUnlocked, isComplete, onSelect, activeCat
             isUnlocked={isUnlocked}
             isComplete={isComplete}
             onSelect={onSelect}
+            onDimmedClick={onDimmedClick}
             activeCategory={activeCategory}
           />
         ))}

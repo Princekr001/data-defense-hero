@@ -12,9 +12,10 @@ interface Props {
   completed: boolean;
   dimmed?: boolean;
   onSelect: () => void;
+  onDimmedClick?: () => void;
 }
 
-export default function LevelNode({ level, position, color, unlocked, completed, dimmed = false, onSelect }: Props) {
+export default function LevelNode({ level, position, color, unlocked, completed, dimmed = false, onSelect, onDimmedClick }: Props) {
 
 
   const ref = useRef<Mesh>(null);
@@ -38,19 +39,19 @@ export default function LevelNode({ level, position, color, unlocked, completed,
       <mesh
         ref={ref}
         onPointerOver={(e) => {
-          if (!interactive) return;
+          if (!unlocked) return;
           e.stopPropagation();
-          hoverRef.current = true;
-          document.body.style.cursor = "pointer";
+          hoverRef.current = interactive;
+          document.body.style.cursor = interactive ? "pointer" : "help";
         }}
         onPointerOut={() => {
           hoverRef.current = false;
           document.body.style.cursor = "auto";
         }}
         onClick={(e) => {
-          if (!interactive) return;
           e.stopPropagation();
-          onSelect();
+          if (interactive) onSelect();
+          else if (dimmed && unlocked) onDimmedClick?.();
         }}
       >
         <icosahedronGeometry args={[0.55, 0]} />
