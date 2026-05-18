@@ -10,8 +10,11 @@ interface Props {
   color: string;
   unlocked: boolean;
   completed: boolean;
+  dimmed?: boolean;
   onSelect: () => void;
 }
+
+export default function LevelNode({ level, position, color, unlocked, completed, dimmed = false, onSelect }: Props) {
 
 export default function LevelNode({ level, position, color, unlocked, completed, onSelect }: Props) {
   const ref = useRef<Mesh>(null);
