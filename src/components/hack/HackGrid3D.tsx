@@ -3,15 +3,16 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars, Html } from "@react-three/drei";
 import LevelNode from "./LevelNode";
 import { hackLevels, hackTiers, levelsByTier } from "@/data/hackTargets";
-import type { HackLevel } from "@/data/hackTargets";
+import type { HackCategory, HackLevel } from "@/data/hackTargets";
 
 interface Props {
   isUnlocked: (id: number) => boolean;
   isComplete: (id: number) => boolean;
   onSelect: (level: HackLevel) => void;
+  activeCategory: HackCategory | "all";
 }
 
-function TierRow({ tierIndex, yOffset, isUnlocked, isComplete, onSelect }: any) {
+function TierRow({ tierIndex, yOffset, isUnlocked, isComplete, onSelect, activeCategory }: any) {
   const tier = hackTiers[tierIndex];
   const levels = levelsByTier(tier.tier);
   const spacing = 2.6;
@@ -39,6 +40,7 @@ function TierRow({ tierIndex, yOffset, isUnlocked, isComplete, onSelect }: any) 
           color={tier.color}
           unlocked={isUnlocked(lvl.id)}
           completed={isComplete(lvl.id)}
+          dimmed={activeCategory !== "all" && lvl.category !== activeCategory}
           onSelect={() => onSelect(lvl)}
         />
       ))}
@@ -46,7 +48,7 @@ function TierRow({ tierIndex, yOffset, isUnlocked, isComplete, onSelect }: any) 
   );
 }
 
-export default function HackGrid3D({ isUnlocked, isComplete, onSelect }: Props) {
+export default function HackGrid3D({ isUnlocked, isComplete, onSelect, activeCategory }: Props) {
   const rows = useMemo(() => [3.2, 0, -3.2], []);
 
   return (
