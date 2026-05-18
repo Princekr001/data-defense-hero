@@ -43,13 +43,14 @@ function TierRow({ tierIndex, yOffset, isUnlocked, isComplete, onSelect, onDimme
           completed={isComplete(lvl.id)}
           dimmed={activeCategory !== "all" && lvl.category !== activeCategory}
           onSelect={() => onSelect(lvl)}
+          onDimmedClick={() => onDimmedClick?.(lvl)}
         />
       ))}
     </group>
   );
 }
 
-export default function HackGrid3D({ isUnlocked, isComplete, onSelect, activeCategory }: Props) {
+export default function HackGrid3D({ isUnlocked, isComplete, onSelect, onDimmedClick, activeCategory }: Props) {
   const rows = useMemo(() => [3.2, 0, -3.2], []);
 
   return (
@@ -75,6 +76,7 @@ export default function HackGrid3D({ isUnlocked, isComplete, onSelect, activeCat
             isUnlocked={isUnlocked}
             isComplete={isComplete}
             onSelect={onSelect}
+            onDimmedClick={onDimmedClick}
             activeCategory={activeCategory}
           />
         ))}
