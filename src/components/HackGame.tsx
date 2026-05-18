@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useHackProgress } from "@/hooks/useHackProgress";
-import { hackLevels, hackTiers } from "@/data/hackTargets";
-import type { HackLevel } from "@/data/hackTargets";
+import { hackLevels, hackTiers, hackCategories } from "@/data/hackTargets";
+import type { HackCategory, HackLevel } from "@/data/hackTargets";
 import HackGrid3D from "./hack/HackGrid3D";
 import MissionScene3D from "./hack/MissionScene3D";
 import PasswordCracker from "./hackGames/PasswordCracker";
@@ -18,6 +18,7 @@ type View = "grid" | "briefing" | "mission" | "result";
 export default function HackGame() {
   const { completed, xp, isUnlocked, isComplete, completeLevel, reset } = useHackProgress();
   const [view, setView] = useState<View>("grid");
+  const [activeCategory, setActiveCategory] = useState<HackCategory | "all">("all");
   const [active, setActive] = useState<HackLevel | null>(null);
   const [result, setResult] = useState<"success" | "fail" | null>(null);
   const { toast } = useToast();
