@@ -75,7 +75,18 @@ export default function HackGame() {
       {/* 3D layer */}
       <div className="absolute inset-0">
         {view === "grid" ? (
-          <HackGrid3D isUnlocked={isUnlocked} isComplete={isComplete} onSelect={handleSelect} activeCategory={activeCategory} />
+          <HackGrid3D
+            isUnlocked={isUnlocked}
+            isComplete={isComplete}
+            onSelect={handleSelect}
+            onDimmedClick={(lvl) =>
+              toast({
+                title: "Target filtered out",
+                description: `"${lvl.name}" isn't in the current category. Pick a highlighted target or switch the filter.`,
+              })
+            }
+            activeCategory={activeCategory}
+          />
         ) : (
           <MissionScene3D accent={tierColor(active)} />
         )}
