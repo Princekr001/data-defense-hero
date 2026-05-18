@@ -8,10 +8,23 @@ export interface HackLevel {
   target: string;
   objective: string;
   miniGame: MiniGameId;
+  category: HackCategory;
   xpReward: number;
   briefing: string;
   successStory: string;
 }
+
+export interface CategoryMeta {
+  id: HackCategory | "all";
+  label: string;
+}
+
+export const hackCategories: CategoryMeta[] = [
+  { id: "all", label: "All targets" },
+  { id: "passwords", label: "Passwords" },
+  { id: "phishing", label: "Phishing" },
+  { id: "privacy", label: "Privacy" },
+];
 
 export interface HackTier {
   tier: 1 | 2 | 3;
