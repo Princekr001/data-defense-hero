@@ -83,35 +83,88 @@ export default function HackGame() {
 
       {/* Overlays */}
       {view === "grid" && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 px-3 w-full max-w-[min(100vw,640px)]">
-          <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-1.5 bg-black/40 backdrop-blur border border-white/10 rounded-full p-1">
-            {hackCategories.map((cat) => {
-              const count =
-                cat.id === "all"
-                  ? hackLevels.length
-                  : hackLevels.filter((l) => l.category === cat.id).length;
-              const isActive = activeCategory === cat.id;
-              return (
+        <>
+          {/* Keyboard-accessible level list — visible only when focused */}
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 focus-within:flex hidden flex-wrap items-center justify-center gap-1.5 max-w-[min(100vw,640px)] bg-black/60 backdrop-blur border border-white/10 rounded-lg p-2">
+            <span className="sr-only" id="hack-targets-help">
+              Use Tab and Shift+Tab to move between hack targets. Press Enter to begin a hack.
+            </span>
+            {hackLevels
+              .filter((l) => activeCategory === "all" || l.category === activeCategory)
+              .filter((l) => isUnlocked(l.id))
+              .map((l) => (
                 <button
-                  key={cat.id}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`text-[11px] sm:text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-cyber"
-                      : "text-white/70 hover:text-white hover:bg-white/10"
-                  }`}
+                  key={l.id}
+                  aria-describedby="hack-targets-help"
+                  onClick={() => handleSelect(l)}
+                  className="text-[11px] font-medium px-3 py-1.5 rounded-full bg-white/5 text-white/80 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
-                  {cat.label}
-                  <span className={`ml-1.5 text-[10px] ${isActive ? "opacity-80" : "opacity-50"}`}>{count}</span>
+                  {isComplete(l.id) ? "✓ " : ""}{l.name}
                 </button>
-              );
-            })}
+              ))}
           </div>
-          <p className="pointer-events-none text-white/60 text-[11px] sm:text-xs bg-black/30 backdrop-blur px-3 py-1 rounded-full border border-white/5">
-            <Target className="inline h-3 w-3 mr-1" />
-            Click a glowing node to begin · drag to orbit
-          </p>
-        </div>
+
+          <div
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 px-3 w-full max-w-[min(100vw,640px)]"
+          >
+            <div
+              role="radiogroup"
+              aria-label="Filter hack targets by topic"
+              onKeyDown={(e) => {
+                const ids = hackCategories.map((c) => c.id);
+                const i = ids.indexOf(activeCategory);
+                if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                  e.preventDefault();
+                  setActiveCategory(ids[(i + 1) % ids.length]);
+                } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                  e.preventDefault();
+                  setActiveCategory(ids[(i - 1 + ids.length) % ids.length]);
+                } else if (e.key === "Home") {
+                  e.preventDefault();
+                  setActiveCategory(ids[0]);
+                } else if (e.key === "End") {
+                  e.preventDefault();
+                  setActiveCategory(ids[ids.length - 1]);
+                }
+              }}
+              className="pointer-events-auto flex flex-wrap items-center justify-center gap-1.5 bg-black/40 backdrop-blur border border-white/10 rounded-full p-1"
+            >
+              {hackCategories.map((cat) => {
+                const count =
+                  cat.id === "all"
+                    ? hackLevels.length
+                    : hackLevels.filter((l) => l.category === cat.id).length;
+                const isActive = activeCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    role="radio"
+                    aria-checked={isActive}
+                    tabIndex={isActive ? 0 : -1}
+                    ref={(el) => {
+                      if (isActive && el && document.activeElement?.getAttribute("role") === "radio") {
+                        el.focus();
+                      }
+                    }}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`text-[11px] sm:text-xs font-medium px-3 py-1.5 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-cyber"
+                        : "text-white/70 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {cat.label}
+                    <span className={`ml-1.5 text-[10px] ${isActive ? "opacity-80" : "opacity-50"}`}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="pointer-events-none text-white/60 text-[11px] sm:text-xs bg-black/30 backdrop-blur px-3 py-1 rounded-full border border-white/5">
+              <Target className="inline h-3 w-3 mr-1" />
+              Click a glowing node or press Tab to navigate · Enter to start
+            </p>
+          </div>
+        </>
       )}
 
       {view === "briefing" && active && (
