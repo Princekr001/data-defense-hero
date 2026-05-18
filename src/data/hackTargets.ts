@@ -1,4 +1,5 @@
 export type MiniGameId = "password" | "packet" | "firewall";
+export type HackCategory = "passwords" | "phishing" | "privacy";
 
 export interface HackLevel {
   id: number;
