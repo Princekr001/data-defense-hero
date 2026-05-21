@@ -339,6 +339,12 @@ export default function HackGame() {
           </Card>
         </div>
       )}
+
+      <CategoryLessonDialog
+        open={!!lessonCategory}
+        onOpenChange={(v) => { if (!v) setLessonCategory(null); }}
+        category={lessonCategory}
+      />
     </div>
   );
 }
