@@ -53,6 +53,11 @@ export default function HackGame() {
     setView("result");
     toast({ title: `Hack successful — +${active.xpReward} XP`, description: active.name });
   };
+  const handleFail = () => {
+    setResult("fail");
+    setView("result");
+  };
+
   const handleResetAll = () => {
     if (!window.confirm("Reset all hack progress and category stats? This cannot be undone.")) return;
     reset();
