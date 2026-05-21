@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Mail, Lock, Users, Wifi, Download, Eye, DollarSign, Gamepad2, 
-  Shield, Brain, Lightbulb, CheckCircle, AlertCircle
+  Shield, Brain, Lightbulb, CheckCircle, AlertCircle, PlayCircle
 } from "lucide-react";
+import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 
 interface SimplifiedLearningScenarioProps {
   scenario: {
