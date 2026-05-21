@@ -261,6 +261,21 @@ export default function HackGame() {
                 {result === "success" ? active.successStory : "The defenses held this time. Analyse what went wrong and try again."}
               </p>
 
+              {/* Wrong-answer / fail: prominent lesson CTA */}
+              {result === "fail" && (
+                <button
+                  onClick={() => setLessonCategory(active.category)}
+                  className="w-full rounded-md border border-accent/40 bg-accent/10 hover:bg-accent/20 transition-colors p-3 text-left flex items-center gap-3"
+                >
+                  <PlayCircle className="h-5 w-5 text-accent flex-shrink-0" />
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-accent">Watch the {active.category} lesson</div>
+                    <div className="text-[11px] text-white/60">Risks, real-life threats &amp; how to avoid them — animated.</div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-accent" />
+                </button>
+              )}
+
               {/* Category breakdown */}
               <div className="rounded-md border border-white/10 bg-white/5 p-3 text-left">
                 <div className="text-[10px] uppercase tracking-wider text-white/50 mb-2 flex items-center gap-1.5">
@@ -274,11 +289,20 @@ export default function HackGame() {
                     const isActive = active.category === cat.id;
                     return (
                       <li key={cat.id} className="text-xs">
-                        <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center justify-between mb-1 gap-2">
                           <span className={`${isActive ? "text-accent font-semibold" : "text-white/80"}`}>
                             {cat.label}{isActive && " ←"}
                           </span>
-                          <span className="font-mono text-white/60">{done}/{total}</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setLessonCategory(cat.id)}
+                              className="text-[10px] uppercase tracking-wider text-white/40 hover:text-accent flex items-center gap-1"
+                              title={`Watch ${cat.label} lesson`}
+                            >
+                              <PlayCircle className="h-3 w-3" /> lesson
+                            </button>
+                            <span className="font-mono text-white/60">{done}/{total}</span>
+                          </div>
                         </div>
                         <div className="h-1 rounded-full bg-white/10 overflow-hidden">
                           <div
