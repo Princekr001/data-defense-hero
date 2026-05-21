@@ -10,8 +10,9 @@ import FirewallBypass from "./hackGames/FirewallBypass";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash2 } from "lucide-react";
+import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash2, PlayCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 
 type View = "grid" | "briefing" | "mission" | "result";
 
