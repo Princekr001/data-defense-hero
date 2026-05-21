@@ -36,6 +36,7 @@ export default function HackGame() {
   }, [activeCategory]);
   const [active, setActive] = useState<HackLevel | null>(null);
   const [result, setResult] = useState<"success" | "fail" | null>(null);
+  const [lessonCategory, setLessonCategory] = useState<string | null>(null);
   const { toast } = useToast();
 
   const tierColor = (lvl: HackLevel | null) =>
