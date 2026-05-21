@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Mail, Lock, Users, Wifi, Download, Eye, DollarSign, Gamepad2, 
-  Shield, Brain, Lightbulb, CheckCircle, AlertCircle
+  Shield, Brain, Lightbulb, CheckCircle, AlertCircle, PlayCircle
 } from "lucide-react";
+import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 
 interface SimplifiedLearningScenarioProps {
   scenario: {
@@ -41,6 +42,7 @@ export default function SimplifiedLearningScenario({
   playerName
 }: SimplifiedLearningScenarioProps) {
   const [showRetry, setShowRetry] = useState(false);
+  const [lessonOpen, setLessonOpen] = useState(false);
 
   const getCategoryIcon = (category: string) => {
     const icons = {
@@ -225,25 +227,37 @@ export default function SimplifiedLearningScenario({
             </CardContent>
           </Card>
 
-          {/* Retry Option for Wrong Answers */}
+          {/* Wrong-answer lesson + retry */}
           {showRetry && (
-            <Card className="border-2 border-primary bg-primary/10">
-              <CardContent className="p-6 text-center">
-                <h3 className="text-xl font-bold text-primary mb-3">Want to Try Again?</h3>
-                <p className="text-foreground mb-4">
-                  Understanding comes through practice. Feel free to explore other options!
-                </p>
-                <Button 
-                  onClick={handleRetry}
-                  variant="default"
-                >
-                  Try Different Approach
-                </Button>
+            <Card className="border-2 border-destructive/40 bg-destructive/5">
+              <CardContent className="p-6 space-y-4 text-center">
+                <div>
+                  <h3 className="text-xl font-bold text-destructive mb-1">
+                    That choice was risky — let's break it down
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Watch the {scenario.category} mini-lesson: real risks, real-life threats, and how to avoid them.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  <Button onClick={() => setLessonOpen(true)} variant="default" className="gap-2">
+                    <PlayCircle className="h-4 w-4" /> Watch animated lesson
+                  </Button>
+                  <Button onClick={handleRetry} variant="outline">
+                    Try Different Approach
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}
         </div>
       )}
+
+      <CategoryLessonDialog
+        open={lessonOpen}
+        onOpenChange={setLessonOpen}
+        category={scenario.category}
+      />
     </div>
   );
 }
