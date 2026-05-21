@@ -90,7 +90,7 @@ export default function HackGame() {
           <span className="font-mono text-white">{xp} XP</span>
           <span className="text-white/40">·</span>
           <span className="text-white/70">{completed.length}/{hackLevels.length}</span>
-          <button onClick={reset} className="ml-2 opacity-60 hover:opacity-100" title="Reset progress">
+          <button onClick={handleResetAll} className="ml-2 opacity-60 hover:opacity-100" title="Reset all progress">
             <RotateCw className="h-3 w-3" />
           </button>
         </div>
@@ -303,6 +303,12 @@ export default function HackGame() {
                   </Button>
                 )}
               </div>
+              <button
+                onClick={handleResetAll}
+                className="w-full text-xs text-white/40 hover:text-destructive flex items-center justify-center gap-1.5 py-1 transition-colors"
+              >
+                <Trash2 className="h-3 w-3" /> Reset All Progress
+              </button>
             </CardContent>
           </Card>
         </div>
