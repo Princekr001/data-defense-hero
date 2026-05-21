@@ -42,6 +42,7 @@ export default function SimplifiedLearningScenario({
   playerName
 }: SimplifiedLearningScenarioProps) {
   const [showRetry, setShowRetry] = useState(false);
+  const [lessonOpen, setLessonOpen] = useState(false);
 
   const getCategoryIcon = (category: string) => {
     const icons = {
