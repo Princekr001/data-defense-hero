@@ -60,6 +60,16 @@ export const categoryLessons: Record<LessonCategory, CategoryLesson> = {
       "Treat urgency, fear and threats as red flags, not commands",
       "Enable multi-factor authentication so a stolen password isn't enough",
     ],
+    quiz: {
+      question: "You get an SMS: 'Your bank account is locked — click here to verify.' What's the SECURE move?",
+      options: [
+        "Tap the link and log in to unlock it quickly",
+        "Reply with your account number to confirm it's you",
+        "Ignore the link and open your bank's official app yourself",
+      ],
+      correctIndex: 2,
+      explanation: "Always reach the bank through its real app or website. Links and replies in unexpected messages are the #1 phishing trap.",
+    },
   },
   password: {
     id: "password",
