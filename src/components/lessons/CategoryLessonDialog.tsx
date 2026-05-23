@@ -99,6 +99,64 @@ export default function CategoryLessonDialog({ open, onOpenChange, category }: P
                   ))}
                 </ul>
               </section>
+
+              {/* Reinforcement quiz */}
+              <section className="rounded-md border border-primary/40 bg-primary/5 p-4">
+                <h4 className="text-sm font-bold uppercase tracking-wider text-primary mb-3 flex items-center gap-2">
+                  <Brain className="h-4 w-4" /> Quick check — lock in the secure choice
+                </h4>
+                <p className="text-sm font-medium text-foreground mb-3">{lesson.quiz.question}</p>
+                <div className="grid gap-2">
+                  {lesson.quiz.options.map((opt, i) => {
+                    const isCorrect = i === lesson.quiz.correctIndex;
+                    const isPicked = picked === i;
+                    const answered = picked !== null;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        disabled={answered}
+                        onClick={() => setPicked(i)}
+                        className={cn(
+                          "text-left text-sm rounded-md border p-3 transition-all flex items-start gap-2",
+                          !answered && "border-border bg-card/60 hover:border-primary hover:bg-primary/10",
+                          answered && isCorrect && "border-primary bg-primary/15 text-foreground",
+                          answered && isPicked && !isCorrect && "border-destructive bg-destructive/10 text-foreground",
+                          answered && !isCorrect && !isPicked && "border-border bg-muted/40 opacity-60",
+                        )}
+                      >
+                        {answered && isCorrect && <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />}
+                        {answered && isPicked && !isCorrect && <XCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />}
+                        <span>{opt}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {picked !== null && (
+                  <div className="mt-3 space-y-2">
+                    <div
+                      className={cn(
+                        "text-sm font-semibold flex items-center gap-2",
+                        picked === lesson.quiz.correctIndex ? "text-primary" : "text-destructive",
+                      )}
+                    >
+                      {picked === lesson.quiz.correctIndex ? (
+                        <>
+                          <CheckCircle2 className="h-4 w-4" /> Correct — that's the secure move.
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="h-4 w-4" /> Not quite — the highlighted option is the secure one.
+                        </>
+                      )}
+                    </div>
+                    <p className="text-sm text-foreground/90 leading-relaxed">{lesson.quiz.explanation}</p>
+                    <Button size="sm" variant="outline" onClick={() => setPicked(null)}>
+                      Try again
+                    </Button>
+                  </div>
+                )}
+              </section>
             </div>
           </>
         )}
