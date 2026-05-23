@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, ShieldCheck, BookOpen, CheckCircle2, XCircle, Brain } from "lucide-react";
+import { AlertTriangle, ShieldCheck, BookOpen, CheckCircle2, XCircle, Brain, Wrench, ListChecks } from "lucide-react";
 import CategoryAnimation from "./CategoryAnimation";
 import { categoryLessons, resolveLessonKey } from "@/data/categoryLessons";
 import { cn } from "@/lib/utils";
@@ -98,6 +98,56 @@ export default function CategoryLessonDialog({ open, onOpenChange, category }: P
                     </li>
                   ))}
                 </ul>
+              </section>
+
+              {/* Risk → Solution pairs */}
+              <section>
+                <h4 className="text-sm font-bold uppercase tracking-wider text-primary mb-2 flex items-center gap-2">
+                  <Wrench className="h-4 w-4" /> Solutions for each risk
+                </h4>
+                <ul className="space-y-2">
+                  {lesson.riskSolutions.map((rs) => (
+                    <li
+                      key={rs.risk}
+                      className="rounded-md border border-border bg-card/60 p-3 grid sm:grid-cols-[1fr_auto_2fr] gap-2 items-start"
+                    >
+                      <div className="flex items-start gap-2 text-sm">
+                        <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                        <span className="leading-snug">{rs.risk}</span>
+                      </div>
+                      <span className="hidden sm:block text-muted-foreground self-center" aria-hidden>
+                        →
+                      </span>
+                      <div className="flex items-start gap-2 text-sm">
+                        <ShieldCheck className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="leading-snug text-foreground/90">{rs.solution}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              {/* Step-by-step action plan */}
+              <section className="rounded-md border border-primary/30 bg-primary/5 p-4">
+                <h4 className="text-sm font-bold uppercase tracking-wider text-primary mb-3 flex items-center gap-2">
+                  <ListChecks className="h-4 w-4" /> Step-by-step: how to solve it today
+                </h4>
+                <ol className="space-y-2.5">
+                  {lesson.stepByStep.map((step, i) => (
+                    <li key={step.title} className="flex gap-3">
+                      <span
+                        className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center"
+                        aria-hidden
+                      >
+                        {i + 1}
+                      </span>
+                      <div className="leading-snug">
+                        <p className="text-sm font-semibold text-foreground">{step.title}</p>
+                        <p className="text-sm text-foreground/80">{step.detail}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
               </section>
 
               {/* Reinforcement quiz */}
