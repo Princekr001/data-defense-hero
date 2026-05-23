@@ -1,8 +1,11 @@
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, ShieldCheck, BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, ShieldCheck, BookOpen, CheckCircle2, XCircle, Brain } from "lucide-react";
 import CategoryAnimation from "./CategoryAnimation";
 import { categoryLessons, resolveLessonKey } from "@/data/categoryLessons";
+import { cn } from "@/lib/utils";
 
 interface Props {
   open: boolean;
@@ -14,6 +17,12 @@ interface Props {
 export default function CategoryLessonDialog({ open, onOpenChange, category }: Props) {
   const key = category ? resolveLessonKey(category) : null;
   const lesson = key ? categoryLessons[key] : null;
+
+  // Reset the reinforcement quiz whenever the dialog opens or category changes
+  const [picked, setPicked] = useState<number | null>(null);
+  useEffect(() => {
+    if (open) setPicked(null);
+  }, [open, key]);
 
   return (
     <Dialog open={open && !!lesson} onOpenChange={onOpenChange}>
