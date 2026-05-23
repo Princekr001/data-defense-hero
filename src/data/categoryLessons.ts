@@ -8,6 +8,15 @@ export type LessonCategory =
   | "scam"
   | "gaming";
 
+export interface LessonQuiz {
+  question: string;
+  options: string[];
+  /** Index of the SECURE / correct option. */
+  correctIndex: number;
+  /** Shown after answering — reinforces the secure choice. */
+  explanation: string;
+}
+
 export interface CategoryLesson {
   id: LessonCategory;
   title: string;
@@ -21,6 +30,8 @@ export interface CategoryLesson {
   realWorld: string[];
   /** How to avoid the risk in real life. */
   howToAvoid: string[];
+  /** Short reinforcement quiz shown after the lesson. */
+  quiz: LessonQuiz;
 }
 
 export const categoryLessons: Record<LessonCategory, CategoryLesson> = {
