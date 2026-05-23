@@ -96,6 +96,16 @@ export const categoryLessons: Record<LessonCategory, CategoryLesson> = {
       "Turn on multi-factor authentication, preferably with an authenticator app",
       "Check haveibeenpwned.com and change any leaked password immediately",
     ],
+    quiz: {
+      question: "Which password is the SECURE choice for your main email?",
+      options: [
+        "Fluffy2019! (your pet + birth year)",
+        "A 16-char random string stored in a password manager",
+        "The same strong password you already use on 3 other sites",
+      ],
+      correctIndex: 1,
+      explanation: "Long, unique, randomly generated passwords beat clever ones. Reusing — even a strong password — turns one leak into many breaches.",
+    },
   },
   social: {
     id: "social",
@@ -122,6 +132,16 @@ export const categoryLessons: Record<LessonCategory, CategoryLesson> = {
       "Limit what you post publicly: workplace, school, daily routine",
       "Pause before reacting: urgency + emotion = manipulation",
     ],
+    quiz: {
+      question: "A caller says they're 'IT support' and needs your 6-digit login code right now. SECURE response?",
+      options: [
+        "Read it out — they sound official and it's urgent",
+        "Refuse, hang up, and call IT back on a number you trust",
+        "Send it by email so there's a written record",
+      ],
+      correctIndex: 1,
+      explanation: "Real IT or support will NEVER ask for your one-time code. Verify through a known channel before sharing anything.",
+    },
   },
   network: {
     id: "network",
@@ -148,6 +168,16 @@ export const categoryLessons: Record<LessonCategory, CategoryLesson> = {
       "Change your home router admin password and Wi-Fi password yearly",
       "Turn off auto-connect to known SSIDs — names can be spoofed",
     ],
+    quiz: {
+      question: "You're at a café and need to log in to your bank. SECURE choice?",
+      options: [
+        "Connect to 'Free_Cafe_WiFi' — it has the strongest signal",
+        "Use your phone's 4G/5G hotspot, or a trusted VPN over the café Wi-Fi",
+        "Use the café Wi-Fi but only on HTTP sites to stay quiet",
+      ],
+      correctIndex: 1,
+      explanation: "Public Wi-Fi can be spoofed or sniffed. Mobile data or a VPN keeps your bank session out of strangers' hands.",
+    },
   },
   malware: {
     id: "malware",
@@ -174,6 +204,16 @@ export const categoryLessons: Record<LessonCategory, CategoryLesson> = {
       "Run a reputable anti-malware tool and scan attachments",
       "Back up your data offline — ransomware can't lock what it can't reach",
     ],
+    quiz: {
+      question: "A pop-up says 'Your Chrome is outdated — click to update'. SECURE action?",
+      options: [
+        "Click — it looks like the real Chrome design",
+        "Close the tab and update via Chrome's own Settings → About Chrome",
+        "Download the file but scan it first before running",
+      ],
+      correctIndex: 1,
+      explanation: "Browsers update themselves. Any pop-up offering an 'update' is almost always malware bait — go through the app itself.",
+    },
   },
   privacy: {
     id: "privacy",
@@ -200,6 +240,16 @@ export const categoryLessons: Record<LessonCategory, CategoryLesson> = {
       "Review app permissions monthly — revoke anything unused",
       "Use a privacy-focused browser & block third-party trackers",
     ],
+    quiz: {
+      question: "You're on holiday and want to post photos. SECURE choice?",
+      options: [
+        "Live-post each location with geo-tags so friends can follow along",
+        "Wait until you're home, and post without precise location data",
+        "Make it a public story — more likes feels safer because of crowds",
+      ],
+      correctIndex: 1,
+      explanation: "Real-time location + an empty house is a burglar's dream. Delay posts and strip geo-metadata to keep your routine private.",
+    },
   },
   scam: {
     id: "scam",
@@ -226,6 +276,16 @@ export const categoryLessons: Record<LessonCategory, CategoryLesson> = {
       "Talk to family/friends before sending money under pressure",
       "Report scams — your report protects the next target",
     ],
+    quiz: {
+      question: "A 'crypto coach' DMs you guaranteeing 10% daily returns if you send USDT now. SECURE move?",
+      options: [
+        "Send a small amount to test — you can always pull out",
+        "Refuse, block, and report — guaranteed returns don't exist",
+        "Ask for proof and then invest a bigger amount if they reply",
+      ],
+      correctIndex: 1,
+      explanation: "No legitimate investment promises guaranteed daily returns. Pressure + crypto + DMs = scam. Block and report.",
+    },
   },
   gaming: {
     id: "gaming",
@@ -252,6 +312,16 @@ export const categoryLessons: Record<LessonCategory, CategoryLesson> = {
       "Download mods only from trusted official communities",
       "Use a unique gaming email — never your main one",
     ],
+    quiz: {
+      question: "A random Discord DM offers 'free skins' if you log in via their link. SECURE response?",
+      options: [
+        "Log in quickly — the offer might expire",
+        "Ignore the DM, never use third-party login pages, and keep 2FA on",
+        "Use a throwaway account password just in case",
+      ],
+      correctIndex: 1,
+      explanation: "Free-skin sites are phishing clones built to steal accounts. Only log in on official launchers, and keep 2FA on every game account.",
+    },
   },
 };
 
