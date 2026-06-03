@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Mail, Lock, Users, Wifi, Download, Eye, DollarSign, Gamepad2, 
-  Shield, Brain, Lightbulb, CheckCircle, AlertCircle, PlayCircle
+  Shield, Brain, Lightbulb, CheckCircle, AlertCircle, PlayCircle, XCircle
 } from "lucide-react";
 import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 
