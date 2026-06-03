@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Mail, Lock, Users, Wifi, Download, Eye, DollarSign, Gamepad2, 
-  Shield, Brain, Lightbulb, CheckCircle, AlertCircle, PlayCircle
+  Shield, Brain, Lightbulb, CheckCircle, AlertCircle, PlayCircle, XCircle
 } from "lucide-react";
 import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 
@@ -203,6 +203,52 @@ export default function SimplifiedLearningScenario({
               <p className="text-lg leading-relaxed">
                 {scenario.feedback.correct}
               </p>
+            </CardContent>
+          </Card>
+
+          {/* Answer Breakdown — show all options with safe / risky labels */}
+          <Card className="border-2 border-border bg-card/80">
+            <CardContent className="p-6">
+              <h3 className="text-xl font-bold text-center text-foreground mb-4">
+                Answer Breakdown
+              </h3>
+              <div className="grid gap-3">
+                {Object.entries(scenario.actions).map(([key, action]) => {
+                  const isSelected = selectedAction === key;
+                  const isSafe = action.type === 'safe';
+                  return (
+                    <div
+                      key={key}
+                      className={`relative p-4 rounded-xl border-2 transition-all ${
+                        isSafe
+                          ? 'border-success/30 bg-success/10'
+                          : 'border-destructive/30 bg-destructive/10'
+                      } ${isSelected ? 'ring-2 ring-primary' : 'opacity-70'}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        {isSafe ? (
+                          <CheckCircle className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                        )}
+                        <p className="flex-1 text-foreground font-medium">
+                          {action.text}
+                        </p>
+                        <div className="flex flex-col gap-1 items-end">
+                          {isSelected && (
+                            <Badge variant="default" className="text-[10px]">Your choice</Badge>
+                          )}
+                          {isSafe ? (
+                            <Badge variant="outline" className="text-success border-success/30 text-[10px]">Safe</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-destructive border-destructive/30 text-[10px]">Risky</Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
 
