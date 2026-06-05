@@ -9,8 +9,9 @@ import { UserAuthButton } from "@/components/UserAuthButton";
 import {
   Shield, Lock, Eye, Zap, Trophy, Star, Target, Brain,
   ChevronRight, Sparkles, Users, AlertTriangle, CheckCircle2,
-  Gamepad2, Award, TrendingUp, Flame, ArrowRight, Sun, Moon
+  Gamepad2, Award, TrendingUp, Flame, ArrowRight, Sun, Moon, Fish
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface LandingPageProps {
   onStart: () => void;
@@ -247,6 +248,43 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
 
       {/* Features */}
       <FeaturesSection />
+
+      {/* Phishing Stream Quest CTA */}
+      <section className="py-16 px-6">
+        <div className="max-w-5xl mx-auto">
+          <ScrollRevealCard>
+            <Card className="relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/10 via-background to-accent/10">
+              <CardContent className="p-8 md:p-10 grid md:grid-cols-[1fr_auto] gap-6 items-center">
+                <div>
+                  <Badge variant="outline" className="mb-3 border-primary/40 text-primary">
+                    <Fish className="h-3.5 w-3.5 mr-1.5" />
+                    New Quest
+                  </Badge>
+                  <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
+                    Phishing Stream
+                  </h3>
+                  <p className="text-muted-foreground max-w-xl leading-relaxed">
+                    Three interactive case studies — email phishing, CEO whaling, and QR-code quishing.
+                    Inspect the bait, spot the red flags, and watch what happens when you click wrong.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <Badge variant="outline" className="text-xs">Email phishing</Badge>
+                    <Badge variant="outline" className="text-xs">Spear & whaling</Badge>
+                    <Badge variant="outline" className="text-xs">QR / clone sites</Badge>
+                  </div>
+                </div>
+                <Link to="/phishing-stream">
+                  <Button size="xl" variant="cyber" className="group">
+                    <Fish className="h-5 w-5" />
+                    Start Quest
+                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </ScrollRevealCard>
+        </div>
+      </section>
 
 
       {/* Gamification Showcase */}
