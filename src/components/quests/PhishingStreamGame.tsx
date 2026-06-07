@@ -78,7 +78,7 @@ export default function PhishingStreamGame({
     return next ? { ...next, id: `${next.id}-${cursor.current}` } : null;
   }, [pool]);
 
-  const flashFeedback = useCallback((kind: Result extends infer _ ? "correct" | "wrong" | "missed" : never, text: string) => {
+  const flashFeedback = useCallback((kind: "correct" | "wrong" | "missed", text: string) => {
     setFeedback({ kind, text });
     window.setTimeout(() => setFeedback(null), 1100);
   }, []);
