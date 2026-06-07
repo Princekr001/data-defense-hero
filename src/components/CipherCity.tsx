@@ -518,6 +518,30 @@ export default function CipherCity() {
     );
   }
 
+  // PHISHING QUEST SCREEN
+  if (gameState === 'phishingQuest') {
+    return (
+      <>
+        <AudioSettingsButton />
+        <PhishingQuest
+          onExit={() => { playSfx('click'); setGameState('city'); }}
+          onReward={({ knowledge, reputation }) => {
+            setResources(prev => ({
+              ...prev,
+              knowledge: Math.min(100, prev.knowledge + knowledge),
+              reputation: Math.min(100, prev.reputation + reputation),
+            }));
+            updateAchievement('guardian');
+            toast({
+              title: "Phishing Quest reward!",
+              description: `+${knowledge} Knowledge, +${reputation} Reputation`,
+            });
+          }}
+        />
+      </>
+    );
+  }
+
   // CITY MAP SCREEN
   if (gameState === 'city') {
     return (
