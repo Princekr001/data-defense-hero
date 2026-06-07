@@ -22,6 +22,7 @@ import AchievementsPanel from "./CipherCity/AchievementsPanel";
 import CharacterProfile from "./CipherCity/CharacterProfile";
 import { achievementsList } from "./CipherCity/achievements";
 import { Achievement, CharacterCustomization, GameState, GameProgress } from "./CipherCity/types";
+import PhishingQuest from "./quests/PhishingQuest";
 
 const initialCustomization: CharacterCustomization = {
   avatar: 'detective',
@@ -517,6 +518,30 @@ export default function CipherCity() {
     );
   }
 
+  // PHISHING QUEST SCREEN
+  if (gameState === 'phishingQuest') {
+    return (
+      <>
+        <AudioSettingsButton />
+        <PhishingQuest
+          onExit={() => { playSfx('click'); setGameState('city'); }}
+          onReward={({ knowledge, reputation }) => {
+            setResources(prev => ({
+              ...prev,
+              knowledge: Math.min(100, prev.knowledge + knowledge),
+              reputation: Math.min(100, prev.reputation + reputation),
+            }));
+            updateAchievement('guardian');
+            toast({
+              title: "Phishing Quest reward!",
+              description: `+${knowledge} Knowledge, +${reputation} Reputation`,
+            });
+          }}
+        />
+      </>
+    );
+  }
+
   // CITY MAP SCREEN
   if (gameState === 'city') {
     return (
@@ -542,6 +567,13 @@ export default function CipherCity() {
                   <Button variant="outline" size="sm" onClick={openLoadMenu}><Download className="h-4 w-4 mr-1" />Load</Button>
                   <Button variant="outline" size="sm" onClick={() => setGameState('profile')}><User className="h-4 w-4 mr-1" />Profile</Button>
                   <Button variant="outline" size="sm" onClick={() => setGameState('achievements')}><Trophy className="h-4 w-4 mr-1" />Achievements</Button>
+                  <Button
+                    size="sm"
+                    onClick={() => { playSfx('click'); setGameState('phishingQuest'); }}
+                    className="bg-gradient-to-r from-primary to-secondary text-primary-foreground"
+                  >
+                    🎣 Phishing Quest
+                  </Button>
                 </div>
               </div>
               <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mt-4">
