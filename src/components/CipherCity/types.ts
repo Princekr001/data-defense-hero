@@ -52,7 +52,8 @@ export type GameState =
   | 'investigation' 
   | 'ending'
   | 'achievements'
-  | 'profile';
+  | 'profile'
+  | 'phishingQuest';
 
 export interface GameProgress {
   playerName: string;
