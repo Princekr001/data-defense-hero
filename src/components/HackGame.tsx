@@ -5,7 +5,7 @@ import type { HackCategory, HackLevel } from "@/data/hackTargets";
 import HackGrid3D from "./hack/HackGrid3D";
 import MissionScene3D from "./hack/MissionScene3D";
 import PasswordCracker from "./hackGames/PasswordCracker";
-import PacketInspector from "./hackGames/PacketInspector";
+import TraceAttacker from "./hackGames/TraceAttacker";
 import FirewallBypass from "./hackGames/FirewallBypass";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -74,7 +74,7 @@ export default function HackGame() {
     if (!active) return null;
     const props = { tier: active.tier, onSuccess: handleSuccess, onFail: handleFail };
     if (active.miniGame === "password") return <PasswordCracker {...props} />;
-    if (active.miniGame === "packet") return <PacketInspector {...props} />;
+    if (active.miniGame === "trace") return <TraceAttacker {...props} />;
     return <FirewallBypass {...props} />;
   };
 

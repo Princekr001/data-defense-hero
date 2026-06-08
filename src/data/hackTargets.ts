@@ -1,4 +1,4 @@
-export type MiniGameId = "password" | "packet" | "firewall";
+export type MiniGameId = "password" | "trace" | "firewall";
 export type HackCategory = "passwords" | "phishing" | "privacy";
 
 export interface HackLevel {
@@ -49,12 +49,12 @@ export const hackLevels: HackLevel[] = [
     successStory: "You're in. The café's router logs show no defenses — a lesson in why public WiFi needs a VPN.",
   },
   {
-    id: 2, tier: 1, name: "Phishing Stream",
-    target: "Public mail relay",
-    objective: "Spot malicious packets in a live feed.",
-    miniGame: "packet", category: "phishing", xpReward: 120,
-    briefing: "A flood of packets is moving through an open relay. Flag the phishing payloads, let the legit ones pass.",
-    successStory: "Quarantined the phishing attempts. Real defenders rely on the same pattern recognition.",
+    id: 2, tier: 1, name: "Trace the Intruder",
+    target: "Small-business server",
+    objective: "Reconstruct the attacker's kill chain from log fragments.",
+    miniGame: "trace", category: "phishing", xpReward: 120,
+    briefing: "Logs are scrolling past. Identify how the attacker got in, what they did, and how they tried to leave with the data.",
+    successStory: "Kill chain reconstructed. Real SOC analysts pivot through logs exactly like this.",
   },
   {
     id: 3, tier: 1, name: "Home Router Bypass",
@@ -73,12 +73,12 @@ export const hackLevels: HackLevel[] = [
     successStory: "VPN tunnel established. Password policies without entropy rules are theatre.",
   },
   {
-    id: 5, tier: 2, name: "Datacenter Sniff",
-    target: "Internal switch fabric",
-    objective: "Detect exfiltration packets in dense traffic.",
-    miniGame: "packet", category: "phishing", xpReward: 220,
-    briefing: "Encrypted traffic hides data exfil. Spot the malicious flows in heavier noise.",
-    successStory: "Exfil channel identified. SOC analysts do this every day at scale.",
+    id: 5, tier: 2, name: "Corporate Breach Trace",
+    target: "Acme corporate network",
+    objective: "Follow the attacker from phish to exfil, then contain them.",
+    miniGame: "trace", category: "phishing", xpReward: 220,
+    briefing: "Phished credentials, lateral movement, and live data theft. Read the evidence and stop them before more PII leaves.",
+    successStory: "Containment executed cleanly. Speed + clarity is what separates a contained incident from a breach headline.",
   },
   {
     id: 6, tier: 2, name: "WAF Maze",
@@ -97,12 +97,12 @@ export const hackLevels: HackLevel[] = [
     successStory: "Operator account compromised. Critical infra deserves hardware-backed MFA.",
   },
   {
-    id: 8, tier: 3, name: "Satellite Uplink",
-    target: "Orbital relay",
-    objective: "Filter command packets at line speed.",
-    miniGame: "packet", category: "phishing", xpReward: 380,
-    briefing: "The uplink is noisy and fast. Don't miss the spoofed commands.",
-    successStory: "Spoofed commands intercepted. Signed command channels prevent this in reality.",
+    id: 8, tier: 3, name: "ICS Intrusion Trace",
+    target: "Industrial control plant",
+    objective: "Trace a macro-borne attacker across IT into OT — and stop them.",
+    miniGame: "trace", category: "phishing", xpReward: 380,
+    briefing: "A document macro spawned PowerShell on an operator workstation. Follow persistence into the plant network before kinetic impact.",
+    successStory: "Attacker evicted, IT/OT segmented, plant safe. This is how real ICS incidents are actually contained.",
   },
   {
     id: 9, tier: 3, name: "Black Vault",
