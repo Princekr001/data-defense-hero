@@ -7,6 +7,7 @@ import {
   Shield, Brain, Lightbulb, CheckCircle, AlertCircle, PlayCircle, XCircle
 } from "lucide-react";
 import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
+import ScenarioScene from "@/components/lessons/ScenarioScene";
 
 interface SimplifiedLearningScenarioProps {
   scenario: {
@@ -97,6 +98,9 @@ export default function SimplifiedLearningScenario({
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
+      {/* Visual reference scene */}
+      <ScenarioScene category={scenario.category} title={scenario.title} />
+
       {/* Scenario Header */}
       <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
         <CardHeader className="text-center">

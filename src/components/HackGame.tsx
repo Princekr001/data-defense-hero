@@ -5,7 +5,7 @@ import type { HackCategory, HackLevel } from "@/data/hackTargets";
 import HackGrid3D from "./hack/HackGrid3D";
 import MissionScene3D from "./hack/MissionScene3D";
 import PasswordCracker from "./hackGames/PasswordCracker";
-import PacketInspector from "./hackGames/PacketInspector";
+import TraceAttacker from "./hackGames/TraceAttacker";
 import FirewallBypass from "./hackGames/FirewallBypass";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +13,13 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash2, PlayCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
+import ScenarioScene from "@/components/lessons/ScenarioScene";
+
+const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
+  phishing: "phishing",
+  passwords: "password",
+  privacy: "privacy",
+};
 
 type View = "grid" | "briefing" | "mission" | "result";
 
@@ -74,7 +81,7 @@ export default function HackGame() {
     if (!active) return null;
     const props = { tier: active.tier, onSuccess: handleSuccess, onFail: handleFail };
     if (active.miniGame === "password") return <PasswordCracker {...props} />;
-    if (active.miniGame === "packet") return <PacketInspector {...props} />;
+    if (active.miniGame === "trace") return <TraceAttacker {...props} />;
     return <FirewallBypass {...props} />;
   };
 
@@ -214,6 +221,7 @@ export default function HackGame() {
                 </Badge>
                 <span className="text-xs text-white/60 font-mono">+{active.xpReward} XP</span>
               </div>
+              <ScenarioScene category={HACK_CAT_MAP[active.category]} title={active.target} />
               <div>
                 <h2 className="text-2xl font-bold">{active.name}</h2>
                 <p className="text-sm text-white/60 mt-1 flex items-center gap-1.5">
