@@ -83,6 +83,11 @@ export default function PhishingStreamGame({
   const [combo, setCombo] = useState(0);
   const [bestCombo, setBestCombo] = useState(0);
   const [score, setScore] = useState(0);
+  const [answered, setAnswered] = useState(0);
+  const lifetimeMs = Math.max(
+    MSG_LIFETIME_FLOOR_MS,
+    MSG_LIFETIME_START_MS - answered * MSG_LIFETIME_DECAY_MS,
+  );
   const [result, setResult] = useState<Result>({
     correct: 0,
     wrong: 0,
@@ -130,7 +135,7 @@ export default function PhishingStreamGame({
         (!current.phish && action === "keep");
 
       // time bonus: faster = more points
-      const speedBonus = Math.max(0, Math.round((MSG_LIFETIME_MS - msgAgeMs) / 100));
+      const speedBonus = Math.max(0, Math.round((lifetimeMs - msgAgeMs) / 100));
       const base = current.phish ? 100 : 60;
       const comboMult = 1 + combo * 0.15;
       const gained = isCorrect ? Math.round((base + speedBonus) * comboMult) : 0;
@@ -202,7 +207,7 @@ export default function PhishingStreamGame({
     const id = window.setInterval(() => {
       setMsgAgeMs((a) => {
         const next = a + TICK_MS;
-        if (next >= MSG_LIFETIME_MS) {
+        if (next >= lifetimeMs) {
           // missed
           const wasPhish = current.phish;
           setResult((r) => ({
@@ -236,7 +241,7 @@ export default function PhishingStreamGame({
     return () => window.clearInterval(id);
   }, [current, finished, solution, lives, nextMessage, finish, score, bestCombo]);
 
-  const msgRemainPct = Math.max(0, 100 - (msgAgeMs / MSG_LIFETIME_MS) * 100);
+  const msgRemainPct = Math.max(0, 100 - (msgAgeMs / lifetimeMs) * 100);
   const danger = msgRemainPct < 35;
 
   return (
