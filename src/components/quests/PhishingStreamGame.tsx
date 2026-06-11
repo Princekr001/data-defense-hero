@@ -40,9 +40,11 @@ interface Props {
   onExit: () => void;
 }
 
-const TICK_MS = 100;
-const MSG_LIFETIME_MS = 3200; // brutal: 3.2s per message
-const START_LIVES = 3;
+const TICK_MS = 80;
+const MSG_LIFETIME_START_MS = 2200; // start at 2.2s
+const MSG_LIFETIME_FLOOR_MS = 900;  // shrinks down to 0.9s
+const MSG_LIFETIME_DECAY_MS = 90;   // -90ms each message answered
+const START_LIVES = 2; // unforgiving
 
 const buildPool = (): StreamMessage[] => {
   let i = 0;
