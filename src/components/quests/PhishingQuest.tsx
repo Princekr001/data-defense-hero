@@ -1,231 +1,118 @@
 import { useState } from "react";
-import { phishingTypes, PhishingType } from "@/data/phishingTypes";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { phishingTypes } from "@/data/phishingTypes";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  ShieldCheck,
-  AlertTriangle,
-  BookOpen,
   Play,
   RotateCcw,
   Trophy,
+  Zap,
+  Flame,
+  Skull,
+  Target,
 } from "lucide-react";
-import PhishingTypeAnimation from "./PhishingTypeAnimation";
-import PhishingStreamGame from "./PhishingStreamGame";
 import { cn } from "@/lib/utils";
+import PhishingStreamGame from "./PhishingStreamGame";
 
-type Phase = "overview" | "study" | "stream" | "results";
+type Phase = "intro" | "stream" | "results";
 
 interface StreamResult {
   correct: number;
   wrong: number;
   missed: number;
   total: number;
+  score: number;
+  bestCombo: number;
 }
 
 interface Props {
   onExit: () => void;
-  /** Optional reward hook back into the city */
   onReward?: (xp: { knowledge: number; reputation: number }) => void;
 }
 
 export default function PhishingQuest({ onExit, onReward }: Props) {
-  const [phase, setPhase] = useState<Phase>("overview");
-  const [studyIndex, setStudyIndex] = useState(0);
-  const [studied, setStudied] = useState<Set<string>>(new Set());
+  const [phase, setPhase] = useState<Phase>("intro");
   const [result, setResult] = useState<StreamResult | null>(null);
 
-  const current: PhishingType = phishingTypes[studyIndex];
-  const allStudied = studied.size >= phishingTypes.length;
-
-  const handleNextStudy = () => {
-    setStudied((s) => new Set(s).add(current.id));
-    if (studyIndex < phishingTypes.length - 1) {
-      setStudyIndex((i) => i + 1);
-    } else {
-      setPhase("overview");
-    }
-  };
-
-  // ---------- OVERVIEW ----------
-  if (phase === "overview") {
+  // ---------- INTRO (no theory walls — just the threat lineup) ----------
+  if (phase === "intro") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4">
-        <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 relative overflow-hidden">
+        {/* ambient glow */}
+        <div className="absolute inset-0 pointer-events-none opacity-40">
+          <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-primary/20 blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 -right-20 w-96 h-96 rounded-full bg-destructive/20 blur-3xl animate-pulse" />
+        </div>
+
+        <div className="max-w-4xl mx-auto space-y-6 animate-fade-in relative">
           <div className="flex items-center justify-between">
             <Button variant="ghost" onClick={onExit} className="gap-1">
-              <ArrowLeft className="h-4 w-4" /> Back to Cipher City
+              <ArrowLeft className="h-4 w-4" /> Cipher City
             </Button>
-            <Badge variant="outline" className="gap-1">
-              <ShieldCheck className="h-3 w-3" /> Phishing Stream Quest
+            <Badge variant="destructive" className="gap-1 animate-pulse">
+              <Skull className="h-3 w-3" /> HARD MODE
             </Badge>
           </div>
 
-          <Card className="bg-card/90 backdrop-blur-xl border-primary/30">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                🎣 Clear the Phishing Stream
-              </CardTitle>
-              <p className="text-muted-foreground">
-                Study every phishing attack type below, then clear the live inbox stream —
-                remove the phish, keep the legit.
+          <Card className="bg-card/90 backdrop-blur-xl border-primary/40 overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-primary via-destructive to-primary animate-pulse" />
+            <CardContent className="p-6 sm:p-8 space-y-6">
+              <div className="text-center space-y-2">
+                <div className="text-6xl mb-2 animate-bounce">🎣</div>
+                <h1 className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-primary to-destructive bg-clip-text text-transparent">
+                  PHISHING STORM
+                </h1>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  6 attack types. 3 lives. 3 seconds per call. One wrong nuke and you bleed.
+                </p>
+              </div>
+
+              {/* Threat lineup — quick scan, no theory */}
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                {phishingTypes.map((t) => (
+                  <div
+                    key={t.id}
+                    className="rounded-xl border border-primary/20 bg-card/60 p-2 text-center hover-scale"
+                    title={`${t.name} — ${t.tagline}`}
+                  >
+                    <div className="text-2xl mb-1">{t.emoji}</div>
+                    <div className="text-[10px] font-bold leading-tight">
+                      {t.name.split(" ")[0]}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Game rules — bite-sized */}
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+                  <Skull className="h-5 w-5 mx-auto text-destructive mb-1" />
+                  <div className="text-xs font-bold">3 lives</div>
+                </div>
+                <div className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3">
+                  <Flame className="h-5 w-5 mx-auto text-orange-500 mb-1" />
+                  <div className="text-xs font-bold">Build combos</div>
+                </div>
+                <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+                  <Target className="h-5 w-5 mx-auto text-primary mb-1" />
+                  <div className="text-xs font-bold">Fast = bonus</div>
+                </div>
+              </div>
+
+              <Button
+                size="lg"
+                onClick={() => setPhase("stream")}
+                className="w-full h-16 text-lg font-black tracking-wider gap-2 bg-gradient-to-r from-primary to-destructive hover:opacity-90"
+              >
+                <Play className="h-6 w-6 fill-current" /> ENTER THE STORM
+              </Button>
+
+              <p className="text-center text-[11px] text-muted-foreground">
+                You'll learn each attack <span className="text-primary font-bold">by surviving it</span>.
+                Mess up → instant solution card.
               </p>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {phishingTypes.map((t, i) => {
-                  const done = studied.has(t.id);
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => {
-                        setStudyIndex(i);
-                        setPhase("study");
-                      }}
-                      className={cn(
-                        "text-left rounded-xl p-4 border-2 transition-all hover:scale-[1.02]",
-                        done
-                          ? "border-primary/50 bg-primary/10"
-                          : "border-border bg-card/60 hover:border-primary/40",
-                      )}
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="text-3xl">{t.emoji}</div>
-                        {done && <CheckCircle2 className="h-5 w-5 text-primary" />}
-                      </div>
-                      <div className="font-bold">{t.name}</div>
-                      <div className="text-xs text-muted-foreground mt-1 leading-snug">
-                        {t.tagline}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <Button
-                  className="flex-1 gap-2"
-                  size="lg"
-                  onClick={() => {
-                    setStudyIndex(0);
-                    setPhase("study");
-                  }}
-                >
-                  <BookOpen className="h-5 w-5" />
-                  {studied.size === 0 ? "Start case studies" : "Continue studying"}
-                </Button>
-                <Button
-                  variant={allStudied ? "default" : "outline"}
-                  size="lg"
-                  className="flex-1 gap-2"
-                  onClick={() => setPhase("stream")}
-                  disabled={!allStudied}
-                  title={allStudied ? "Begin the stream challenge" : "Study all 6 types first"}
-                >
-                  <Play className="h-5 w-5" />
-                  Enter the Stream {allStudied ? "" : `(${studied.size}/${phishingTypes.length})`}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  // ---------- STUDY (animated case study + content) ----------
-  if (phase === "study") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4">
-        <div className="max-w-4xl mx-auto space-y-5 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" onClick={() => setPhase("overview")} className="gap-1">
-              <ArrowLeft className="h-4 w-4" /> All types
-            </Button>
-            <Badge variant="outline">
-              {studyIndex + 1} / {phishingTypes.length}
-            </Badge>
-          </div>
-
-          <Card className="bg-card/90 backdrop-blur-xl border-primary/30">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <span className="text-3xl">{current.emoji}</span> {current.name}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">{current.tagline}</p>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <PhishingTypeAnimation type={current} />
-
-              <section className="rounded-md border border-border bg-card/60 p-4">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-primary mb-1">
-                  What it is
-                </h4>
-                <p className="text-sm text-foreground/90">{current.what}</p>
-              </section>
-
-              <section className="rounded-md border border-destructive/30 bg-destructive/5 p-4">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-destructive mb-2 flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4" /> Red flags
-                </h4>
-                <ul className="grid sm:grid-cols-2 gap-2">
-                  {current.redFlags.map((r) => (
-                    <li
-                      key={r}
-                      className="text-sm rounded-md border border-border bg-background/40 p-2.5 leading-snug"
-                    >
-                      {r}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-
-              <section className="rounded-md border border-yellow-500/30 bg-yellow-500/5 p-4">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-yellow-600 dark:text-yellow-400 mb-1 flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" /> Real-world case
-                </h4>
-                <p className="text-sm text-foreground/90 leading-relaxed">{current.realCase}</p>
-              </section>
-
-              <section className="rounded-md border border-primary/30 bg-primary/5 p-4">
-                <h4 className="text-sm font-bold uppercase tracking-wider text-primary mb-2 flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4" /> How to defend
-                </h4>
-                <ul className="space-y-1.5">
-                  {current.defenses.map((d) => (
-                    <li key={d} className="text-sm flex gap-2 leading-snug">
-                      <ShieldCheck className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                      <span>{d}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-
-              <div className="flex justify-between pt-2">
-                <Button
-                  variant="outline"
-                  disabled={studyIndex === 0}
-                  onClick={() => setStudyIndex((i) => Math.max(0, i - 1))}
-                  className="gap-1"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Previous
-                </Button>
-                <Button onClick={handleNextStudy} className="gap-1">
-                  {studyIndex < phishingTypes.length - 1 ? (
-                    <>
-                      Next type <ArrowRight className="h-4 w-4" />
-                    </>
-                  ) : (
-                    <>
-                      Finish studying <CheckCircle2 className="h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -236,22 +123,24 @@ export default function PhishingQuest({ onExit, onReward }: Props) {
   // ---------- STREAM ----------
   if (phase === "stream") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4">
         <div className="max-w-3xl mx-auto space-y-4 animate-fade-in">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" onClick={() => setPhase("overview")} className="gap-1">
-              <ArrowLeft className="h-4 w-4" /> Back
+            <Button variant="ghost" onClick={() => setPhase("intro")} className="gap-1">
+              <ArrowLeft className="h-4 w-4" /> Abort
             </Button>
-            <Badge variant="outline">Live phishing stream — 60s</Badge>
+            <Badge variant="destructive" className="gap-1 animate-pulse">
+              <Zap className="h-3 w-3" /> LIVE
+            </Badge>
           </div>
           <PhishingStreamGame
-            durationSec={60}
-            onExit={() => setPhase("overview")}
+            durationSec={45}
+            onExit={() => setPhase("intro")}
             onComplete={(r) => {
               setResult(r);
               setPhase("results");
-              const knowledge = Math.min(25, r.correct * 2);
-              const reputation = Math.min(20, r.correct - r.wrong);
+              const knowledge = Math.min(40, r.correct * 3);
+              const reputation = Math.min(30, r.correct * 2 - r.wrong * 3);
               onReward?.({ knowledge, reputation: Math.max(0, reputation) });
             }}
           />
@@ -265,57 +154,76 @@ export default function PhishingQuest({ onExit, onReward }: Props) {
   const accuracy = r.total === 0 ? 0 : Math.round((r.correct / r.total) * 100);
   const rank =
     accuracy >= 90
-      ? { name: "Phish Hunter", emoji: "🏆" }
+      ? { name: "Phish Hunter", emoji: "🏆", color: "text-yellow-400" }
       : accuracy >= 75
-        ? { name: "Inbox Guardian", emoji: "🛡️" }
+        ? { name: "Inbox Guardian", emoji: "🛡️", color: "text-primary" }
         : accuracy >= 50
-          ? { name: "Cautious Clicker", emoji: "🧐" }
-          : { name: "Needs Training", emoji: "📚" };
+          ? { name: "Cautious Clicker", emoji: "🧐", color: "text-orange-400" }
+          : { name: "Compromised", emoji: "💀", color: "text-destructive" };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4 flex items-center justify-center">
-      <Card className="max-w-xl w-full bg-card/90 backdrop-blur-xl border-primary/30 animate-fade-in">
-        <CardHeader className="text-center">
-          <div className="text-6xl mb-2">{rank.emoji}</div>
-          <CardTitle className="text-3xl">{rank.name}</CardTitle>
-          <p className="text-muted-foreground">Phishing Stream cleared</p>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-xl bg-primary/10 border border-primary/30 p-3">
-              <div className="text-2xl font-bold text-primary">{r.correct}</div>
-              <div className="text-xs text-muted-foreground">Correct</div>
-            </div>
-            <div className="rounded-xl bg-destructive/10 border border-destructive/30 p-3">
-              <div className="text-2xl font-bold text-destructive">{r.wrong}</div>
-              <div className="text-xs text-muted-foreground">Wrong</div>
-            </div>
-            <div className="rounded-xl bg-yellow-500/10 border border-yellow-500/30 p-3">
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                {r.missed}
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 flex items-center justify-center">
+      <Card className="max-w-xl w-full bg-card/95 backdrop-blur-xl border-primary/40 animate-fade-in overflow-hidden">
+        <div className="h-1 bg-gradient-to-r from-primary via-destructive to-primary" />
+        <CardContent className="p-6 space-y-5 text-center">
+          <div className="text-7xl animate-bounce">{rank.emoji}</div>
+          <div>
+            <div className={cn("text-3xl font-black", rank.color)}>{rank.name}</div>
+            <p className="text-sm text-muted-foreground">Phishing Storm survived</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl border border-primary/30 bg-primary/10 p-4">
+              <Zap className="h-5 w-5 mx-auto text-primary mb-1" />
+              <div className="text-3xl font-black text-primary">{r.score}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Score
               </div>
-              <div className="text-xs text-muted-foreground">Let through</div>
+            </div>
+            <div className="rounded-xl border border-orange-500/30 bg-orange-500/10 p-4">
+              <Flame className="h-5 w-5 mx-auto text-orange-500 mb-1" />
+              <div className="text-3xl font-black text-orange-500">x{r.bestCombo}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Best combo
+              </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
-            <div className="text-sm text-muted-foreground">Accuracy</div>
-            <div className="text-4xl font-bold text-primary">{accuracy}%</div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-lg bg-primary/5 border border-primary/20 p-2">
+              <div className="text-xl font-bold text-primary">{r.correct}</div>
+              <div className="text-[10px] text-muted-foreground">Correct</div>
+            </div>
+            <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-2">
+              <div className="text-xl font-bold text-destructive">{r.wrong}</div>
+              <div className="text-[10px] text-muted-foreground">Wrong</div>
+            </div>
+            <div className="rounded-lg bg-yellow-500/5 border border-yellow-500/20 p-2">
+              <div className="text-xl font-bold text-yellow-500">{r.missed}</div>
+              <div className="text-[10px] text-muted-foreground">Let through</div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+            <div className="text-xs text-muted-foreground uppercase tracking-wider">
+              Accuracy
+            </div>
+            <div className="text-3xl font-black text-primary">{accuracy}%</div>
           </div>
 
           <div className="flex gap-2">
             <Button
               variant="outline"
-              className="flex-1 gap-1"
+              className="flex-1 gap-1 h-12 font-bold"
               onClick={() => {
                 setResult(null);
                 setPhase("stream");
               }}
             >
-              <RotateCcw className="h-4 w-4" /> Retry stream
+              <RotateCcw className="h-4 w-4" /> Retry
             </Button>
-            <Button className="flex-1 gap-1" onClick={onExit}>
-              <Trophy className="h-4 w-4" /> Claim & exit
+            <Button className="flex-1 gap-1 h-12 font-bold" onClick={onExit}>
+              <Trophy className="h-4 w-4" /> Claim
             </Button>
           </div>
         </CardContent>
