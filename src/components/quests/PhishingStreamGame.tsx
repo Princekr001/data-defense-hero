@@ -159,6 +159,7 @@ export default function PhishingStreamGame({
         total: r.total + 1,
       }));
       setLives(nextLives);
+      setAnswered((n) => n + 1);
 
       // Solution flash — game stops while shown
       setSolution({
@@ -216,6 +217,7 @@ export default function PhishingStreamGame({
             total: r.total + 1,
           }));
           setCombo(0);
+          setAnswered((n) => n + 1);
           if (wasPhish) {
             const newLives = lives - 1;
             setLives(newLives);
