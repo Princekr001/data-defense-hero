@@ -4,7 +4,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Trash2, Inbox, AlertTriangle, ShieldCheck, Clock, Sparkles } from "lucide-react";
+import {
+  Trash2,
+  Inbox,
+  AlertTriangle,
+  ShieldCheck,
+  Clock,
+  Flame,
+  Heart,
+  Zap,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StreamMessage {
@@ -20,6 +30,8 @@ interface Result {
   wrong: number;
   missed: number;
   total: number;
+  score: number;
+  bestCombo: number;
 }
 
 interface Props {
@@ -27,6 +39,10 @@ interface Props {
   onComplete: (result: Result) => void;
   onExit: () => void;
 }
+
+const TICK_MS = 100;
+const MSG_LIFETIME_MS = 3200; // brutal: 3.2s per message
+const START_LIVES = 3;
 
 const buildPool = (): StreamMessage[] => {
   let i = 0;
@@ -51,43 +67,83 @@ const shuffle = <T,>(arr: T[]) => {
 };
 
 export default function PhishingStreamGame({
-  durationSec = 60,
+  durationSec = 45,
   onComplete,
   onExit,
 }: Props) {
   const pool = useMemo(() => shuffle(buildPool()), []);
   const cursor = useRef(0);
 
-  const [queue, setQueue] = useState<StreamMessage[]>(() => pool.slice(0, 3));
+  const [current, setCurrent] = useState<StreamMessage | null>(() => pool[0] ?? null);
+  const [msgAgeMs, setMsgAgeMs] = useState(0);
   const [timeLeft, setTimeLeft] = useState(durationSec);
-  const [result, setResult] = useState<Result>({ correct: 0, wrong: 0, missed: 0, total: 0 });
-  const [feedback, setFeedback] = useState<{
+  const [lives, setLives] = useState(START_LIVES);
+  const [combo, setCombo] = useState(0);
+  const [bestCombo, setBestCombo] = useState(0);
+  const [score, setScore] = useState(0);
+  const [result, setResult] = useState<Result>({
+    correct: 0,
+    wrong: 0,
+    missed: 0,
+    total: 0,
+    score: 0,
+    bestCombo: 0,
+  });
+  const [solution, setSolution] = useState<{
     kind: "correct" | "wrong" | "missed";
-    text: string;
+    title: string;
+    body: string;
   } | null>(null);
+  const [shake, setShake] = useState(false);
   const [finished, setFinished] = useState(false);
 
-  // refill queue cursor starts after the initial 3
   useEffect(() => {
-    cursor.current = 3;
+    cursor.current = 1;
   }, []);
 
-  const popNext = useCallback((): StreamMessage | null => {
-    const next = pool[cursor.current % pool.length];
+  const nextMessage = useCallback(() => {
+    const msg = pool[cursor.current % pool.length];
     cursor.current += 1;
-    return next ? { ...next, id: `${next.id}-${cursor.current}` } : null;
+    setCurrent(msg ? { ...msg, id: `${msg.id}-${cursor.current}` } : null);
+    setMsgAgeMs(0);
   }, [pool]);
 
-  const flashFeedback = useCallback((kind: "correct" | "wrong" | "missed", text: string) => {
-    setFeedback({ kind, text });
-    window.setTimeout(() => setFeedback(null), 1100);
-  }, []);
+  const finish = useCallback(
+    (finalScore: number, finalCombo: number) => {
+      setFinished(true);
+      setResult((r) => {
+        const final = { ...r, score: finalScore, bestCombo: finalCombo };
+        onComplete(final);
+        return final;
+      });
+    },
+    [onComplete],
+  );
 
   const handleDecision = useCallback(
-    (msg: StreamMessage, action: "remove" | "keep") => {
-      if (finished) return;
+    (action: "remove" | "keep") => {
+      if (!current || finished || solution) return;
       const isCorrect =
-        (msg.phish && action === "remove") || (!msg.phish && action === "keep");
+        (current.phish && action === "remove") ||
+        (!current.phish && action === "keep");
+
+      // time bonus: faster = more points
+      const speedBonus = Math.max(0, Math.round((MSG_LIFETIME_MS - msgAgeMs) / 100));
+      const base = current.phish ? 100 : 60;
+      const comboMult = 1 + combo * 0.15;
+      const gained = isCorrect ? Math.round((base + speedBonus) * comboMult) : 0;
+
+      let nextLives = lives;
+      let nextCombo = isCorrect ? combo + 1 : 0;
+      if (!isCorrect) nextLives = lives - 1;
+
+      setScore((s) => s + gained);
+      setCombo(nextCombo);
+      setBestCombo((b) => Math.max(b, nextCombo));
+      if (!isCorrect) {
+        setShake(true);
+        window.setTimeout(() => setShake(false), 400);
+      }
 
       setResult((r) => ({
         ...r,
@@ -95,163 +151,251 @@ export default function PhishingStreamGame({
         wrong: r.wrong + (isCorrect ? 0 : 1),
         total: r.total + 1,
       }));
+      setLives(nextLives);
 
-      flashFeedback(
-        isCorrect ? "correct" : "wrong",
-        isCorrect
-          ? msg.phish
-            ? `Removed — ${msg.typeName} attack neutralized!`
-            : `Kept — that was a legit message.`
-          : msg.phish
-            ? `Missed a ${msg.typeName} phish: ${msg.hint ?? "watch the red flags."}`
-            : `Oops — that one was actually safe.`,
-      );
-
-      setQueue((q) => {
-        const filtered = q.filter((m) => m.id !== msg.id);
-        const next = popNext();
-        return next ? [...filtered, next] : filtered;
+      // Solution flash — game stops while shown
+      setSolution({
+        kind: isCorrect ? "correct" : "wrong",
+        title: isCorrect
+          ? current.phish
+            ? `🎯 Neutralized — ${current.typeName}`
+            : `✅ Smart — that one was legit`
+          : current.phish
+            ? `💥 Phish slipped through — ${current.typeName}`
+            : `💥 You nuked a real message`,
+        body:
+          current.hint ??
+          (current.phish
+            ? "Look for urgency, lookalike domains, secrecy demands, and unexpected attachments."
+            : "Normal traffic — no urgency, no credential ask, no lookalike sender."),
       });
+
+      if (nextLives <= 0) {
+        // delay finish slightly so player reads the solution
+        window.setTimeout(() => finish(score + gained, Math.max(bestCombo, nextCombo)), 1400);
+      }
     },
-    [finished, popNext, flashFeedback],
+    [current, finished, solution, msgAgeMs, combo, lives, score, bestCombo, finish],
   );
 
-  // countdown
+  const dismissSolution = useCallback(() => {
+    setSolution(null);
+    if (lives > 0 && !finished) nextMessage();
+  }, [lives, finished, nextMessage]);
+
+  // Global countdown
   useEffect(() => {
     if (finished) return;
     if (timeLeft <= 0) {
-      setFinished(true);
+      finish(score, bestCombo);
       return;
     }
     const id = window.setTimeout(() => setTimeLeft((t) => t - 1), 1000);
     return () => window.clearTimeout(id);
-  }, [timeLeft, finished]);
+  }, [timeLeft, finished, finish, score, bestCombo]);
 
-  // auto-cycle oldest message every ~6s if untouched (counts as "missed")
+  // Per-message lifetime (auto miss)
   useEffect(() => {
-    if (finished || queue.length === 0) return;
-    const id = window.setTimeout(() => {
-      const oldest = queue[0];
-      if (!oldest) return;
-      setResult((r) => ({
-        ...r,
-        missed: r.missed + (oldest.phish ? 1 : 0),
-        total: r.total + 1,
-      }));
-      if (oldest.phish) {
-        flashFeedback("missed", `Let through: ${oldest.typeName}. ${oldest.hint ?? ""}`);
-      }
-      setQueue((q) => {
-        const rest = q.slice(1);
-        const next = popNext();
-        return next ? [...rest, next] : rest;
+    if (finished || solution || !current) return;
+    const id = window.setInterval(() => {
+      setMsgAgeMs((a) => {
+        const next = a + TICK_MS;
+        if (next >= MSG_LIFETIME_MS) {
+          // missed
+          const wasPhish = current.phish;
+          setResult((r) => ({
+            ...r,
+            missed: r.missed + (wasPhish ? 1 : 0),
+            total: r.total + 1,
+          }));
+          setCombo(0);
+          if (wasPhish) {
+            const newLives = lives - 1;
+            setLives(newLives);
+            setShake(true);
+            window.setTimeout(() => setShake(false), 400);
+            setSolution({
+              kind: "missed",
+              title: `⏱️ Let through — ${current.typeName}`,
+              body: current.hint ?? "Hesitation = compromise. Decide fast next time.",
+            });
+            if (newLives <= 0) {
+              window.setTimeout(() => finish(score, bestCombo), 1400);
+            }
+          } else {
+            // legit ignored — neutral, just move on
+            nextMessage();
+          }
+          return 0;
+        }
+        return next;
       });
-    }, 6000);
-    return () => window.clearTimeout(id);
-  }, [queue, finished, popNext, flashFeedback]);
+    }, TICK_MS);
+    return () => window.clearInterval(id);
+  }, [current, finished, solution, lives, nextMessage, finish, score, bestCombo]);
 
-  useEffect(() => {
-    if (finished) onComplete(result);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finished]);
-
-  const accuracy =
-    result.total === 0 ? 100 : Math.round((result.correct / result.total) * 100);
+  const msgRemainPct = Math.max(0, 100 - (msgAgeMs / MSG_LIFETIME_MS) * 100);
+  const danger = msgRemainPct < 35;
 
   return (
-    <Card className="bg-card/90 backdrop-blur-xl border-primary/30">
-      <CardContent className="p-6 space-y-5">
+    <Card
+      className={cn(
+        "bg-card/95 backdrop-blur-xl border-primary/40 overflow-hidden",
+        shake && "animate-[shake_0.4s_ease-in-out]",
+      )}
+    >
+      <style>{`
+        @keyframes shake {
+          0%,100% { transform: translateX(0); }
+          25% { transform: translateX(-6px); }
+          75% { transform: translateX(6px); }
+        }
+        @keyframes pop-in {
+          0% { transform: scale(0.85); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
+      <CardContent className="p-5 space-y-4">
         {/* HUD */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2 font-black tracking-wider">
             <Inbox className="h-5 w-5 text-primary" />
-            <span className="font-bold">Inbox Defense — Phishing Stream</span>
+            <span>INBOX DEFENSE</span>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="gap-1">
+          <div className="flex flex-wrap gap-1.5">
+            <Badge variant="outline" className="gap-1 font-mono">
               <Clock className="h-3 w-3" /> {timeLeft}s
             </Badge>
-            <Badge variant="default" className="gap-1">
-              <ShieldCheck className="h-3 w-3" /> {result.correct} correct
+            <Badge variant="outline" className="gap-1 font-mono">
+              {Array.from({ length: START_LIVES }).map((_, i) => (
+                <Heart
+                  key={i}
+                  className={cn(
+                    "h-3.5 w-3.5",
+                    i < lives ? "text-destructive fill-destructive" : "text-muted-foreground/30",
+                  )}
+                />
+              ))}
             </Badge>
-            <Badge variant="destructive" className="gap-1">
-              <AlertTriangle className="h-3 w-3" /> {result.wrong + result.missed} errors
+            <Badge
+              className={cn(
+                "gap-1 font-mono",
+                combo >= 3
+                  ? "bg-orange-500 hover:bg-orange-500"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary",
+              )}
+            >
+              <Flame className="h-3 w-3" /> x{combo}
             </Badge>
-            <Badge variant="secondary" className="gap-1">
-              <Sparkles className="h-3 w-3" /> {accuracy}%
+            <Badge variant="default" className="gap-1 font-mono">
+              <Zap className="h-3 w-3" /> {score}
             </Badge>
           </div>
         </div>
-        <Progress value={(timeLeft / durationSec) * 100} className="h-2" />
+        <Progress value={(timeLeft / durationSec) * 100} className="h-1.5" />
 
-        {/* feedback toast */}
-        <div className="h-10 flex items-center justify-center">
-          {feedback && (
+        {/* Card stage */}
+        <div className="relative min-h-[260px]">
+          {current && !solution && !finished && (
             <div
+              key={current.id}
               className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium border animate-fade-in",
-                feedback.kind === "correct" &&
-                  "bg-primary/15 border-primary/40 text-primary",
-                feedback.kind === "wrong" &&
-                  "bg-destructive/15 border-destructive/40 text-destructive",
-                feedback.kind === "missed" &&
-                  "bg-yellow-500/10 border-yellow-500/40 text-yellow-600 dark:text-yellow-400",
+                "rounded-2xl border-2 p-5 bg-gradient-to-br from-card to-card/60 shadow-xl transition-all",
+                "animate-fade-in",
+                danger
+                  ? "border-destructive/70 shadow-destructive/30"
+                  : "border-primary/40",
               )}
+              style={{ animation: "pop-in 0.25s ease-out" }}
             >
-              {feedback.text}
-            </div>
-          )}
-        </div>
+              {/* Per-message timer bar */}
+              <div className="mb-3 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full transition-all",
+                    danger ? "bg-destructive" : "bg-primary",
+                  )}
+                  style={{ width: `${msgRemainPct}%` }}
+                />
+              </div>
 
-        {/* message stream */}
-        <div className="space-y-3 min-h-[280px]">
-          {queue.length === 0 && (
-            <p className="text-center text-muted-foreground py-10">Inbox clear...</p>
-          )}
-          {queue.map((m, i) => (
-            <div
-              key={m.id}
-              className={cn(
-                "rounded-xl border p-4 bg-card/60 backdrop-blur transition-all animate-fade-in",
-                i === 0 ? "border-primary/40 shadow-lg" : "border-border opacity-90",
-              )}
-            >
               <div className="flex items-start gap-3">
-                <div className="text-2xl">📩</div>
-                <p className="flex-1 text-sm sm:text-base leading-snug text-foreground">
-                  {m.text}
+                <div className="text-3xl">📩</div>
+                <p className="flex-1 text-base sm:text-lg leading-snug text-foreground font-medium">
+                  {current.text}
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2 mt-3 justify-end">
+
+              <div className="grid grid-cols-2 gap-3 mt-5">
                 <Button
-                  size="sm"
+                  size="lg"
                   variant="outline"
-                  onClick={() => handleDecision(m, "keep")}
-                  disabled={finished}
-                  className="gap-1"
+                  onClick={() => handleDecision("keep")}
+                  className="h-14 gap-2 border-2 hover:border-primary hover:bg-primary/10 font-bold"
                 >
-                  <Inbox className="h-4 w-4" /> Keep
+                  <ShieldCheck className="h-5 w-5" /> KEEP
                 </Button>
                 <Button
-                  size="sm"
+                  size="lg"
                   variant="destructive"
-                  onClick={() => handleDecision(m, "remove")}
-                  disabled={finished}
-                  className="gap-1"
+                  onClick={() => handleDecision("remove")}
+                  className="h-14 gap-2 font-bold"
                 >
-                  <Trash2 className="h-4 w-4" /> Remove
+                  <Trash2 className="h-5 w-5" /> NUKE
                 </Button>
               </div>
+              <p className="text-[10px] text-center text-muted-foreground mt-2 uppercase tracking-wider">
+                Hesitation = compromise · 1 wrong move costs a life
+              </p>
             </div>
-          ))}
+          )}
+
+          {solution && (
+            <div
+              className={cn(
+                "rounded-2xl border-2 p-5 shadow-2xl",
+                solution.kind === "correct"
+                  ? "border-primary/60 bg-primary/10"
+                  : "border-destructive/60 bg-destructive/10",
+              )}
+              style={{ animation: "pop-in 0.2s ease-out" }}
+            >
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-center gap-2">
+                  {solution.kind === "correct" ? (
+                    <ShieldCheck className="h-6 w-6 text-primary" />
+                  ) : (
+                    <AlertTriangle className="h-6 w-6 text-destructive" />
+                  )}
+                  <h3 className="font-bold text-lg leading-tight">{solution.title}</h3>
+                </div>
+                <Button size="icon" variant="ghost" onClick={dismissSolution}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="rounded-lg bg-background/60 border border-border p-3">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                  Solution
+                </div>
+                <p className="text-sm leading-relaxed">{solution.body}</p>
+              </div>
+              <Button
+                onClick={dismissSolution}
+                className="w-full mt-3 h-11 font-bold"
+                disabled={lives <= 0}
+              >
+                {lives <= 0 ? "Game over…" : "Next threat →"}
+              </Button>
+            </div>
+          )}
         </div>
 
-        <div className="flex justify-between pt-2">
+        <div className="flex justify-between items-center pt-1">
           <Button variant="ghost" size="sm" onClick={onExit}>
             Exit
           </Button>
-          <p className="text-xs text-muted-foreground self-center">
-            Tip: remove phishing, keep legit messages. Hesitation = let-through.
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+            Best combo · x{bestCombo}
           </p>
         </div>
       </CardContent>
