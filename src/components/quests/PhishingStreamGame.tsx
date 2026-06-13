@@ -260,7 +260,7 @@ export default function PhishingStreamGame({
       });
     }, TICK_MS);
     return () => window.clearInterval(id);
-  }, [current, finished, solution, lives, nextMessage, finish, score, bestCombo]);
+  }, [current, finished, solution, lifelineActive, lives, nextMessage, finish, score, bestCombo]);
 
   const msgRemainPct = Math.max(0, 100 - (msgAgeMs / lifetimeMs) * 100);
   const danger = msgRemainPct < 35;
