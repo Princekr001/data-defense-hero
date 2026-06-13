@@ -191,7 +191,7 @@ export default function PhishingStreamGame({
         window.setTimeout(() => finish(score + gained, Math.max(bestCombo, nextCombo)), 1400);
       }
     },
-    [current, finished, solution, msgAgeMs, combo, lives, score, bestCombo, finish],
+    [current, finished, solution, lifelineActive, msgAgeMs, combo, lives, score, bestCombo, finish],
   );
 
   const dismissSolution = useCallback(() => {
