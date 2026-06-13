@@ -199,6 +199,17 @@ export default function PhishingStreamGame({
     if (lives > 0 && !finished) nextMessage();
   }, [lives, finished, nextMessage]);
 
+  const useLifeline = useCallback(() => {
+    if (lifelineUsed || !current || finished || solution || lifelineActive) return;
+    setLifelineUsed(true);
+    setLifelineActive(true);
+  }, [lifelineUsed, current, finished, solution, lifelineActive]);
+
+  const dismissLifeline = useCallback(() => {
+    setLifelineActive(false);
+    if (lives > 0 && !finished) nextMessage();
+  }, [lives, finished, nextMessage]);
+
   // Global countdown
   useEffect(() => {
     if (finished) return;
