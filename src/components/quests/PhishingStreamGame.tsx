@@ -14,6 +14,7 @@ import {
   Heart,
   Zap,
   X,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +69,11 @@ const shuffle = <T,>(arr: T[]) => {
   return a;
 };
 
+const typeRedFlags = (typeName: string): string[] => {
+  const t = phishingTypes.find((x) => x.name === typeName);
+  return t ? t.redFlags : [];
+};
+
 export default function PhishingStreamGame({
   durationSec = 45,
   onComplete,
@@ -103,6 +109,8 @@ export default function PhishingStreamGame({
   } | null>(null);
   const [shake, setShake] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [lifelineUsed, setLifelineUsed] = useState(false);
+  const [lifelineActive, setLifelineActive] = useState(false);
 
   useEffect(() => {
     cursor.current = 1;
@@ -129,7 +137,7 @@ export default function PhishingStreamGame({
 
   const handleDecision = useCallback(
     (action: "remove" | "keep") => {
-      if (!current || finished || solution) return;
+      if (!current || finished || solution || lifelineActive) return;
       const isCorrect =
         (current.phish && action === "remove") ||
         (!current.phish && action === "keep");
@@ -183,11 +191,22 @@ export default function PhishingStreamGame({
         window.setTimeout(() => finish(score + gained, Math.max(bestCombo, nextCombo)), 1400);
       }
     },
-    [current, finished, solution, msgAgeMs, combo, lives, score, bestCombo, finish],
+    [current, finished, solution, lifelineActive, msgAgeMs, combo, lives, score, bestCombo, finish],
   );
 
   const dismissSolution = useCallback(() => {
     setSolution(null);
+    if (lives > 0 && !finished) nextMessage();
+  }, [lives, finished, nextMessage]);
+
+  const useLifeline = useCallback(() => {
+    if (lifelineUsed || !current || finished || solution || lifelineActive) return;
+    setLifelineUsed(true);
+    setLifelineActive(true);
+  }, [lifelineUsed, current, finished, solution, lifelineActive]);
+
+  const dismissLifeline = useCallback(() => {
+    setLifelineActive(false);
     if (lives > 0 && !finished) nextMessage();
   }, [lives, finished, nextMessage]);
 
@@ -204,7 +223,7 @@ export default function PhishingStreamGame({
 
   // Per-message lifetime (auto miss)
   useEffect(() => {
-    if (finished || solution || !current) return;
+    if (finished || solution || lifelineActive || !current) return;
     const id = window.setInterval(() => {
       setMsgAgeMs((a) => {
         const next = a + TICK_MS;
@@ -241,7 +260,7 @@ export default function PhishingStreamGame({
       });
     }, TICK_MS);
     return () => window.clearInterval(id);
-  }, [current, finished, solution, lives, nextMessage, finish, score, bestCombo]);
+  }, [current, finished, solution, lifelineActive, lives, nextMessage, finish, score, bestCombo]);
 
   const msgRemainPct = Math.max(0, 100 - (msgAgeMs / lifetimeMs) * 100);
   const danger = msgRemainPct < 35;
@@ -299,13 +318,26 @@ export default function PhishingStreamGame({
             <Badge variant="default" className="gap-1 font-mono">
               <Zap className="h-3 w-3" /> {score}
             </Badge>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={useLifeline}
+              disabled={lifelineUsed || !current || finished || !!solution || lifelineActive}
+              className={cn(
+                "h-6 px-2 text-[10px] font-bold gap-1 border-primary/50",
+                !lifelineUsed && "animate-pulse",
+                lifelineUsed && "opacity-40 cursor-not-allowed",
+              )}
+            >
+              <Eye className="h-3 w-3" /> RED FLAGS
+            </Button>
           </div>
         </div>
         <Progress value={(timeLeft / durationSec) * 100} className="h-1.5" />
 
         {/* Card stage */}
         <div className="relative min-h-[260px]">
-          {current && !solution && !finished && (
+          {current && !solution && !finished && !lifelineActive && (
             <div
               key={current.id}
               className={cn(
@@ -394,6 +426,50 @@ export default function PhishingStreamGame({
                 disabled={lives <= 0}
               >
                 {lives <= 0 ? "Game over…" : "Next threat →"}
+              </Button>
+            </div>
+          )}
+
+          {lifelineActive && current && (
+            <div
+              className="rounded-2xl border-2 p-5 shadow-2xl border-amber-500/60 bg-amber-500/10"
+              style={{ animation: "pop-in 0.2s ease-out" }}
+            >
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-6 w-6 text-amber-400" />
+                  <h3 className="font-bold text-lg leading-tight">
+                    🔍 Red Flags — {current.typeName}
+                  </h3>
+                </div>
+                <Button size="icon" variant="ghost" onClick={dismissLifeline}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="rounded-lg bg-background/60 border border-border p-3 space-y-2">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                  Watch for these signals
+                </div>
+                {typeRedFlags(current.typeName).map((flag, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-2 text-sm text-amber-100"
+                  >
+                    <span className="mt-0.5 text-amber-400">⚠️</span>
+                    <span className="leading-relaxed">{flag}</span>
+                  </div>
+                ))}
+                {typeRedFlags(current.typeName).length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No specific red flags recorded for this type — rely on your gut.
+                  </p>
+                )}
+              </div>
+              <Button
+                onClick={dismissLifeline}
+                className="w-full mt-3 h-11 font-bold bg-amber-500 hover:bg-amber-600 text-black"
+              >
+                Resume →
               </Button>
             </div>
           )}
