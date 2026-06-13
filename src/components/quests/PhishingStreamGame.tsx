@@ -69,6 +69,11 @@ const shuffle = <T,>(arr: T[]) => {
   return a;
 };
 
+const typeRedFlags = (typeName: string): string[] => {
+  const t = phishingTypes.find((x) => x.name === typeName);
+  return t ? t.redFlags : [];
+};
+
 export default function PhishingStreamGame({
   durationSec = 45,
   onComplete,
@@ -104,6 +109,8 @@ export default function PhishingStreamGame({
   } | null>(null);
   const [shake, setShake] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [lifelineUsed, setLifelineUsed] = useState(false);
+  const [lifelineActive, setLifelineActive] = useState(false);
 
   useEffect(() => {
     cursor.current = 1;
