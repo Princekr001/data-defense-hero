@@ -137,7 +137,7 @@ export default function PhishingStreamGame({
 
   const handleDecision = useCallback(
     (action: "remove" | "keep") => {
-      if (!current || finished || solution) return;
+      if (!current || finished || solution || lifelineActive) return;
       const isCorrect =
         (current.phish && action === "remove") ||
         (!current.phish && action === "keep");
