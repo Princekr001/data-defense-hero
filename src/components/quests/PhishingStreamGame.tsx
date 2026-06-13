@@ -322,7 +322,7 @@ export default function PhishingStreamGame({
               size="sm"
               variant="outline"
               onClick={useLifeline}
-              disabled={lifelineUsed || !current || finished || solution || lifelineActive}
+              disabled={lifelineUsed || !current || finished || !!solution || lifelineActive}
               className={cn(
                 "h-6 px-2 text-[10px] font-bold gap-1 border-primary/50",
                 !lifelineUsed && "animate-pulse",
