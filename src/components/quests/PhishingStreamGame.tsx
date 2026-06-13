@@ -318,6 +318,19 @@ export default function PhishingStreamGame({
             <Badge variant="default" className="gap-1 font-mono">
               <Zap className="h-3 w-3" /> {score}
             </Badge>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={useLifeline}
+              disabled={lifelineUsed || !current || finished || solution || lifelineActive}
+              className={cn(
+                "h-6 px-2 text-[10px] font-bold gap-1 border-primary/50",
+                !lifelineUsed && "animate-pulse",
+                lifelineUsed && "opacity-40 cursor-not-allowed",
+              )}
+            >
+              <Eye className="h-3 w-3" /> RED FLAGS
+            </Button>
           </div>
         </div>
         <Progress value={(timeLeft / durationSec) * 100} className="h-1.5" />
