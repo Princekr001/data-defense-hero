@@ -429,6 +429,50 @@ export default function PhishingStreamGame({
               </Button>
             </div>
           )}
+
+          {lifelineActive && current && (
+            <div
+              className="rounded-2xl border-2 p-5 shadow-2xl border-amber-500/60 bg-amber-500/10"
+              style={{ animation: "pop-in 0.2s ease-out" }}
+            >
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-6 w-6 text-amber-400" />
+                  <h3 className="font-bold text-lg leading-tight">
+                    🔍 Red Flags — {current.typeName}
+                  </h3>
+                </div>
+                <Button size="icon" variant="ghost" onClick={dismissLifeline}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="rounded-lg bg-background/60 border border-border p-3 space-y-2">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                  Watch for these signals
+                </div>
+                {typeRedFlags(current.typeName).map((flag, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-2 text-sm text-amber-100"
+                  >
+                    <span className="mt-0.5 text-amber-400">⚠️</span>
+                    <span className="leading-relaxed">{flag}</span>
+                  </div>
+                ))}
+                {typeRedFlags(current.typeName).length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No specific red flags recorded for this type — rely on your gut.
+                  </p>
+                )}
+              </div>
+              <Button
+                onClick={dismissLifeline}
+                className="w-full mt-3 h-11 font-bold bg-amber-500 hover:bg-amber-600 text-black"
+              >
+                Resume →
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-between items-center pt-1">
