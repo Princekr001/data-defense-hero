@@ -223,7 +223,7 @@ export default function PhishingStreamGame({
 
   // Per-message lifetime (auto miss)
   useEffect(() => {
-    if (finished || solution || !current) return;
+    if (finished || solution || lifelineActive || !current) return;
     const id = window.setInterval(() => {
       setMsgAgeMs((a) => {
         const next = a + TICK_MS;
