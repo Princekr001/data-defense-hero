@@ -14,6 +14,7 @@ import {
   Heart,
   Zap,
   X,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
