@@ -337,7 +337,7 @@ export default function PhishingStreamGame({
 
         {/* Card stage */}
         <div className="relative min-h-[260px]">
-          {current && !solution && !finished && (
+          {current && !solution && !finished && !lifelineActive && (
             <div
               key={current.id}
               className={cn(
