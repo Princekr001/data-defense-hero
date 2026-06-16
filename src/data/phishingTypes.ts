@@ -80,6 +80,24 @@ export const phishingTypes: PhishingType[] = [
         phish: true,
         hint: "Tiny fee + unfamiliar domain = classic delivery phish.",
       },
+      {
+        text: "Your Netflix subscription will auto-renew on the 18th for ₹649. Manage in the app.",
+        phish: false,
+      },
+      {
+        text: "FINAL NOTICE: your mailbox is 99% full. Click <netflx-storage.net> in 15 min or lose all mail.",
+        phish: true,
+        hint: "Storage panic + countdown + lookalike domain.",
+      },
+      {
+        text: "Welcome to the newsletter you signed up for last Tuesday — confirm here to start receiving issues.",
+        phish: false,
+      },
+      {
+        text: "Tax refund of $842 approved — claim it via this secure HMRC-portal.support form within 24h.",
+        phish: true,
+        hint: "Tax agencies don't email refund forms — and the domain is fake.",
+      },
     ],
   },
   {
@@ -124,6 +142,15 @@ export const phishingTypes: PhishingType[] = [
         text: "Quick favor — review attached invoice before I send it to the client tonight. (sender: ceo@yourc0mpany.com)",
         phish: true,
         hint: "Look-alike domain with a zero instead of an 'o'.",
+      },
+      {
+        text: "Hey, can you push the staging branch when you get a sec? I'll review the PR after lunch. — Sam",
+        phish: false,
+      },
+      {
+        text: "Saw your post about the Atlas project. I'm a recruiter — quick 15 min? Calendar link: calend1y.com/x42",
+        phish: true,
+        hint: "Lookalike Calendly + cold ask + personalized hook = recon spear-phish.",
       },
     ],
   },
@@ -170,6 +197,15 @@ export const phishingTypes: PhishingType[] = [
         phish: true,
         hint: "Tiny 'fix' + same wording + urgency = swap-the-attachment clone.",
       },
+      {
+        text: "Following yesterday's design review — sharing the Figma link we used in the call so you can comment async.",
+        phish: false,
+      },
+      {
+        text: "RE: Project Helix — replacing the deck I sent this morning. Old one had wrong numbers, please pull THIS .zip.",
+        phish: true,
+        hint: ".zip swap on a 'resent' email is a malware delivery move.",
+      },
     ],
   },
   {
@@ -214,6 +250,15 @@ export const phishingTypes: PhishingType[] = [
         text: "Vendor 'Acme' has updated bank details. Please redirect this month's payment to the new account in attachment.",
         phish: true,
         hint: "Bank-detail change with no phone confirmation = vendor fraud.",
+      },
+      {
+        text: "Reminder from the CFO: Q3 forecast deck is due in the shared drive by Friday. No action needed today.",
+        phish: false,
+      },
+      {
+        text: "Confidential M&A — only you. Reply with your personal email so legal can send the NDA outside our domain. — CEO",
+        phish: true,
+        hint: "Secrecy + 'personal email' + bypass legal = textbook whaling.",
       },
     ],
   },
@@ -260,6 +305,15 @@ export const phishingTypes: PhishingType[] = [
         phish: true,
         hint: "HR/payroll asks via QR? Never — type the portal URL yourself.",
       },
+      {
+        text: "Conference badge with a QR that links to your own speaker bio page on the official event site.",
+        phish: false,
+      },
+      {
+        text: "Sticker on an EV charger: 'App down — scan to pay manually'. URL after scan: ev-quickpay.top",
+        phish: true,
+        hint: "Sticker-over-sticker + unfamiliar .top domain = quishing in the wild.",
+      },
     ],
   },
   {
@@ -304,6 +358,15 @@ export const phishingTypes: PhishingType[] = [
         text: "DM: 'Hi! I'm from Support. To speed up your refund, share your OTP when you get it.'",
         phish: true,
         hint: "No legitimate support agent EVER asks for an OTP.",
+      },
+      {
+        text: "Reply from official @Spotify (verified): 'Sorry about that — try logging out and back in. Let us know if it persists.'",
+        phish: false,
+      },
+      {
+        text: "DM from @PayPaI_assist (capital i, not L): 'Your dispute is approved. Confirm your card via the secure link to release funds.'",
+        phish: true,
+        hint: "Capital I impersonating L + 'confirm card' link = angler.",
       },
     ],
   },
