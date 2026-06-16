@@ -143,6 +143,15 @@ export const phishingTypes: PhishingType[] = [
         phish: true,
         hint: "Look-alike domain with a zero instead of an 'o'.",
       },
+      {
+        text: "Hey, can you push the staging branch when you get a sec? I'll review the PR after lunch. — Sam",
+        phish: false,
+      },
+      {
+        text: "Saw your post about the Atlas project. I'm a recruiter — quick 15 min? Calendar link: calend1y.com/x42",
+        phish: true,
+        hint: "Lookalike Calendly + cold ask + personalized hook = recon spear-phish.",
+      },
     ],
   },
   {
