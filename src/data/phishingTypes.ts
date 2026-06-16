@@ -305,6 +305,15 @@ export const phishingTypes: PhishingType[] = [
         phish: true,
         hint: "HR/payroll asks via QR? Never — type the portal URL yourself.",
       },
+      {
+        text: "Conference badge with a QR that links to your own speaker bio page on the official event site.",
+        phish: false,
+      },
+      {
+        text: "Sticker on an EV charger: 'App down — scan to pay manually'. URL after scan: ev-quickpay.top",
+        phish: true,
+        hint: "Sticker-over-sticker + unfamiliar .top domain = quishing in the wild.",
+      },
     ],
   },
   {
