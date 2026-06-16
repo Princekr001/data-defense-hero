@@ -359,6 +359,15 @@ export const phishingTypes: PhishingType[] = [
         phish: true,
         hint: "No legitimate support agent EVER asks for an OTP.",
       },
+      {
+        text: "Reply from official @Spotify (verified): 'Sorry about that — try logging out and back in. Let us know if it persists.'",
+        phish: false,
+      },
+      {
+        text: "DM from @PayPaI_assist (capital i, not L): 'Your dispute is approved. Confirm your card via the secure link to release funds.'",
+        phish: true,
+        hint: "Capital I impersonating L + 'confirm card' link = angler.",
+      },
     ],
   },
 ];
