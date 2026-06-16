@@ -197,6 +197,15 @@ export const phishingTypes: PhishingType[] = [
         phish: true,
         hint: "Tiny 'fix' + same wording + urgency = swap-the-attachment clone.",
       },
+      {
+        text: "Following yesterday's design review — sharing the Figma link we used in the call so you can comment async.",
+        phish: false,
+      },
+      {
+        text: "RE: Project Helix — replacing the deck I sent this morning. Old one had wrong numbers, please pull THIS .zip.",
+        phish: true,
+        hint: ".zip swap on a 'resent' email is a malware delivery move.",
+      },
     ],
   },
   {
