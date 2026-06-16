@@ -298,7 +298,9 @@ export default function PhishingStreamGame({
   return (
     <Card
       className={cn(
-        "bg-card/95 backdrop-blur-xl border-primary/40 overflow-hidden",
+        "relative bg-card/95 backdrop-blur-xl border-primary/40 overflow-hidden",
+        "ring-2 ring-offset-0 transition-all duration-500",
+        level.ring,
         shake && "animate-[shake_0.4s_ease-in-out]",
       )}
     >
@@ -312,19 +314,68 @@ export default function PhishingStreamGame({
           0% { transform: scale(0.85); opacity: 0; }
           100% { transform: scale(1); opacity: 1; }
         }
+        @keyframes grid-drift {
+          0% { background-position: 0 0; }
+          100% { background-position: 40px 40px; }
+        }
+        @keyframes level-burst {
+          0% { transform: scale(0.6) rotate(-8deg); opacity: 0; }
+          40% { transform: scale(1.15) rotate(2deg); opacity: 1; }
+          100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        @keyframes aurora {
+          0%,100% { transform: translate3d(-10%, -10%, 0) scale(1); }
+          50% { transform: translate3d(10%, 5%, 0) scale(1.15); }
+        }
       `}</style>
-      <CardContent className="p-5 space-y-4">
+
+      {/* Animated cyber background */}
+      <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(120,140,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(120,140,255,0.08) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+            animation: "grid-drift 6s linear infinite",
+          }}
+        />
+        <div
+          className={cn(
+            "absolute -top-32 -left-32 h-80 w-80 rounded-full blur-3xl opacity-40 bg-gradient-to-br",
+            level.color,
+          )}
+          style={{ animation: "aurora 8s ease-in-out infinite" }}
+        />
+        <div
+          className={cn(
+            "absolute -bottom-32 -right-32 h-80 w-80 rounded-full blur-3xl opacity-30 bg-gradient-to-br",
+            level.color,
+          )}
+          style={{ animation: "aurora 10s ease-in-out infinite reverse" }}
+        />
+      </div>
+
+      <CardContent className="relative z-10 p-5 space-y-4">
         {/* HUD */}
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2 font-black tracking-wider">
-            <Inbox className="h-5 w-5 text-primary" />
-            <span>INBOX DEFENSE</span>
+          <div className="flex items-center gap-2">
+            <div className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gradient-to-r text-black font-black text-xs tracking-widest shadow-lg",
+              level.color,
+            )}>
+              <Trophy className="h-3.5 w-3.5" />
+              LVL {levelIdx + 1} · {level.name}
+            </div>
+            <span className="hidden sm:inline text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+              Inbox Defense
+            </span>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            <Badge variant="outline" className="gap-1 font-mono">
+            <Badge variant="outline" className="gap-1 font-mono backdrop-blur">
               <Clock className="h-3 w-3" /> {timeLeft}s
             </Badge>
-            <Badge variant="outline" className="gap-1 font-mono">
+            <Badge variant="outline" className="gap-1 font-mono backdrop-blur">
               {Array.from({ length: START_LIVES }).map((_, i) => (
                 <Heart
                   key={i}
@@ -338,7 +389,9 @@ export default function PhishingStreamGame({
             <Badge
               className={cn(
                 "gap-1 font-mono",
-                combo >= 3
+                combo >= 5
+                  ? "bg-gradient-to-r from-rose-500 to-orange-500 text-white animate-pulse"
+                  : combo >= 3
                   ? "bg-orange-500 hover:bg-orange-500"
                   : "bg-secondary text-secondary-foreground hover:bg-secondary",
               )}
@@ -354,7 +407,7 @@ export default function PhishingStreamGame({
               onClick={useLifeline}
               disabled={lifelineUsed || !current || finished || !!solution || lifelineActive}
               className={cn(
-                "h-6 px-2 text-[10px] font-bold gap-1 border-primary/50",
+                "h-6 px-2 text-[10px] font-bold gap-1 border-primary/50 backdrop-blur",
                 !lifelineUsed && "animate-pulse",
                 lifelineUsed && "opacity-40 cursor-not-allowed",
               )}
@@ -363,7 +416,23 @@ export default function PhishingStreamGame({
             </Button>
           </div>
         </div>
-        <Progress value={(timeLeft / durationSec) * 100} className="h-1.5" />
+
+        {/* Stacked timers: round + level progress */}
+        <div className="space-y-1.5">
+          <Progress value={(timeLeft / durationSec) * 100} className="h-1.5" />
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
+              <div
+                className={cn("h-full bg-gradient-to-r transition-all duration-300", level.color)}
+                style={{ width: `${levelProgress}%` }}
+              />
+            </div>
+            <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+              {answered % ANSWERS_PER_LEVEL}/{ANSWERS_PER_LEVEL} → next rank
+            </span>
+          </div>
+        </div>
+
 
         {/* Card stage */}
         <div className="relative min-h-[260px]">
