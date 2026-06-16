@@ -251,6 +251,15 @@ export const phishingTypes: PhishingType[] = [
         phish: true,
         hint: "Bank-detail change with no phone confirmation = vendor fraud.",
       },
+      {
+        text: "Reminder from the CFO: Q3 forecast deck is due in the shared drive by Friday. No action needed today.",
+        phish: false,
+      },
+      {
+        text: "Confidential M&A — only you. Reply with your personal email so legal can send the NDA outside our domain. — CEO",
+        phish: true,
+        hint: "Secrecy + 'personal email' + bypass legal = textbook whaling.",
+      },
     ],
   },
   {
