@@ -15,6 +15,8 @@ import {
   Zap,
   X,
   Eye,
+  Trophy,
+  Skull,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
