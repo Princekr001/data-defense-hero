@@ -436,6 +436,28 @@ export default function PhishingStreamGame({
 
         {/* Card stage */}
         <div className="relative min-h-[260px]">
+          {levelUp && (
+            <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+              <div
+                className={cn(
+                  "px-8 py-5 rounded-2xl bg-gradient-to-br shadow-2xl border-2 border-white/20",
+                  "text-black text-center",
+                  LEVELS[levelUp.idx].color,
+                )}
+                style={{ animation: "level-burst 0.5s cubic-bezier(.34,1.56,.64,1)" }}
+              >
+                <div className="flex items-center justify-center gap-2 text-[10px] font-mono tracking-widest opacity-80">
+                  <Skull className="h-3 w-3" /> THREAT LEVEL UP <Skull className="h-3 w-3" />
+                </div>
+                <div className="text-3xl font-black tracking-wider mt-1">
+                  {LEVELS[levelUp.idx].name}
+                </div>
+                <div className="text-[11px] font-semibold mt-1 opacity-80">
+                  Messages get faster — stay sharp
+                </div>
+              </div>
+            </div>
+          )}
           {current && !solution && !finished && !lifelineActive && (
             <div
               key={current.id}
