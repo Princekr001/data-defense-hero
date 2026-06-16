@@ -126,6 +126,21 @@ export default function PhishingStreamGame({
   const [finished, setFinished] = useState(false);
   const [lifelineUsed, setLifelineUsed] = useState(false);
   const [lifelineActive, setLifelineActive] = useState(false);
+  const [levelUp, setLevelUp] = useState<null | { idx: number }>(null);
+  const levelIdx = Math.min(LEVELS.length - 1, Math.floor(answered / ANSWERS_PER_LEVEL));
+  const level = LEVELS[levelIdx];
+  const levelProgress = ((answered % ANSWERS_PER_LEVEL) / ANSWERS_PER_LEVEL) * 100;
+
+  // Trigger level-up overlay
+  useEffect(() => {
+    if (answered === 0) return;
+    if (answered % ANSWERS_PER_LEVEL === 0) {
+      const idx = Math.min(LEVELS.length - 1, Math.floor(answered / ANSWERS_PER_LEVEL));
+      setLevelUp({ idx });
+      const id = window.setTimeout(() => setLevelUp(null), 1400);
+      return () => window.clearTimeout(id);
+    }
+  }, [answered]);
 
   useEffect(() => {
     cursor.current = 1;
