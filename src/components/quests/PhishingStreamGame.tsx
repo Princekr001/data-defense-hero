@@ -47,7 +47,7 @@ const TICK_MS = 80;
 const MSG_LIFETIME_START_MS = 2400;
 const MSG_LIFETIME_FLOOR_MS = 850;
 const MSG_LIFETIME_DECAY_MS = 80;
-const START_LIVES = 3;
+const START_LIVES = 2;
 const ANSWERS_PER_LEVEL = 5;
 
 const LEVELS = [
