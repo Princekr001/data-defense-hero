@@ -44,10 +44,23 @@ interface Props {
 }
 
 const TICK_MS = 80;
-const MSG_LIFETIME_START_MS = 2200; // start at 2.2s
-const MSG_LIFETIME_FLOOR_MS = 900;  // shrinks down to 0.9s
-const MSG_LIFETIME_DECAY_MS = 90;   // -90ms each message answered
-const START_LIVES = 2; // unforgiving
+const MSG_LIFETIME_START_MS = 2400;
+const MSG_LIFETIME_FLOOR_MS = 850;
+const MSG_LIFETIME_DECAY_MS = 80;
+const START_LIVES = 3;
+const ANSWERS_PER_LEVEL = 5;
+
+const LEVELS = [
+  { name: "ROOKIE",     color: "from-sky-400 to-cyan-300",     ring: "ring-sky-400/60" },
+  { name: "ANALYST",    color: "from-emerald-400 to-lime-300", ring: "ring-emerald-400/60" },
+  { name: "HUNTER",     color: "from-amber-400 to-yellow-300", ring: "ring-amber-400/60" },
+  { name: "SPECIALIST", color: "from-orange-500 to-rose-400",  ring: "ring-orange-500/60" },
+  { name: "ELITE",      color: "from-fuchsia-500 to-pink-400", ring: "ring-fuchsia-500/60" },
+  { name: "LEGEND",     color: "from-violet-500 to-indigo-400",ring: "ring-violet-500/60" },
+  { name: "MYTHIC",     color: "from-red-500 to-rose-600",     ring: "ring-red-500/60" },
+];
+const getLevel = (n: number) =>
+  LEVELS[Math.min(LEVELS.length - 1, Math.floor(n / ANSWERS_PER_LEVEL))];
 
 const buildPool = (): StreamMessage[] => {
   let i = 0;
