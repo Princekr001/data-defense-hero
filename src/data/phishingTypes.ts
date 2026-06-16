@@ -80,6 +80,24 @@ export const phishingTypes: PhishingType[] = [
         phish: true,
         hint: "Tiny fee + unfamiliar domain = classic delivery phish.",
       },
+      {
+        text: "Your Netflix subscription will auto-renew on the 18th for ₹649. Manage in the app.",
+        phish: false,
+      },
+      {
+        text: "FINAL NOTICE: your mailbox is 99% full. Click <netflx-storage.net> in 15 min or lose all mail.",
+        phish: true,
+        hint: "Storage panic + countdown + lookalike domain.",
+      },
+      {
+        text: "Welcome to the newsletter you signed up for last Tuesday — confirm here to start receiving issues.",
+        phish: false,
+      },
+      {
+        text: "Tax refund of $842 approved — claim it via this secure HMRC-portal.support form within 24h.",
+        phish: true,
+        hint: "Tax agencies don't email refund forms — and the domain is fake.",
+      },
     ],
   },
   {
