@@ -60,44 +60,45 @@ export default function PhishingQuest({ onExit, onReward }: Props) {
             <div className="h-1 bg-gradient-to-r from-primary via-destructive to-primary animate-pulse" />
             <CardContent className="p-6 sm:p-8 space-y-6">
               <div className="text-center space-y-2">
-                <div className="text-6xl mb-2 animate-bounce">🎣</div>
+                <div className="text-6xl mb-2 animate-bounce">🛡️</div>
                 <h1 className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-primary to-destructive bg-clip-text text-transparent">
-                  PHISHING STORM
+                  DATA DEFENSE SIMULATOR
                 </h1>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                  6 attack types. 3 lives. 3 seconds per call. One wrong nuke and you bleed.
+                  You are the target. Emails, calls, SMS, QR codes, DMs, push alerts —
+                  <span className="text-destructive font-bold"> real attacks land in real time</span>.
+                  Every choice changes your bank, identity, contacts and device.
                 </p>
               </div>
 
-              {/* Threat lineup — quick scan, no theory */}
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                {phishingTypes.map((t) => (
-                  <div
-                    key={t.id}
-                    className="rounded-xl border border-primary/20 bg-card/60 p-2 text-center hover-scale"
-                    title={`${t.name} — ${t.tagline}`}
-                  >
-                    <div className="text-2xl mb-1">{t.emoji}</div>
-                    <div className="text-[10px] font-bold leading-tight">
-                      {t.name.split(" ")[0]}
-                    </div>
+              {/* Meters at stake */}
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { l: "Bank", v: "₹50,000", c: "text-primary" },
+                  { l: "Identity", v: "100%", c: "text-primary" },
+                  { l: "Contacts", v: "300", c: "text-primary" },
+                  { l: "Device", v: "100%", c: "text-primary" },
+                ].map((m) => (
+                  <div key={m.l} className="rounded-lg border border-primary/30 bg-primary/5 p-2 text-center">
+                    <div className="text-[9px] uppercase tracking-widest text-muted-foreground">{m.l}</div>
+                    <div className={cn("font-mono font-black text-sm", m.c)}>{m.v}</div>
                   </div>
                 ))}
               </div>
 
-              {/* Game rules — bite-sized */}
+              {/* Rules */}
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
                   <Skull className="h-5 w-5 mx-auto text-destructive mb-1" />
-                  <div className="text-xs font-bold">3 lives</div>
+                  <div className="text-xs font-bold">Any meter → 0 = game over</div>
                 </div>
                 <div className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3">
                   <Flame className="h-5 w-5 mx-auto text-orange-500 mb-1" />
-                  <div className="text-xs font-bold">Build combos</div>
+                  <div className="text-xs font-bold">3 waves, escalating</div>
                 </div>
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
                   <Target className="h-5 w-5 mx-auto text-primary mb-1" />
-                  <div className="text-xs font-bold">Fast = bonus</div>
+                  <div className="text-xs font-bold">1 lifeline: Red flags</div>
                 </div>
               </div>
 
@@ -106,12 +107,11 @@ export default function PhishingQuest({ onExit, onReward }: Props) {
                 onClick={() => setPhase("stream")}
                 className="w-full h-16 text-lg font-black tracking-wider gap-2 bg-gradient-to-r from-primary to-destructive hover:opacity-90"
               >
-                <Play className="h-6 w-6 fill-current" /> ENTER THE STORM
+                <Play className="h-6 w-6 fill-current" /> DEFEND YOUR DATA
               </Button>
 
               <p className="text-center text-[11px] text-muted-foreground">
-                You'll learn each attack <span className="text-primary font-bold">by surviving it</span>.
-                Mess up → instant solution card.
+                Every wrong tap has a <span className="text-destructive font-bold">real-world consequence</span>. Learn by getting hit.
               </p>
             </CardContent>
           </Card>
