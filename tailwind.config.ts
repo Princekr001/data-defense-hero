@@ -139,17 +139,30 @@ export default {
 					}
 				},
 				'bounce-in': {
-					'0%': {
-						transform: 'scale(0.3)',
-						opacity: '0'
-					},
-					'50%': {
-						transform: 'scale(1.1)'
-					},
-					'100%': {
-						transform: 'scale(1)',
-						opacity: '1'
-					}
+					'0%': { transform: 'scale(0.3)', opacity: '0' },
+					'50%': { transform: 'scale(1.1)' },
+					'100%': { transform: 'scale(1)', opacity: '1' }
+				},
+				'ticker': {
+					'0%': { transform: 'translateX(0)' },
+					'100%': { transform: 'translateX(-50%)' }
+				},
+				'sms-buzz': {
+					'0%,100%': { transform: 'translateX(0)' },
+					'20%': { transform: 'translateX(-6px) rotate(-1deg)' },
+					'40%': { transform: 'translateX(6px) rotate(1deg)' },
+					'60%': { transform: 'translateX(-4px)' },
+					'80%': { transform: 'translateX(4px)' }
+				},
+				'call-ring': {
+					'0%,100%': { transform: 'rotate(0deg)' },
+					'25%': { transform: 'rotate(-2deg)' },
+					'75%': { transform: 'rotate(2deg)' }
+				},
+				'push-drop': {
+					'0%': { transform: 'translateY(-40px)', opacity: '0' },
+					'60%': { transform: 'translateY(6px)', opacity: '1' },
+					'100%': { transform: 'translateY(0)', opacity: '1' }
 				}
 			},
 			animation: {
