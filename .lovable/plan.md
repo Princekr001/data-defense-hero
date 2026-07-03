@@ -1,50 +1,93 @@
-## Goal
 
-Add a topic-category filter to the 3D Hack Grid so students can practice one cybersecurity area at a time.
+# From Quiz → Data Defense Simulator
 
-## Categories (derived from existing level content)
+The current Phishing Storm reads like a timed multiple-choice quiz (message text + two buttons). We'll rebuild it as a **cinematic defense sim** where the player IS a person whose data, money, contacts and reputation are actively under attack — and every decision plays out visibly on screen.
 
-Each hack level already maps cleanly to one of three core domains based on its mini-game and target. I'll add an explicit `category` field so it's data-driven, not inferred at render time.
+## The new core loop
 
-| Category | Tag | Levels |
-|---|---|---|
-| Passwords & Credentials | `passwords` | L1 Open WiFi Heist, L4 Corp VPN Crack, L7 Power Grid Lockpick |
-| Phishing & Network Traffic | `phishing` | L2 Phishing Stream, L5 Datacenter Sniff, L8 Satellite Uplink |
-| Privacy & Network Defense | `privacy` | L3 Home Router Bypass, L6 WAF Maze, L9 Black Vault |
+Instead of "read message → pick Legit/Phish", the player commands a stylized avatar ("YOU") sitting at a desk. Threats arrive as **live incoming alerts** — a ringing phone, a popping email, a QR code slid across the desk, a bank SMS buzzing. The player has seconds to react with a contextual action (Block, Report, Verify, Ignore, Open).
 
-Plus an "All targets" option (default).
+Each choice triggers a **consequence cutscene** (2-3s animation) that visibly changes the player's state:
 
-## UX
+- Wrong → attacker avatar laughs, data packets fly out of the player's device, a bank balance ticks down, a "CONTACTS LEAKED" banner sweeps in, screen glitches red.
+- Right → shield pulse, attacker avatar disintegrates, "THREAT NEUTRALIZED" stamp, small XP burst.
 
-- A pill-style filter bar pinned **bottom-center** of the Hack Grid screen (above the existing hint text), styled to match the existing black/cyan HUD (backdrop-blur, white/10 border).
-- 4 chips: `All · Passwords · Phishing · Privacy`. Active chip uses the cyber accent color; counts shown in small text (`Passwords · 3`).
-- On mobile (`< sm`), the bar wraps and uses smaller padding.
+The consequence is the teaching moment — no separate solution card wall.
 
-## 3D behavior
+## Player identity & stakes (persistent HUD)
 
-- Filtering does not remove nodes from the scene — that would jar the layout. Instead:
-  - Matching nodes render at full emissive intensity.
-  - Non-matching nodes fade to ~15% opacity, desaturate, and become non-interactive (pointer events off).
-- The current unlock/complete logic stays unchanged — players still progress through the full sequence; the filter is a visual practice aid.
+Four live meters replace the abstract "score":
 
-## File changes
+```text
+ [ Bank Balance   $2,480 ] ← ticks down on scams / phishing money loss
+ [ Identity       92%    ] ← drops on credential leaks
+ [ Contacts       247    ] ← drops on contact-list breaches
+ [ Device Health  100%   ] ← drops on malware / quishing installs
+```
 
-**Edited**
-- `src/data/hackTargets.ts` — add `category: "passwords" | "phishing" | "privacy"` to each level; export a `hackCategories` array with label + count helpers.
-- `src/components/hack/LevelNode.tsx` — accept a `dimmed` prop; when true, reduce opacity, drop emissive intensity, and ignore pointer events.
-- `src/components/hack/HackGrid3D.tsx` — accept `activeCategory` prop and pass `dimmed` to each `LevelNode` when `activeCategory !== "all" && level.category !== activeCategory`.
-- `src/components/HackGame.tsx` — add `activeCategory` state, render the filter bar (only when `view === "grid"`), pass into `HackGrid3D`.
+Lose any meter to zero → game over cutscene ("Your identity was sold on the dark web").
 
-**No changes** to mini-games, progression, or the mission scene.
+## The character
 
-## Out of scope
+A stylized SVG avatar rendered in the scene (not a static emoji):
+- Neutral pose while idle
+- Alert pose when threat incoming (leans forward, sweat drop)
+- Shield-up pose on correct block
+- Shocked / drained pose on wrong choice
+- Face + color customizable at first launch (reuse existing CharacterCustomizer skin tokens)
 
-- No re-introduction of the old `EnhancedInteractiveCyberGame` Quiz Mode.
-- No new mini-games or categories beyond what the existing levels already cover.
-- No persistence of the selected filter (resets to "All" on reload — it's a practice toggle).
+Antagonist avatars appear per threat type: **Phisher Ghost** (email), **Suit Impostor** (whaling), **QR Trickster** (quishing), **Voice Bot** (vishing), **Clone** (clone phishing), **Angler Fish** (social).
 
-## Verification
+## Threat scene types (each with its own animation)
 
-- Toggle each filter chip; confirm only matching nodes glow and are clickable.
-- "All" restores the default visual.
-- Resize to mobile width; filter bar wraps and stays tappable.
+1. **Email pop-in** — envelope slides onto screen, unfolds, headers/link highlighted.
+2. **SMS buzz** — phone shakes on desk, message bubbles typewriter-in.
+3. **Voice call** — phone rings with waveform, transcript streams live.
+4. **QR flash** — a printed QR card lands on the desk, camera-scan overlay.
+5. **DM ping** — social app notification with fake profile card.
+6. **Push alert** — OS-style banner drops from top.
+
+Each scene ships with 2-4 contextual action buttons (not just Legit/Phish): e.g. `Answer`, `Decline`, `Report as spam`, `Scan QR`, `Cover it`.
+
+## Live alert system
+
+A ticker at the top streams **real-world-style news alerts** between waves ("⚠️ 3,400 accounts drained via fake bank SMS in Mumbai today") to reinforce seriousness. Between rounds, a "Threat Intel" card shows the actual technique the player just faced, in one line, with the red flags highlighted on the original message.
+
+## Difficulty & pacing (kept hard)
+
+- Waves of 5 threats, escalating: single threat → parallel threats (email + SMS at once) → decoys (legit-looking that ARE legit — punished for over-blocking).
+- Reaction window shrinks each wave.
+- Boss wave: a live "attack in progress" where 3 threats fire in 6 seconds.
+
+## Files to change
+
+- **New** `src/components/quests/scenes/` — one small component per scene type (EmailScene, SMSScene, CallScene, QRScene, DMScene, PushScene) with framer-motion animations.
+- **New** `src/components/quests/DefenderAvatar.tsx` — SVG player with pose states.
+- **New** `src/components/quests/AttackerAvatar.tsx` — SVG antagonists per threat type.
+- **New** `src/components/quests/ConsequenceOverlay.tsx` — the "packets leaking / shield pulse / balance drop" cutscene.
+- **New** `src/components/quests/DefenderHUD.tsx` — bank / identity / contacts / device meters + live news ticker.
+- **New** `src/data/defenderThreats.ts` — threat scenarios with scene type, actions, consequences, teach-line, red flags.
+- **Rewrite** `src/components/quests/PhishingStreamGame.tsx` — orchestrator (wave manager, meters, game-over) instead of the current text-message stream.
+- **Update** `src/components/quests/PhishingQuest.tsx` — intro reframed as "You have 60 seconds. Protect your data." with meter preview.
+- **Keep** `src/data/phishingTypes.ts` (referenced for taxonomy) and Red Flags lifeline (adapted to new scenes).
+
+## What stays
+
+- 3 lives → replaced by the 4 meters; lifeline "Show Red Flags" survives.
+- Level/rank progression survives, but is now tied to meters saved + threats neutralized.
+- Reward calculation (`knowledge` / `reputation`) into Cipher City stays intact.
+
+## Out of scope for this pass
+
+- Sound design overhaul (reuse existing `useGameAudio`).
+- Multiplayer / leaderboard changes.
+- New backend tables.
+
+## One decision before I build
+
+**Character art direction — pick one:**
+- **A. Flat vector cyberpunk** — geometric SVG avatar, neon outlines, matches current dark theme. Fastest, ships crisp animations.
+- **B. Pixel-art hacker** — 32×32 pixel character with 4-frame pose sprites, retro arcade feel.
+- **C. 3D-ish isometric desk scene** — CSS 3D transformed desk with the avatar as a stylized silhouette, more cinematic but heavier.
+
+I recommend **A** — best fit for the existing cyberpunk system and quickest to animate multiple pose states without new assets.
