@@ -70,7 +70,7 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
   const [lifelineUsed, setLifelineUsed] = useState(false);
   const [showRedFlags, setShowRedFlags] = useState(false);
 
-  const threat: Threat | undefined = queue[idx];
+  const threat = queue[idx];
   const waveIdx = threat?.waveIdx ?? totalWaves - 1;
 
   // Reset reaction timer when threat changes
