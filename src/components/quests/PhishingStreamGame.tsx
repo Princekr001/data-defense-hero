@@ -11,7 +11,6 @@ import {
   METER_STARTS,
   WAVES,
   type MeterKey,
-  type Threat,
   type ThreatAction,
 } from "@/data/defenderThreats";
 
