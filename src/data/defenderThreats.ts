@@ -4,19 +4,20 @@
 
 export type SceneType = "email" | "sms" | "call" | "qr" | "dm" | "push";
 export type MeterKey = "bank" | "identity" | "contacts" | "device";
+export type Exposure = "credentials" | "otp" | "device" | "contacts" | "bank" | "identity";
 
 export interface ThreatAction {
   id: string;
   label: string;
-  hint?: string; // shown on hover on desktop
-  // If this action is the correct/safe one for this threat
+  hint?: string;
   safe: boolean;
-  // Delta to each meter when chosen (only applied on unsafe unless "reward" defined)
   damage?: Partial<Record<MeterKey, number>>;
-  // Reward-side messaging on safe pick
   rewardMessage?: string;
-  // Failure explanation on unsafe pick
   failMessage?: string;
+  // What this unsafe action leaks — drives future targeted follow-ups
+  exposes?: Exposure[];
+  // Small heal awarded on a proactive safe pick (e.g. reporting)
+  heal?: Partial<Record<MeterKey, number>>;
 }
 
 export interface Threat {
@@ -315,3 +316,130 @@ export const NEWS_TICKER = [
   "🔥 Deepfake CEO wire-fraud losses topped $2.7B worldwide in 2025",
   "⚡ MFA fatigue attacks bypassed 2FA in 15% of breaches last year",
 ];
+
+// -------- Branching: exposure-triggered follow-up threats --------
+// When the player fails and leaks something, the ATTACKER escalates.
+// One of these gets injected into the queue for the next threat.
+
+export const FOLLOW_UPS: Record<Exposure, Threat[]> = {
+  credentials: [
+    {
+      id: "fu-cred-1",
+      scene: "email",
+      attacker: "clone",
+      category: "Follow-up: password stuffed",
+      from: "no-reply@your-email.com",
+      subject: "Your password was just changed",
+      body: "We changed your password after your recent login. If this wasn't you, click here to restore: http://restore-mail.help/undo",
+      redFlags: ["restore-mail.help", "click here"],
+      reactMs: 3200,
+      actions: [
+        { id: "click", label: "Restore now", safe: false, damage: { identity: 30, contacts: 60 }, exposes: ["contacts"], failMessage: "Attacker locked you in deeper. Address book exfiltrated." },
+        { id: "app", label: "Login via official site", safe: true, rewardMessage: "You checked directly. Session revoked.", heal: { identity: 5 } },
+      ],
+      teach: "Once creds leak, attackers spam 'reset' scams. Only trust the official app/site typed by you.",
+    },
+  ],
+  otp: [
+    {
+      id: "fu-otp-1",
+      scene: "call",
+      attacker: "voice",
+      category: "Follow-up: bank drain call",
+      from: "Bank Fraud Team",
+      subject: "Confirming your ₹49,999 transfer",
+      body: "Sir we see a large transfer from your account. Please confirm the OTP we just sent to reverse it.",
+      redFlags: ["confirm OTP", "reverse", "large transfer"],
+      reactMs: 3000,
+      actions: [
+        { id: "otp", label: "Share OTP to reverse", safe: false, damage: { bank: 20000, identity: 20 }, exposes: ["bank"], failMessage: "You shared the OTP. That was the drain transaction — approved by you." },
+        { id: "hangup-callback", label: "Hang up + call bank number on card", safe: true, rewardMessage: "Real bank confirmed no such transfer. Drain blocked.", heal: { identity: 5 } },
+      ],
+      teach: "After an OTP leak, attackers race the clock. NEVER re-share OTPs, even to 'reverse'.",
+    },
+  ],
+  device: [
+    {
+      id: "fu-device-1",
+      scene: "push",
+      attacker: "clone",
+      category: "Follow-up: fake AV alert",
+      from: "System Security",
+      subject: "5 viruses detected — clean now",
+      body: "Your device is severely infected. Install SecureCleanPro.exe to remove threats.",
+      redFlags: [".exe", "SecureCleanPro"],
+      reactMs: 2800,
+      actions: [
+        { id: "install", label: "Install cleaner", safe: false, damage: { device: 40, contacts: 40 }, exposes: ["contacts"], failMessage: "Second-stage payload installed. Full remote access." },
+        { id: "reboot", label: "Reboot + scan with built-in tool", safe: true, rewardMessage: "Windows Defender caught the loader. Contained.", heal: { device: 8 } },
+      ],
+      teach: "A compromised device attracts fake 'security' popups. Only trust the OS's built-in tools.",
+    },
+  ],
+  contacts: [
+    {
+      id: "fu-contacts-1",
+      scene: "dm",
+      attacker: "clone",
+      category: "Follow-up: friend impersonation",
+      from: "@your.cousin.new (dup account)",
+      body: "Hey it's me, lost my phone. Send ₹3,000 to this UPI for a new SIM 🙏",
+      redFlags: ["dup account", "new SIM"],
+      reactMs: 3000,
+      actions: [
+        { id: "send", label: "Send ₹3,000", safe: false, damage: { bank: 3000, contacts: 20 }, exposes: ["bank"], failMessage: "Same attacker, new mask. Money gone." },
+        { id: "call", label: "Call cousin's real number", safe: true, rewardMessage: "Cousin is fine. Duplicate reported.", heal: { contacts: 10 } },
+      ],
+      teach: "Leaked contacts = attackers know who to impersonate. Always verify on a known channel.",
+    },
+  ],
+  bank: [
+    {
+      id: "fu-bank-1",
+      scene: "sms",
+      attacker: "voice",
+      category: "Follow-up: card recovery scam",
+      from: "VM-CARDHELP",
+      body: "Recovery service: Recover funds lost in your recent fraud. Pay ₹499 processing fee: recover-money.link/case",
+      redFlags: ["recovery service", "processing fee", "recover-money.link"],
+      reactMs: 2600,
+      actions: [
+        { id: "pay", label: "Pay ₹499 recovery", safe: false, damage: { bank: 499, identity: 10 }, failMessage: "Recovery scams re-target the already-scammed. You lost more." },
+        { id: "ignore", label: "Ignore + report to 1930", safe: true, rewardMessage: "Reported. No recovery service demands a fee upfront.", heal: { identity: 5 } },
+      ],
+      teach: "Victim lists are sold. 'Recovery agents' are a second attack. Real cybercrime helplines are free.",
+    },
+  ],
+  identity: [
+    {
+      id: "fu-identity-1",
+      scene: "email",
+      attacker: "suit",
+      category: "Follow-up: loan-in-your-name",
+      from: "loans@quick-approve.co",
+      subject: "Your ₹2 lakh loan is pre-approved",
+      body: "Congrats! Click to accept your instant loan. No documents needed.",
+      redFlags: ["No documents needed", "quick-approve.co"],
+      reactMs: 2600,
+      actions: [
+        { id: "accept", label: "Accept loan", safe: false, damage: { bank: 5000, identity: 30 }, failMessage: "You just co-signed a fraud loan taken with your stolen Aadhaar." },
+        { id: "cibil", label: "Check CIBIL + freeze credit", safe: true, rewardMessage: "You spotted 2 loans opened in your name. Frozen in time.", heal: { identity: 8 } },
+      ],
+      teach: "Stolen identity → fraudulent loans. Freeze your credit report after any KYC leak.",
+    },
+  ],
+};
+
+// Infer exposures from an unsafe action's damage when the threat author didn't tag it.
+export function inferExposures(a: ThreatAction): Exposure[] {
+  if (a.exposes && a.exposes.length) return a.exposes;
+  if (a.safe || !a.damage) return [];
+  const out: Exposure[] = [];
+  if ((a.damage.bank ?? 0) > 0) out.push("bank");
+  if ((a.damage.identity ?? 0) >= 30) out.push("credentials");
+  else if ((a.damage.identity ?? 0) > 0) out.push("identity");
+  if ((a.damage.contacts ?? 0) > 0) out.push("contacts");
+  if ((a.damage.device ?? 0) > 0) out.push("device");
+  return out;
+}
+

@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Eye, ShieldOff, Skull } from "lucide-react";
+import { Eye, ShieldOff, Skull, Sparkles, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DefenderAvatar, { type DefenderPose } from "./DefenderAvatar";
 import AttackerAvatar from "./AttackerAvatar";
@@ -14,8 +14,12 @@ import AchievementToast from "./AchievementToast";
 import {
   METER_STARTS,
   WAVES,
+  FOLLOW_UPS,
+  inferExposures,
   type MeterKey,
   type ThreatAction,
+  type Threat,
+  type Exposure,
 } from "@/data/defenderThreats";
 import {
   FUN_FACTS,
@@ -27,18 +31,13 @@ import {
 } from "@/data/knowledge";
 import { useKnowledgeVault, pickRandom } from "@/hooks/useKnowledgeVault";
 
+type QThreat = Threat & { waveIdx: number; injected?: boolean };
+
 interface StreamResult {
-  correct: number;
-  wrong: number;
-  missed: number;
-  total: number;
-  score: number;
-  bestCombo: number;
-  bankSaved: number;
-  identityLeft: number;
-  knowledgeGained: number;
-  factsUnlocked: number;
-  achievements: number;
+  correct: number; wrong: number; missed: number; total: number;
+  score: number; bestCombo: number;
+  bankSaved: number; identityLeft: number;
+  knowledgeGained: number; factsUnlocked: number; achievements: number;
 }
 
 interface Props {
@@ -54,15 +53,21 @@ interface PendingOutcome {
   message: string;
   teach: string;
   damage?: Partial<Record<MeterKey, number>>;
+  heal?: Partial<Record<MeterKey, number>>;
+  branchTag?: string; // shown in overlay: "Attacker escalating…" / "Recovery pulse"
 }
 
 const TICK_MS = 100;
+const MAX_INJECTIONS = 4;
+
+function initialQueue(): QThreat[] {
+  return WAVES.flatMap((w, wi) => w.map((t) => ({ ...t, waveIdx: wi })));
+}
 
 export default function PhishingStreamGame({ onExit, onComplete }: Props) {
-  const queue = useMemo(() => WAVES.flatMap((w, wi) => w.map((t) => ({ ...t, waveIdx: wi }))), []);
+  const [queue, setQueue] = useState<QThreat[]>(() => initialQueue());
   const totalWaves = WAVES.length;
 
-  const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState<Phase>("playing");
   const [meters, setMeters] = useState<Record<MeterKey, number>>({ ...METER_STARTS });
   const [timeLeftMs, setTimeLeftMs] = useState(0);
@@ -86,12 +91,18 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
   const [lifelineUsedThisThreat, setLifelineUsedThisThreat] = useState(false);
   const [bankAtWaveStart, setBankAtWaveStart] = useState(METER_STARTS.bank);
 
+  // -------- Branching profile --------
+  const [safeStreak, setSafeStreak] = useState(0);
+  const [riskyStreak, setRiskyStreak] = useState(0);
+  const [exposures, setExposures] = useState<Exposure[]>([]);
+  const [reactMod, setReactMod] = useState(1); // multiplier for next threat's reactMs
+  const injectionsRef = useRef(0);
+
   const vault = useKnowledgeVault();
 
-  const threat = queue[idx];
+  const threat = queue[0];
   const waveIdx = threat?.waveIdx ?? totalWaves - 1;
 
-  // Achievements deduped per session
   const unlockedThisRun = useRef<Set<string>>(new Set());
   const tryUnlock = useCallback((id: string) => {
     if (unlockedThisRun.current.has(id)) return;
@@ -102,14 +113,16 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
     setAchievement({ icon: def.icon, name: def.name, tagline: def.tagline });
   }, [vault]);
 
+  // Reset timer per threat, applying the branching reactMod
   useEffect(() => {
     if (!threat || phase !== "playing") return;
-    setTimeLeftMs(threat.reactMs);
+    const modded = Math.max(1200, Math.round(threat.reactMs * reactMod));
+    setTimeLeftMs(modded);
     setPose("alert");
     setAttackerDefeated(false);
     setShowRedFlags(false);
     setLifelineUsedThisThreat(false);
-  }, [threat, phase]);
+  }, [threat, phase, reactMod]);
 
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => {
@@ -131,20 +144,39 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, threat, showRedFlags]);
 
-  const applyDamage = useCallback((damage: Partial<Record<MeterKey, number>>) => {
+  const applyDelta = useCallback((delta: Partial<Record<MeterKey, number>>, mode: "damage" | "heal") => {
     setMeters((m) => {
       const next = { ...m };
       let killed = false;
-      (Object.entries(damage) as [MeterKey, number][]).forEach(([k, v]) => {
-        next[k] = Math.max(0, next[k] - v);
-        if (next[k] <= 0) killed = true;
+      (Object.entries(delta) as [MeterKey, number][]).forEach(([k, v]) => {
+        const cap = k === "bank" ? METER_STARTS.bank : k === "contacts" ? METER_STARTS.contacts : 100;
+        if (mode === "damage") {
+          next[k] = Math.max(0, next[k] - v);
+          if (next[k] <= 0) killed = true;
+        } else {
+          next[k] = Math.min(cap, next[k] + v);
+        }
       });
       if (killed) setTimeout(() => setPhase("over"), 50);
       return next;
     });
   }, []);
 
-  // Pick a random knowledge card, avoiding already-seen
+  // Inject a follow-up threat targeted at the fresh exposure
+  const injectFollowUp = useCallback((exp: Exposure, waveOf: number) => {
+    if (injectionsRef.current >= MAX_INJECTIONS) return;
+    const pool = FOLLOW_UPS[exp];
+    if (!pool || pool.length === 0) return;
+    const t = pool[Math.floor(Math.random() * pool.length)];
+    const fu: QThreat = { ...t, waveIdx: waveOf, injected: true, id: `${t.id}-${Date.now()}` };
+    injectionsRef.current += 1;
+    setQueue((q) => {
+      if (q.length <= 1) return [...q, fu];
+      // insert AFTER the current threat, so the branching kicks in next
+      return [q[0], fu, ...q.slice(1)];
+    });
+  }, []);
+
   const pickKnowledge = useCallback((): KnowledgePayload => {
     const buckets = ["fact", "comic", "myth", "tip"] as const;
     const kind = buckets[Math.floor(Math.random() * buckets.length)];
@@ -156,38 +188,38 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
   }, [vault.state.seen]);
 
   const advanceAfterKnowledge = useCallback(() => {
-    // Check for wave end -> case file
-    const nextIdx = idx + 1;
-    const currentWave = queue[idx]?.waveIdx ?? 0;
-    const nextWave = queue[nextIdx]?.waveIdx;
-    const waveClearing = nextWave !== undefined && nextWave !== currentWave;
-    const allDone = nextIdx >= queue.length;
+    // Consume the current head
+    setQueue((q) => {
+      const consumed = q[0];
+      const rest = q.slice(1);
+      const nextHead = rest[0];
+      const currentWave = consumed?.waveIdx ?? 0;
+      const nextWave = nextHead?.waveIdx;
+      const waveClearing = nextHead && nextWave !== currentWave;
+      const allDone = rest.length === 0;
 
-    // Bank Guardian achievement — bank untouched during wave
-    if ((waveClearing || allDone) && meters.bank >= bankAtWaveStart) {
-      tryUnlock("bank-guardian");
-    }
-
-    if (waveClearing) {
-      const file = CASE_FILES[Math.min(currentWave, CASE_FILES.length - 1)];
-      setCaseFile(file);
-      setPhase("caseFile");
-      return;
-    }
-    if (allDone) { setPhase("over"); return; }
-    setIdx(nextIdx);
-    setPhase("playing");
-  }, [idx, queue, meters.bank, bankAtWaveStart, tryUnlock]);
+      if ((waveClearing || allDone) && meters.bank >= bankAtWaveStart) {
+        tryUnlock("bank-guardian");
+      }
+      if (waveClearing) {
+        const file = CASE_FILES[Math.min(currentWave, CASE_FILES.length - 1)];
+        setCaseFile(file);
+        setPhase("caseFile");
+      } else if (allDone) {
+        setPhase("over");
+      } else {
+        setPhase("playing");
+      }
+      return rest;
+    });
+  }, [meters.bank, bankAtWaveStart, tryUnlock]);
 
   const finishConsequence = useCallback(() => {
     setPending(null);
-    // Cipher Bot reacts through the knowledge screen (mood already set)
     const payload = pickKnowledge();
-    // mark seen + count
     vault.markSeen((payload.data as any).id);
     setKnowledge(payload);
     setPhase("knowledge");
-    // Cyber Scholar achievement
     if (vault.state.cardsRead + 1 >= 5) tryUnlock("cyber-scholar");
   }, [pickKnowledge, vault, tryUnlock]);
 
@@ -198,17 +230,18 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
 
   const finishCaseFile = useCallback(() => {
     setCaseFile(null);
-    const nextIdx = idx + 1;
-    if (nextIdx >= queue.length) { setPhase("over"); return; }
     setBankAtWaveStart(meters.bank);
-    setIdx(nextIdx);
+    if (queue.length === 0) { setPhase("over"); return; }
     setPhase("playing");
-  }, [idx, queue.length, meters.bank]);
+  }, [queue.length, meters.bank]);
 
   const handleTimeout = useCallback(() => {
     if (!threat) return;
     setMissed((n) => n + 1);
     setCombo(0);
+    setSafeStreak(0);
+    setRiskyStreak((r) => r + 1);
+    setReactMod(0.85); // attackers press the advantage
     setPose("hurt");
     setBotMood("hit");
     const worstUnsafe = threat.actions.find((a) => !a.safe && a.damage);
@@ -218,35 +251,55 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
         dmg[k] = (dmg[k] ?? 0) + Math.round(v * 0.5);
       });
     }
-    applyDamage(dmg);
+    applyDelta(dmg, "damage");
     setPending({
       outcome: "compromised",
       message: `You froze. The attack landed while you hesitated.`,
       teach: threat.teach,
       damage: dmg,
+      branchTag: "Next threat closes in faster.",
     });
     setPhase("consequence");
-  }, [threat, applyDamage]);
+  }, [threat, applyDelta]);
 
   const handleAction = useCallback(
     (action: ThreatAction) => {
       if (!threat || phase !== "playing") return;
 
       if (action.safe) {
-        const speedBonus = Math.round((timeLeftMs / threat.reactMs) * 50);
+        const speedBonus = Math.round((timeLeftMs / (threat.reactMs * reactMod)) * 50);
         const gained = 100 + speedBonus + combo * 10;
         setScore((s) => s + gained);
-        setCorrect((n) => {
-          const next = n + 1;
-          if (next >= 5) tryUnlock("spam-slayer");
-          return next;
-        });
+        setCorrect((n) => { const nx = n + 1; if (nx >= 5) tryUnlock("spam-slayer"); return nx; });
         setCombo((c) => {
-          const next = c + 1;
-          setBestCombo((b) => Math.max(b, next));
-          if (next >= 3) tryUnlock("no-flinch");
-          return next;
+          const nx = c + 1;
+          setBestCombo((b) => Math.max(b, nx));
+          if (nx >= 3) tryUnlock("no-flinch");
+          return nx;
         });
+        setRiskyStreak(0);
+
+        const nextSafeStreak = safeStreak + 1;
+        setSafeStreak(nextSafeStreak);
+
+        // Optional per-action heal (e.g. "report" actions)
+        if (action.heal) applyDelta(action.heal, "heal");
+
+        // RECOVERY PULSE — 3 consecutive safe picks: heal + gentler next threat
+        let branchTag: string | undefined;
+        if (nextSafeStreak >= 3) {
+          setSafeStreak(0);
+          const heal: Partial<Record<MeterKey, number>> = {
+            identity: 10, device: 10, contacts: 20, bank: 1500,
+          };
+          applyDelta(heal, "heal");
+          setReactMod(1.25); // player earned breathing room
+          branchTag = "Recovery pulse: meters healed, next threat gentler.";
+        } else {
+          // subtle easing after any safe pick
+          setReactMod((r) => Math.min(1.15, r + 0.05));
+        }
+
         if (lifelineUsedThisThreat) tryUnlock("eagle-eye");
         if (threat.scene === "qr") tryUnlock("qr-master");
         setPose("shield");
@@ -256,33 +309,54 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
           outcome: "safe",
           message: action.rewardMessage ?? "You made the right call. Attack neutralized.",
           teach: threat.teach,
+          heal: action.heal,
+          branchTag,
         });
         setPhase("consequence");
       } else {
         setWrong((n) => n + 1);
         setCombo(0);
+        setSafeStreak(0);
+        const nextRisky = riskyStreak + 1;
+        setRiskyStreak(nextRisky);
+
+        if (action.damage) applyDelta(action.damage, "damage");
+
+        // BRANCH: record exposures + inject a targeted follow-up
+        const exps = inferExposures(action);
+        if (exps.length) {
+          setExposures((e) => Array.from(new Set([...e, ...exps])));
+          injectFollowUp(exps[0], threat.waveIdx);
+        }
+
+        // Attackers speed up more if you keep failing
+        const newMod = nextRisky >= 2 ? 0.75 : 0.85;
+        setReactMod(newMod);
+
         setPose("hurt");
         setBotMood("hit");
-        if (action.damage) applyDamage(action.damage);
         setPending({
           outcome: "compromised",
           message: action.failMessage ?? "Attacker succeeded. Data compromised.",
           teach: threat.teach,
           damage: action.damage,
+          branchTag: exps.length
+            ? `Attacker escalating — targeting your ${exps[0]}.`
+            : "Attackers press the advantage. Next threat is faster.",
         });
         setPhase("consequence");
       }
     },
-    [threat, phase, timeLeftMs, combo, applyDamage, lifelineUsedThisThreat, tryUnlock],
+    [threat, phase, timeLeftMs, combo, reactMod, safeStreak, riskyStreak, lifelineUsedThisThreat, applyDelta, injectFollowUp, tryUnlock],
   );
 
   const emittedRef = useRef(false);
   useEffect(() => {
     if (phase !== "over" || emittedRef.current) return;
     emittedRef.current = true;
-    const total = correct + wrong + missed;
     onComplete({
-      correct, wrong, missed, total, score, bestCombo,
+      correct, wrong, missed, total: correct + wrong + missed,
+      score, bestCombo,
       bankSaved: meters.bank,
       identityLeft: meters.identity,
       knowledgeGained: (correct + wrong + missed) * 15,
@@ -301,6 +375,12 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
 
   if (phase === "over" && !pending && !knowledge && !caseFile) return null;
 
+  // Profile badge state
+  const profileState =
+    riskyStreak >= 2 ? { label: "ATTACKERS ESCALATING", color: "text-destructive border-destructive/60 bg-destructive/10", Icon: AlertTriangle }
+    : safeStreak >= 2 ? { label: "STEADY DEFENSE", color: "text-primary border-primary/60 bg-primary/10", Icon: Sparkles }
+    : { label: "NEUTRAL", color: "text-muted-foreground border-white/10 bg-white/5", Icon: Sparkles };
+
   return (
     <div className="relative">
       <div
@@ -317,8 +397,26 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
           wave={waveIdx + 1}
           waveTotal={totalWaves}
           timeLeftMs={timeLeftMs}
-          reactWindowMs={threat?.reactMs ?? 1}
+          reactWindowMs={Math.round((threat?.reactMs ?? 1) * reactMod)}
         />
+
+        {/* Branching profile strip */}
+        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+          <div className={cn("flex items-center gap-1 px-2 py-1 rounded-full border", profileState.color)}>
+            <profileState.Icon className="w-3 h-3" />
+            {profileState.label}
+          </div>
+          {threat?.injected && (
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full border border-destructive/60 bg-destructive/10 text-destructive animate-pulse">
+              ⚡ FOLLOW-UP ATTACK
+            </div>
+          )}
+          {exposures.length > 0 && (
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full border border-yellow-500/40 bg-yellow-500/10 text-yellow-400">
+              LEAKED: {exposures.join(" · ")}
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-xl border border-primary/20 bg-card/40 backdrop-blur p-3 min-h-[180px]">
           <DefenderAvatar pose={pose} className="w-28 h-28" />
@@ -377,7 +475,6 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
           </Button>
         </div>
 
-        {/* Cipher Bot — floating companion */}
         <div className="fixed bottom-4 left-4 z-30">
           <CipherBot mood={botMood} />
         </div>
@@ -386,7 +483,7 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
       {pending && (
         <ConsequenceOverlay
           outcome={pending.outcome}
-          message={pending.message}
+          message={pending.message + (pending.branchTag ? ` — ${pending.branchTag}` : "")}
           teach={pending.teach}
           damage={pending.damage}
           onDone={finishConsequence}
