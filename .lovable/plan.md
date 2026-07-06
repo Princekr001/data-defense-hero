@@ -1,93 +1,128 @@
+# Cipher City → Premium Cyber Defense Experience
 
-# From Quiz → Data Defense Simulator
+Transform the Data Defense Simulator into a story-driven, reward-loop game where every 15–20s the player gets threat → decision → animated consequence → knowledge drop → progression. Keep XP, reputation, knowledge, customization, sound, Red Flag lifeline, and Cipher City integration — enhance them, never replace.
 
-The current Phishing Storm reads like a timed multiple-choice quiz (message text + two buttons). We'll rebuild it as a **cinematic defense sim** where the player IS a person whose data, money, contacts and reputation are actively under attack — and every decision plays out visibly on screen.
+## 1. New data layer
 
-## The new core loop
+Create bite-sized content banks (no walls of text; each item ≤ ~60 words):
 
-Instead of "read message → pick Legit/Phish", the player commands a stylized avatar ("YOU") sitting at a desk. Threats arrive as **live incoming alerts** — a ringing phone, a popping email, a QR code slid across the desk, a bank SMS buzzing. The player has seconds to react with a contextual action (Block, Report, Verify, Ignore, Open).
+- `src/data/knowledge/funFacts.ts` — 30+ fun cyber facts
+- `src/data/knowledge/comicCases.ts` — 15+ 3-panel funny case studies (panels + moral)
+- `src/data/knowledge/mythVsReality.ts` — 20+ myth/reality pairs
+- `src/data/knowledge/cyberTips.ts` — 25+ short Cipher Bot tips
+- `src/data/knowledge/caseFiles.ts` — 12+ real-world case files (Bangladesh Bank, Colonial Pipeline, Twitter 2020, WannaCry, Target, SolarWinds…) with attack / damage / why / prevention
+- `src/data/knowledge/newsTicker.ts` — rotating live-alert headlines (extends current ticker)
+- `src/data/operations.ts` — 6 Operations (Home Shield → Banking Crisis → School Security → Hospital Lockdown → National Grid → Dark Web), each with theme color, background, music cue, threat wave IDs
+- `src/data/achievements/defender.ts` — Spam Slayer, Eagle Eye, Cyber Scholar, QR Master, Bank Guardian, etc. with triggers
 
-Each choice triggers a **consequence cutscene** (2-3s animation) that visibly changes the player's state:
+All categorized by topic: `phishing | malware | passwords | banking | social | ai` for the Knowledge Vault.
 
-- Wrong → attacker avatar laughs, data packets fly out of the player's device, a bank balance ticks down, a "CONTACTS LEAKED" banner sweeps in, screen glitches red.
-- Right → shield pulse, attacker avatar disintegrates, "THREAT NEUTRALIZED" stamp, small XP burst.
+## 2. Consequence cinematics (replace ✅/❌ screen)
 
-The consequence is the teaching moment — no separate solution card wall.
+Rewrite `src/components/quests/ConsequenceOverlay.tsx` as a 2–3s cinematic (Framer Motion):
 
-## Player identity & stakes (persistent HUD)
+- **Correct**: expanding green shield ring, hacker sprite dissolving into pixels, "THREAT NEUTRALIZED" stamp slam, XP particles flying to HUD, defender smile pose, city-glow brighten pulse.
+- **Wrong**: RGB glitch bars, hacker laugh sprite, meter counters ticking down live, floating data packets ("SSN", "OTP", "₹") leaking outward, device-spark sparks.
 
-Four live meters replace the abstract "score":
+No "Next" button gate — auto-advances into the Knowledge Card.
 
-```text
- [ Bank Balance   $2,480 ] ← ticks down on scams / phishing money loss
- [ Identity       92%    ] ← drops on credential leaks
- [ Contacts       247    ] ← drops on contact-list breaches
- [ Device Health  100%   ] ← drops on malware / quishing installs
-```
+## 3. Knowledge Card system
 
-Lose any meter to zero → game over cutscene ("Your identity was sold on the dark web").
+New `src/components/quests/knowledge/KnowledgeCard.tsx` — one shared shell, four variants:
 
-## The character
+- `FunFactCard` — animated speech bubble, 3–4s auto-dismiss
+- `ComicCaseCard` — 3 panels slide-in with speech bubbles + moral panel
+- `MythRealityCard` — flip-card animation between MYTH and REALITY
+- `CyberTipCard` — Cipher Bot floats in and speaks
 
-A stylized SVG avatar rendered in the scene (not a static emoji):
-- Neutral pose while idle
-- Alert pose when threat incoming (leans forward, sweat drop)
-- Shield-up pose on correct block
-- Shocked / drained pose on wrong choice
-- Face + color customizable at first launch (reuse existing CharacterCustomizer skin tokens)
+`useKnowledgeQueue` hook picks a non-repeating random category+item per threat, tracks seen IDs in localStorage, awards **+Knowledge XP** with particle animation into the meter, and unlocks the item in the Vault.
 
-Antagonist avatars appear per threat type: **Phisher Ghost** (email), **Suit Impostor** (whaling), **QR Trickster** (quishing), **Voice Bot** (vishing), **Clone** (clone phishing), **Angler Fish** (social).
+## 4. Cipher Bot companion
 
-## Threat scene types (each with its own animation)
+New `src/components/quests/CipherBot.tsx`:
 
-1. **Email pop-in** — envelope slides onto screen, unfolds, headers/link highlighted.
-2. **SMS buzz** — phone shakes on desk, message bubbles typewriter-in.
-3. **Voice call** — phone rings with waveform, transcript streams live.
-4. **QR flash** — a printed QR card lands on the desk, camera-scan overlay.
-5. **DM ping** — social app notification with fake profile card.
-6. **Push alert** — OS-style banner drops from top.
+- Floating SVG robot bottom-right of the battle stage
+- Reacts after each action with witty one-liners from a pool ("Nice catch." / "Curiosity is good. Clicking random links isn't.")
+- Idle bob animation; speech bubble pops with typewriter effect
+- Also delivers CyberTipCards
 
-Each scene ships with 2-4 contextual action buttons (not just Legit/Phish): e.g. `Answer`, `Decline`, `Report as spam`, `Scan QR`, `Cover it`.
+## 5. Case File cutscene
 
-## Live alert system
+New `src/components/quests/CaseFileCard.tsx` — unlocks after each wave clears:
 
-A ticker at the top streams **real-world-style news alerts** between waves ("⚠️ 3,400 accounts drained via fake bank SMS in Mumbai today") to reinforce seriousness. Between rounds, a "Threat Intel" card shows the actual technique the player just faced, in one line, with the red flags highlighted on the original message.
+- Terminal-style "CASE FILE #NN" header
+- Sections: Attack / Damage / Why / Prevention (icon per row, staggered fade)
+- Max 25s, skippable, adds to Vault
 
-## Difficulty & pacing (kept hard)
+## 6. Operations & evolving world
 
-- Waves of 5 threats, escalating: single threat → parallel threats (email + SMS at once) → decoys (legit-looking that ARE legit — punished for over-blocking).
-- Reaction window shrinks each wave.
-- Boss wave: a live "attack in progress" where 3 threats fire in 6 seconds.
+- Rename levels to **Operations** in `PhishingQuest.tsx` intro and HUD
+- `src/components/quests/OperationIntro.tsx` — cinematic title card per operation (name, theme, backdrop)
+- `src/components/quests/CityBackdrop.tsx` — SVG city that morphs by operation stage: broken neon → clean skyline → celebrating drones. Driven by a `cityHealth` value derived from meters + completed operations.
+- Refactor `PhishingStreamGame.tsx` to consume operation → waves instead of hardcoded WAVES
 
-## Files to change
+## 7. Achievement popups
 
-- **New** `src/components/quests/scenes/` — one small component per scene type (EmailScene, SMSScene, CallScene, QRScene, DMScene, PushScene) with framer-motion animations.
-- **New** `src/components/quests/DefenderAvatar.tsx` — SVG player with pose states.
-- **New** `src/components/quests/AttackerAvatar.tsx` — SVG antagonists per threat type.
-- **New** `src/components/quests/ConsequenceOverlay.tsx` — the "packets leaking / shield pulse / balance drop" cutscene.
-- **New** `src/components/quests/DefenderHUD.tsx` — bank / identity / contacts / device meters + live news ticker.
-- **New** `src/data/defenderThreats.ts` — threat scenarios with scene type, actions, consequences, teach-line, red flags.
-- **Rewrite** `src/components/quests/PhishingStreamGame.tsx` — orchestrator (wave manager, meters, game-over) instead of the current text-message stream.
-- **Update** `src/components/quests/PhishingQuest.tsx` — intro reframed as "You have 60 seconds. Protect your data." with meter preview.
-- **Keep** `src/data/phishingTypes.ts` (referenced for taxonomy) and Red Flags lifeline (adapted to new scenes).
+New `src/components/quests/AchievementToast.tsx`:
 
-## What stays
+- Top-center slide-down with glow, icon, name, tagline
+- Triggered by `useAchievements` hook watching stat deltas (blocked count, red flags used, facts read, QR calls, bank meter preserved)
+- Persists unlock state in localStorage + Cipher City progress
 
-- 3 lives → replaced by the 4 meters; lifeline "Show Red Flags" survives.
-- Level/rank progression survives, but is now tied to meters saved + threats neutralized.
-- Reward calculation (`knowledge` / `reputation`) into Cipher City stays intact.
+## 8. Knowledge Vault
 
-## Out of scope for this pass
+New `src/pages/KnowledgeVault.tsx` (also reachable from Cipher City menu) or `src/components/CipherCity/KnowledgeVault.tsx`:
 
-- Sound design overhaul (reuse existing `useGameAudio`).
-- Multiplayer / leaderboard changes.
-- New backend tables.
+- Grid of 6 category tiles with % complete radial rings
+- Tap category → list of unlocked Facts / Cases / Tips / Myths / Case Files
+- Overall completion badge ("Knowledge Vault 82%")
+- Re-open any card to replay animation
 
-## One decision before I build
+## 9. HUD polish
 
-**Character art direction — pick one:**
-- **A. Flat vector cyberpunk** — geometric SVG avatar, neon outlines, matches current dark theme. Fastest, ships crisp animations.
-- **B. Pixel-art hacker** — 32×32 pixel character with 4-frame pose sprites, retro arcade feel.
-- **C. 3D-ish isometric desk scene** — CSS 3D transformed desk with the avatar as a stylized silhouette, more cinematic but heavier.
+Enhance `DefenderHUD.tsx`:
 
-I recommend **A** — best fit for the existing cyberpunk system and quickest to animate multiple pose states without new assets.
+- Live news ticker sources from `newsTicker.ts` (rotating headlines)
+- Knowledge XP meter added next to the 4 damage meters
+- Operation name + progress dots for current wave
+- Meter change animations (count-up/down, flash on hit)
+
+## 10. Mission Report
+
+New `src/components/quests/MissionReport.tsx` replaces plain score screen:
+
+- Animated dashboard rows counting up: Threats Neutralized · Identity Saved · Money Protected · Knowledge Learned · Facts Unlocked · Case Files · Achievements · City Security ↑
+- CTA to next Operation or return to Cipher City
+
+## 11. Motion & polish
+
+- Add `framer-motion` usage across new overlays (fade + scale + slide + glow presets in a shared `src/components/quests/motion.ts`)
+- Additional Tailwind keyframes: `glitch`, `pixel-dissolve`, `shield-expand`, `packet-leak`, `stamp-slam`, `card-flip`, `bot-bob`
+- Ensure 60fps on mobile-first layouts; guard heavy effects behind `prefers-reduced-motion`
+
+## 12. Wiring
+
+- `PhishingStreamGame.tsx`: after each action → play `ConsequenceOverlay` → then `KnowledgeCard` (random category) → check achievements → next threat. After last threat of a wave → `CaseFileCard`. After last wave of an operation → `MissionReport` → next `OperationIntro`.
+- `PhishingQuest.tsx` intro reframed around Operations and Knowledge Vault entry point.
+- Cipher City menu gains "Knowledge Vault" tile.
+
+## Out of scope
+
+- New backend tables (all progression stored in existing localStorage + game_saves)
+- Multiplayer / voice-acted audio
+- Auth changes
+- Rewriting Cipher City missions
+
+## Technical details
+
+- **Stack**: React + Framer Motion + Tailwind semantic tokens (no hardcoded colors)
+- **State**: local `useReducer` in `PhishingStreamGame` for phase machine (`playing → consequence → knowledge → achievement → next | wave-clear → caseFile → next-wave | ops-clear → report`)
+- **Persistence**: extend existing `useGameSave` payload with `knowledgeVault: { seenIds: string[] }`, `achievements: string[]`, `operationsCleared: number`, `cityHealth: number`
+- **Randomization**: weighted picker avoiding last 5 seen IDs per category
+- **Perf**: lazy-load Vault page; memoize card components; cap simultaneous particles
+
+## Files
+
+**New (~15)**: data banks (7), Cipher Bot, KnowledgeCard + 4 variants, CaseFileCard, OperationIntro, CityBackdrop, AchievementToast, MissionReport, KnowledgeVault, motion presets, achievements hook, knowledge queue hook.
+
+**Edited (~5)**: `ConsequenceOverlay.tsx`, `PhishingStreamGame.tsx`, `PhishingQuest.tsx`, `DefenderHUD.tsx`, `tailwind.config.ts`, `useGameSave.ts`, Cipher City menu.
