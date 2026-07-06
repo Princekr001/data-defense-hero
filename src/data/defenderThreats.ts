@@ -4,19 +4,20 @@
 
 export type SceneType = "email" | "sms" | "call" | "qr" | "dm" | "push";
 export type MeterKey = "bank" | "identity" | "contacts" | "device";
+export type Exposure = "credentials" | "otp" | "device" | "contacts" | "bank" | "identity";
 
 export interface ThreatAction {
   id: string;
   label: string;
-  hint?: string; // shown on hover on desktop
-  // If this action is the correct/safe one for this threat
+  hint?: string;
   safe: boolean;
-  // Delta to each meter when chosen (only applied on unsafe unless "reward" defined)
   damage?: Partial<Record<MeterKey, number>>;
-  // Reward-side messaging on safe pick
   rewardMessage?: string;
-  // Failure explanation on unsafe pick
   failMessage?: string;
+  // What this unsafe action leaks — drives future targeted follow-ups
+  exposes?: Exposure[];
+  // Small heal awarded on a proactive safe pick (e.g. reporting)
+  heal?: Partial<Record<MeterKey, number>>;
 }
 
 export interface Threat {
