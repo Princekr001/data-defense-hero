@@ -504,13 +504,30 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
         </div>
       </div>
 
-      {pending && (
+      {pending && phase === "consequence" && (
         <ConsequenceOverlay
           outcome={pending.outcome}
           message={pending.message + (pending.branchTag ? ` — ${pending.branchTag}` : "")}
           teach={pending.teach}
           damage={pending.damage}
           onDone={finishConsequence}
+        />
+      )}
+
+      {pending && phase === "report" && (
+        <DamageReport
+          outcome={pending.outcome}
+          actionTaken={pending.actionTaken}
+          category={pending.category}
+          message={pending.message}
+          teach={pending.teach}
+          damage={pending.damage}
+          heal={pending.heal}
+          metersBefore={pending.metersBefore}
+          metersAfter={meters}
+          exposures={pending.exposures}
+          branchTag={pending.branchTag}
+          onContinue={finishReport}
         />
       )}
 
