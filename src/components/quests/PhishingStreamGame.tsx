@@ -276,6 +276,8 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
     (action: ThreatAction) => {
       if (!threat || phase !== "playing") return;
 
+      const before = { ...meters };
+
       if (action.safe) {
         const speedBonus = Math.round((timeLeftMs / (threat.reactMs * reactMod)) * 50);
         const gained = 100 + speedBonus + combo * 10;
@@ -297,12 +299,11 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
 
         // RECOVERY PULSE — 3 consecutive safe picks: heal + gentler next threat
         let branchTag: string | undefined;
+        let pulseHeal: Partial<Record<MeterKey, number>> | undefined;
         if (nextSafeStreak >= 3) {
           setSafeStreak(0);
-          const heal: Partial<Record<MeterKey, number>> = {
-            identity: 10, device: 10, contacts: 20, bank: 1500,
-          };
-          applyDelta(heal, "heal");
+          pulseHeal = { identity: 10, device: 10, contacts: 20, bank: 1500 };
+          applyDelta(pulseHeal, "heal");
           setReactMod(1.25); // player earned breathing room
           branchTag = "Recovery pulse: meters healed, next threat gentler.";
         } else {
@@ -319,8 +320,12 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
           outcome: "safe",
           message: action.rewardMessage ?? "You made the right call. Attack neutralized.",
           teach: threat.teach,
-          heal: action.heal,
+          heal: { ...(action.heal ?? {}), ...(pulseHeal ?? {}) },
           branchTag,
+          actionTaken: action.label,
+          category: threat.category,
+          exposures: [],
+          metersBefore: before,
         });
         setPhase("consequence");
       } else {
@@ -353,11 +358,15 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
           branchTag: exps.length
             ? `Attacker escalating — targeting your ${exps[0]}.`
             : "Attackers press the advantage. Next threat is faster.",
+          actionTaken: action.label,
+          category: threat.category,
+          exposures: exps,
+          metersBefore: before,
         });
         setPhase("consequence");
       }
     },
-    [threat, phase, timeLeftMs, combo, reactMod, safeStreak, riskyStreak, lifelineUsedThisThreat, applyDelta, injectFollowUp, tryUnlock],
+    [threat, phase, meters, timeLeftMs, combo, reactMod, safeStreak, riskyStreak, lifelineUsedThisThreat, applyDelta, injectFollowUp, tryUnlock],
   );
 
   const emittedRef = useRef(false);
