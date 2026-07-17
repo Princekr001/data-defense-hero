@@ -47,7 +47,7 @@ interface Props {
   onComplete: (r: StreamResult) => void;
 }
 
-type Phase = "playing" | "consequence" | "knowledge" | "caseFile" | "over";
+type Phase = "playing" | "consequence" | "report" | "knowledge" | "caseFile" | "over";
 
 interface PendingOutcome {
   outcome: "safe" | "compromised";
@@ -56,6 +56,10 @@ interface PendingOutcome {
   damage?: Partial<Record<MeterKey, number>>;
   heal?: Partial<Record<MeterKey, number>>;
   branchTag?: string; // shown in overlay: "Attacker escalating…" / "Recovery pulse"
+  actionTaken: string;
+  category: string;
+  exposures: Exposure[];
+  metersBefore: Record<MeterKey, number>;
 }
 
 const TICK_MS = 100;
