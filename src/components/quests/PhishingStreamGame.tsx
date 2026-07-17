@@ -220,6 +220,11 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
   }, [meters.bank, bankAtWaveStart, tryUnlock]);
 
   const finishConsequence = useCallback(() => {
+    // Cinematic done — gate the player behind the Damage Report.
+    setPhase("report");
+  }, []);
+
+  const finishReport = useCallback(() => {
     setPending(null);
     const payload = pickKnowledge();
     vault.markSeen((payload.data as any).id);
