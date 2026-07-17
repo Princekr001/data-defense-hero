@@ -11,6 +11,7 @@ import CipherBot from "./CipherBot";
 import KnowledgeCard, { type KnowledgePayload } from "./knowledge/KnowledgeCard";
 import CaseFileCard from "./CaseFileCard";
 import AchievementToast from "./AchievementToast";
+import DamageReport from "./DamageReport";
 import {
   METER_STARTS,
   WAVES,
@@ -46,7 +47,7 @@ interface Props {
   onComplete: (r: StreamResult) => void;
 }
 
-type Phase = "playing" | "consequence" | "knowledge" | "caseFile" | "over";
+type Phase = "playing" | "consequence" | "report" | "knowledge" | "caseFile" | "over";
 
 interface PendingOutcome {
   outcome: "safe" | "compromised";
@@ -55,6 +56,10 @@ interface PendingOutcome {
   damage?: Partial<Record<MeterKey, number>>;
   heal?: Partial<Record<MeterKey, number>>;
   branchTag?: string; // shown in overlay: "Attacker escalating…" / "Recovery pulse"
+  actionTaken: string;
+  category: string;
+  exposures: Exposure[];
+  metersBefore: Record<MeterKey, number>;
 }
 
 const TICK_MS = 100;
@@ -215,6 +220,11 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
   }, [meters.bank, bankAtWaveStart, tryUnlock]);
 
   const finishConsequence = useCallback(() => {
+    // Cinematic done — gate the player behind the Damage Report.
+    setPhase("report");
+  }, []);
+
+  const finishReport = useCallback(() => {
     setPending(null);
     const payload = pickKnowledge();
     vault.markSeen((payload.data as any).id);
@@ -251,6 +261,7 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
         dmg[k] = (dmg[k] ?? 0) + Math.round(v * 0.5);
       });
     }
+    const before = { ...meters };
     applyDelta(dmg, "damage");
     setPending({
       outcome: "compromised",
@@ -258,13 +269,19 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
       teach: threat.teach,
       damage: dmg,
       branchTag: "Next threat closes in faster.",
+      actionTaken: "No response (timeout)",
+      category: threat.category,
+      exposures: worstUnsafe ? inferExposures(worstUnsafe) : [],
+      metersBefore: before,
     });
     setPhase("consequence");
-  }, [threat, applyDelta]);
+  }, [threat, meters, applyDelta]);
 
   const handleAction = useCallback(
     (action: ThreatAction) => {
       if (!threat || phase !== "playing") return;
+
+      const before = { ...meters };
 
       if (action.safe) {
         const speedBonus = Math.round((timeLeftMs / (threat.reactMs * reactMod)) * 50);
@@ -287,12 +304,11 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
 
         // RECOVERY PULSE — 3 consecutive safe picks: heal + gentler next threat
         let branchTag: string | undefined;
+        let pulseHeal: Partial<Record<MeterKey, number>> | undefined;
         if (nextSafeStreak >= 3) {
           setSafeStreak(0);
-          const heal: Partial<Record<MeterKey, number>> = {
-            identity: 10, device: 10, contacts: 20, bank: 1500,
-          };
-          applyDelta(heal, "heal");
+          pulseHeal = { identity: 10, device: 10, contacts: 20, bank: 1500 };
+          applyDelta(pulseHeal, "heal");
           setReactMod(1.25); // player earned breathing room
           branchTag = "Recovery pulse: meters healed, next threat gentler.";
         } else {
@@ -309,8 +325,12 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
           outcome: "safe",
           message: action.rewardMessage ?? "You made the right call. Attack neutralized.",
           teach: threat.teach,
-          heal: action.heal,
+          heal: { ...(action.heal ?? {}), ...(pulseHeal ?? {}) },
           branchTag,
+          actionTaken: action.label,
+          category: threat.category,
+          exposures: [],
+          metersBefore: before,
         });
         setPhase("consequence");
       } else {
@@ -343,11 +363,15 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
           branchTag: exps.length
             ? `Attacker escalating — targeting your ${exps[0]}.`
             : "Attackers press the advantage. Next threat is faster.",
+          actionTaken: action.label,
+          category: threat.category,
+          exposures: exps,
+          metersBefore: before,
         });
         setPhase("consequence");
       }
     },
-    [threat, phase, timeLeftMs, combo, reactMod, safeStreak, riskyStreak, lifelineUsedThisThreat, applyDelta, injectFollowUp, tryUnlock],
+    [threat, phase, meters, timeLeftMs, combo, reactMod, safeStreak, riskyStreak, lifelineUsedThisThreat, applyDelta, injectFollowUp, tryUnlock],
   );
 
   const emittedRef = useRef(false);
@@ -480,13 +504,30 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
         </div>
       </div>
 
-      {pending && (
+      {pending && phase === "consequence" && (
         <ConsequenceOverlay
           outcome={pending.outcome}
           message={pending.message + (pending.branchTag ? ` — ${pending.branchTag}` : "")}
           teach={pending.teach}
           damage={pending.damage}
           onDone={finishConsequence}
+        />
+      )}
+
+      {pending && phase === "report" && (
+        <DamageReport
+          outcome={pending.outcome}
+          actionTaken={pending.actionTaken}
+          category={pending.category}
+          message={pending.message}
+          teach={pending.teach}
+          damage={pending.damage}
+          heal={pending.heal}
+          metersBefore={pending.metersBefore}
+          metersAfter={meters}
+          exposures={pending.exposures}
+          branchTag={pending.branchTag}
+          onContinue={finishReport}
         />
       )}
 
