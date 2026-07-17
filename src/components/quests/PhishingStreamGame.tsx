@@ -256,6 +256,7 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
         dmg[k] = (dmg[k] ?? 0) + Math.round(v * 0.5);
       });
     }
+    const before = { ...meters };
     applyDelta(dmg, "damage");
     setPending({
       outcome: "compromised",
@@ -263,9 +264,13 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
       teach: threat.teach,
       damage: dmg,
       branchTag: "Next threat closes in faster.",
+      actionTaken: "No response (timeout)",
+      category: threat.category,
+      exposures: worstUnsafe ? inferExposures(worstUnsafe) : [],
+      metersBefore: before,
     });
     setPhase("consequence");
-  }, [threat, applyDelta]);
+  }, [threat, meters, applyDelta]);
 
   const handleAction = useCallback(
     (action: ThreatAction) => {
