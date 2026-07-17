@@ -11,6 +11,7 @@ import CipherBot from "./CipherBot";
 import KnowledgeCard, { type KnowledgePayload } from "./knowledge/KnowledgeCard";
 import CaseFileCard from "./CaseFileCard";
 import AchievementToast from "./AchievementToast";
+import DamageReport from "./DamageReport";
 import {
   METER_STARTS,
   WAVES,
