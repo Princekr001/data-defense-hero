@@ -103,8 +103,12 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
   const [exposures, setExposures] = useState<Exposure[]>([]);
   const [reactMod, setReactMod] = useState(1); // multiplier for next threat's reactMs
   const injectionsRef = useRef(0);
+  const [journal, setJournal] = useState<JournalEntry[]>([]);
+  const [journalOpen, setJournalOpen] = useState(false);
+  const stepRef = useRef(0);
 
   const vault = useKnowledgeVault();
+
 
   const threat = queue[0];
   const waveIdx = threat?.waveIdx ?? totalWaves - 1;
@@ -226,13 +230,31 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
   }, []);
 
   const finishReport = useCallback(() => {
+    if (pending) {
+      stepRef.current += 1;
+      const now = new Date();
+      setJournal((j) => [
+        ...j,
+        {
+          id: `${now.getTime()}-${stepRef.current}`,
+          step: stepRef.current,
+          category: pending.category,
+          actionTaken: pending.actionTaken,
+          outcome: pending.outcome,
+          damage: pending.damage,
+          heal: pending.heal,
+          lesson: pending.teach,
+          time: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+    }
     setPending(null);
     const payload = pickKnowledge();
     vault.markSeen((payload.data as any).id);
     setKnowledge(payload);
     setPhase("knowledge");
     if (vault.state.cardsRead + 1 >= 5) tryUnlock("cyber-scholar");
-  }, [pickKnowledge, vault, tryUnlock]);
+  }, [pending, pickKnowledge, vault, tryUnlock]);
 
   const finishKnowledge = useCallback(() => {
     setKnowledge(null);
@@ -473,22 +495,39 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
                 key={a.id}
                 onClick={() => handleAction(a)}
                 className={cn(
-                  "relative rounded-lg border-2 p-3 text-left transition-all hover:scale-[1.02] active:scale-95",
-                  "border-primary/30 bg-card/60 backdrop-blur hover:border-primary hover:bg-primary/10",
-                  "min-h-[68px] flex flex-col justify-center",
+                  "group relative overflow-hidden rounded-xl border p-3 text-left transition-all hover:scale-[1.02] active:scale-95",
+                  "border-primary/25 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur",
+                  "hover:border-primary hover:shadow-[0_0_25px_hsl(var(--primary)/0.35)]",
+                  "min-h-[72px] flex flex-col justify-center",
                 )}
               >
-                <div className="text-sm font-black leading-tight">{a.label}</div>
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition" />
+                <div className="text-sm font-black leading-tight tracking-tight">{a.label}</div>
                 {a.hint && <div className="text-[10px] text-muted-foreground mt-0.5">{a.hint}</div>}
+                <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40 group-hover:text-primary group-hover:translate-x-0.5 transition" />
               </button>
             ))}
           </div>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={useLifeline} disabled={lifelineUsed || phase !== "playing"} className="gap-1">
             <Eye className="w-4 h-4" />
             {lifelineUsed ? "Lifeline used" : "Red flags (1x)"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setJournalOpen(true)}
+            className="gap-1 border-primary/40 hover:bg-primary/10 relative"
+          >
+            <BookOpen className="w-4 h-4" />
+            Journal
+            {journal.length > 0 && (
+              <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black">
+                {journal.length}
+              </span>
+            )}
           </Button>
           <div className="ml-auto flex items-center gap-3 text-[11px]">
             <span className="text-primary font-mono">SCORE {score}</span>
@@ -534,6 +573,14 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
 
       {knowledge && <KnowledgeCard payload={knowledge} onDone={finishKnowledge} />}
       {caseFile && <CaseFileCard file={caseFile} onDone={finishCaseFile} />}
+
+      <ActionJournal
+        entries={journal}
+        open={journalOpen}
+        onClose={() => setJournalOpen(false)}
+        onClear={() => setJournal([])}
+      />
+
       {achievement && (
         <AchievementToast
           icon={achievement.icon}
