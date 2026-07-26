@@ -103,8 +103,28 @@ export default function PhishingStreamGame({ onExit, onComplete }: Props) {
   const [exposures, setExposures] = useState<Exposure[]>([]);
   const [reactMod, setReactMod] = useState(1); // multiplier for next threat's reactMs
   const injectionsRef = useRef(0);
-  const [journal, setJournal] = useState<JournalEntry[]>([]);
+  const JOURNAL_KEY = "dds.actionJournal.v1";
+  const [journal, setJournal] = useState<JournalEntry[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(JOURNAL_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? (parsed as JournalEntry[]) : [];
+    } catch {
+      return [];
+    }
+  });
   const [journalOpen, setJournalOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(JOURNAL_KEY, JSON.stringify(journal));
+    } catch {
+      /* storage full or blocked — ignore */
+    }
+  }, [journal]);
   const stepRef = useRef(0);
 
   const vault = useKnowledgeVault();
