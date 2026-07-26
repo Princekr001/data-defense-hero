@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Eye, ShieldOff, Skull, Sparkles, AlertTriangle } from "lucide-react";
+import { Eye, ShieldOff, Skull, Sparkles, AlertTriangle, BookOpen, ChevronRight } from "lucide-react";
+import ActionJournal, { type JournalEntry } from "./ActionJournal";
 import { cn } from "@/lib/utils";
 import DefenderAvatar, { type DefenderPose } from "./DefenderAvatar";
 import AttackerAvatar from "./AttackerAvatar";
