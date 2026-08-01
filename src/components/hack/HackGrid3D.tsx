@@ -3,7 +3,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars, Html } from "@react-three/drei";
 import type { Group } from "three";
 import LevelNode from "./LevelNode";
-import { hackLevels, hackTiers, levelsByTier } from "@/data/hackTargets";
+import { hackTiers, levelsByTier } from "@/data/hackTargets";
 import type { HackCategory, HackLevel } from "@/data/hackTargets";
 
 interface Props {

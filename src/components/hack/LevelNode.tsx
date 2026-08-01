@@ -54,7 +54,7 @@ export default function LevelNode({ level, position, color, unlocked, completed,
           else if (dimmed && unlocked) onDimmedClick?.();
         }}
       >
-        <icosahedronGeometry args={[0.55, 0]} />
+        <cylinderGeometry args={[0.42, 0.42, 0.42, 6]} />
         <meshStandardMaterial
           color={baseColor}
           emissive={baseColor}
@@ -71,9 +71,9 @@ export default function LevelNode({ level, position, color, unlocked, completed,
         <meshBasicMaterial color={baseColor} transparent opacity={ringOpacity} />
       </mesh>
       <Html distanceFactor={8} center position={[0, -1.05, 0]} style={{ pointerEvents: "none", opacity: dimmed ? 0.25 : 1, transition: "opacity 250ms" }}>
-        <div className="text-center whitespace-nowrap">
-          <div className="text-white text-xs font-bold tracking-wide drop-shadow-lg">{level.name}</div>
-          <div className="text-[10px] opacity-70 text-white">
+        <div className="text-center whitespace-nowrap rounded-md bg-black/45 backdrop-blur-sm px-2 py-1 border border-white/10">
+          <div className="font-display text-white text-xs font-semibold tracking-[0.12em] uppercase drop-shadow-lg">{level.name}</div>
+          <div className="font-mono text-[10px] opacity-70 text-white">
             {completed ? "✓ Cleared" : unlocked ? `+${level.xpReward} XP` : "🔒 Locked"}
           </div>
         </div>
