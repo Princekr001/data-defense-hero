@@ -39,7 +39,7 @@ function TierOrbit({
       {/* orbit track */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <ringGeometry args={[radius - 0.035, radius + 0.035, 128]} />
-        <meshBasicMaterial color={tier.color} transparent opacity={0.28} />
+        <meshBasicMaterial color={tier.color} transparent opacity={0.5} />
       </mesh>
       {/* faint disc */}
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
@@ -49,7 +49,7 @@ function TierOrbit({
 
       {/* tier label pinned to the ring edge */}
       <Html position={[-radius - 0.9, 0.55, 0]} center style={{ pointerEvents: "none" }}>
-        <div className="text-center">
+        <div className="text-center whitespace-nowrap">
           <div
             className="font-display text-white font-bold text-[13px] tracking-[0.25em] uppercase"
             style={{ textShadow: `0 0 12px ${tier.color}` }}
