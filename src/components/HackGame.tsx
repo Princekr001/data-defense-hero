@@ -4,6 +4,8 @@ import { hackLevels, hackTiers, hackCategories } from "@/data/hackTargets";
 import type { HackCategory, HackLevel } from "@/data/hackTargets";
 import HackGrid3D from "./hack/HackGrid3D";
 import MissionScene3D from "./hack/MissionScene3D";
+import BossFight from "./hack/BossFight";
+import { bossForLevel } from "@/data/hackBosses";
 import PasswordCracker from "./hackGames/PasswordCracker";
 import TraceAttacker from "./hackGames/TraceAttacker";
 import FirewallBypass from "./hackGames/FirewallBypass";
@@ -21,7 +23,7 @@ const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   privacy: "privacy",
 };
 
-type View = "grid" | "briefing" | "mission" | "result";
+type View = "grid" | "briefing" | "mission" | "boss" | "result";
 
 export default function HackGame() {
   const { completed, xp, isUnlocked, isComplete, completeLevel, reset } = useHackProgress();
@@ -43,6 +45,7 @@ export default function HackGame() {
   }, [activeCategory]);
   const [active, setActive] = useState<HackLevel | null>(null);
   const [result, setResult] = useState<"success" | "fail" | null>(null);
+  const [bossRun, setBossRun] = useState(0);
   const [lessonCategory, setLessonCategory] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -55,12 +58,33 @@ export default function HackGame() {
     setView("briefing");
   };
 
+  const activeBoss = active ? bossForLevel(active.id) : null;
+
+  // Clearing the mini-game only opens the door — the boss guards the level.
   const handleSuccess = () => {
     if (!active) return;
+    if (activeBoss) {
+      setBossRun((n) => n + 1);
+      setView("boss");
+      toast({
+        title: `⚠ ${activeBoss.handle} has taken the system`,
+        description: activeBoss.threat,
+        variant: "destructive",
+      });
+      return;
+    }
     completeLevel(active.id);
     setResult("success");
     setView("result");
     toast({ title: `Hack successful — +${active.xpReward} XP`, description: active.name });
+  };
+
+  const handleBossDefeat = () => {
+    if (!active) return;
+    completeLevel(active.id);
+    setResult("success");
+    setView("result");
+    toast({ title: `Boss purged — +${active.xpReward} XP`, description: active.name });
   };
   const handleFail = () => {
     setResult("fail");
@@ -255,6 +279,20 @@ export default function HackGame() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {view === "boss" && active && activeBoss && (
+        <BossFight
+          key={`${active.id}-${bossRun}`}
+          boss={activeBoss}
+          accent={tierColor(active)}
+          onDefeat={handleBossDefeat}
+          onOverrun={() => setBossRun((n) => n + 1)}
+          onAbort={() => {
+            setView("grid");
+            setActive(null);
+          }}
+        />
       )}
 
       {view === "result" && active && (
