@@ -17,8 +17,8 @@ const DRAIN_PER_SEC: Record<1 | 2 | 3, number> = { 1: 1.1, 2: 1.8, 3: 2.6 };
 export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }: Props) {
   const tune = bossTuning[boss.tier];
   const [phaseIdx, setPhaseIdx] = useState(0);
-  const [integrity, setIntegrity] = useState(tune.integrity);
-  const [timeLeft, setTimeLeft] = useState(tune.phaseMs);
+  const [integrity, setIntegrity] = useState<number>(tune.integrity);
+  const [timeLeft, setTimeLeft] = useState<number>(tune.phaseMs);
   const [picked, setPicked] = useState<number | null>(null);
   const [shake, setShake] = useState(false);
   const [taunt, setTaunt] = useState(boss.taunts[0]);
