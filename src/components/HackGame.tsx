@@ -86,7 +86,7 @@ export default function HackGame() {
   };
 
   return (
-    <div className="relative w-full h-[100dvh] overflow-hidden bg-[#06070f] text-foreground">
+    <div className="relative w-full h-[100dvh] overflow-hidden bg-[#05060d] text-foreground font-body">
       {/* HUD */}
       <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-3 sm:p-4 pointer-events-none">
         <div className="pointer-events-auto flex items-center gap-2">
@@ -96,7 +96,7 @@ export default function HackGame() {
         </div>
         <div className="pointer-events-auto flex items-center gap-2 bg-black/40 backdrop-blur border border-white/10 rounded-full px-3 py-1.5 text-xs">
           <Trophy className="h-3.5 w-3.5 text-yellow-400" />
-          <span className="font-mono text-white">{xp} XP</span>
+          <span className="font-mono text-white tracking-tight">{xp} XP</span>
           <span className="text-white/40">·</span>
           <span className="text-white/70">{completed.length}/{hackLevels.length}</span>
           <button onClick={handleResetAll} className="ml-2 opacity-60 hover:opacity-100" title="Reset all progress">
@@ -223,7 +223,7 @@ export default function HackGame() {
               </div>
               <ScenarioScene category={HACK_CAT_MAP[active.category]} title={active.target} />
               <div>
-                <h2 className="text-2xl font-bold">{active.name}</h2>
+                <h2 className="font-display text-2xl font-bold tracking-[0.06em] uppercase">{active.name}</h2>
                 <p className="text-sm text-white/60 mt-1 flex items-center gap-1.5">
                   <Terminal className="h-3.5 w-3.5" /> Target: {active.target}
                 </p>
@@ -248,7 +248,7 @@ export default function HackGame() {
           <Card className="w-full sm:max-w-md border-white/10 bg-black/80 text-white pointer-events-auto rounded-b-none sm:rounded-lg animate-slide-in-right">
             <CardContent className="p-5 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-sm tracking-wide uppercase">{active.name}</h3>
+                <h3 className="font-display font-bold text-sm tracking-[0.2em] uppercase">{active.name}</h3>
                 <Badge variant="outline" className="border-white/20 text-white text-[10px]">LIVE</Badge>
               </div>
               {renderMiniGame()}
@@ -262,7 +262,7 @@ export default function HackGame() {
           <Card className={`w-full max-w-md border bg-black/80 text-white ${result === "success" ? "border-accent/50" : "border-destructive/50"}`}>
             <CardContent className="p-6 space-y-4 text-center">
               <div className="text-5xl">{result === "success" ? "🛡️" : "🚨"}</div>
-              <h2 className="text-2xl font-bold">
+              <h2 className="font-display text-2xl font-bold tracking-[0.12em] uppercase">
                 {result === "success" ? "Hack Successful" : "Detected & Blocked"}
               </h2>
               <p className="text-sm text-white/70 leading-relaxed">
