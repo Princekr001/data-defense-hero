@@ -23,15 +23,6 @@ export default {
 				body: ['Sora', 'system-ui', 'sans-serif'],
 				mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
 			},
-			keyframes: {
-				'boss-shake': {
-					'0%, 100%': { transform: 'translate3d(0,0,0)' },
-					'20%': { transform: 'translate3d(-6px, 3px, 0)' },
-					'40%': { transform: 'translate3d(5px, -4px, 0)' },
-					'60%': { transform: 'translate3d(-4px, -2px, 0)' },
-					'80%': { transform: 'translate3d(4px, 3px, 0)' },
-				},
-			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -104,6 +95,13 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			keyframes: {
+				'boss-shake': {
+					'0%, 100%': { transform: 'translate3d(0,0,0)' },
+					'20%': { transform: 'translate3d(-6px, 3px, 0)' },
+					'40%': { transform: 'translate3d(5px, -4px, 0)' },
+					'60%': { transform: 'translate3d(-4px, -2px, 0)' },
+					'80%': { transform: 'translate3d(4px, 3px, 0)' },
+				},
 				'accordion-down': {
 					from: {
 						height: '0'
