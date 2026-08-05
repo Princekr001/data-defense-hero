@@ -310,7 +310,13 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
           {locked && (
             <p className="mt-1 font-mono text-[9px] text-white/30">Threat level locks once the gauntlet starts.</p>
           )}
+          {showRestored && (
+            <p className="mt-2 rounded border border-accent/40 bg-accent/10 px-2 py-1 font-mono text-[9px] text-accent">
+              Checkpoint restored — stage {phaseIdx + 1}, integrity {Math.ceil(integrity)}%
+            </p>
+          )}
         </div>
+
 
 
         {/* integrity + timer */}
