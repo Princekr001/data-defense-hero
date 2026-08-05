@@ -7,15 +7,13 @@ import type { Group, Mesh, Points } from "three";
 /** Infinite scrolling wireframe cyber-grid — the "floor" of cyberspace. */
 function CyberGrid({ color, y, dir = 1 }: { color: string; y: number; dir?: number }) {
   const ref = useRef<Group>(null);
-  useFrame((state, dt) => {
+  useFrame((state) => {
     if (!ref.current) return;
     ref.current.position.z = ((state.clock.elapsedTime * 2.2 * dir) % 4) - 2;
   });
   return (
     <group ref={ref} position={[0, y, 0]}>
-      <gridHelper args={[80, 80, color, color]} rotation={[0, 0, 0]}>
-        {/* material tweaked below */}
-      </gridHelper>
+      <gridHelper args={[80, 80, color, color]} />
     </group>
   );
 }
