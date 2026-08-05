@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, Skull, ShieldAlert, Activity, ChevronRight } from "lucide-react";
+import { AlertTriangle, Skull, ShieldAlert, Activity, ChevronRight, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { bossTuning, type HackBoss } from "@/data/hackBosses";
+import {
+  bossTuning,
+  bossDifficulties,
+  bossDifficultyById,
+  type BossDifficulty,
+  type HackBoss,
+} from "@/data/hackBosses";
 
 interface Props {
   boss: HackBoss;
@@ -13,20 +19,52 @@ interface Props {
 }
 
 const DRAIN_PER_SEC: Record<1 | 2 | 3, number> = { 1: 1.1, 2: 1.8, 3: 2.6 };
+const DIFF_KEY = "ddh.bossDifficulty.v1";
 
 export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }: Props) {
-  const tune = bossTuning[boss.tier];
+  const base = bossTuning[boss.tier];
+  const [difficulty, setDifficulty] = useState<BossDifficulty>(() => {
+    try {
+      const saved = localStorage.getItem(DIFF_KEY) as BossDifficulty | null;
+      if (saved && bossDifficulties.some((d) => d.id === saved)) return saved;
+    } catch {}
+    return "operator";
+  });
+  const preset = bossDifficultyById(difficulty);
+  const tune = useMemo(
+    () => ({
+      integrity: base.integrity,
+      phaseMs: Math.round(base.phaseMs * preset.timeMul),
+      wrongHit: Math.round(base.wrongHit * preset.penaltyMul),
+      timeoutHit: Math.round(base.timeoutHit * preset.penaltyMul),
+      drainPerSec: DRAIN_PER_SEC[boss.tier] * preset.drainMul,
+    }),
+    [base, preset, boss.tier],
+  );
+
   const [phaseIdx, setPhaseIdx] = useState(0);
-  const [integrity, setIntegrity] = useState<number>(tune.integrity);
+  const [integrity, setIntegrity] = useState<number>(base.integrity);
   const [timeLeft, setTimeLeft] = useState<number>(tune.phaseMs);
   const [picked, setPicked] = useState<number | null>(null);
   const [shake, setShake] = useState(false);
   const [taunt, setTaunt] = useState(boss.taunts[0]);
   const [outcome, setOutcome] = useState<"running" | "won" | "lost">("running");
   const endedRef = useRef(false);
+  const startedRef = useRef(false);
 
   const phase = boss.phases[phaseIdx];
   const critical = integrity <= 35;
+  const locked = startedRef.current || phaseIdx > 0 || picked !== null;
+
+  const pickDifficulty = (id: BossDifficulty) => {
+    if (locked) return;
+    setDifficulty(id);
+    try { localStorage.setItem(DIFF_KEY, id); } catch {}
+    const p = bossDifficultyById(id);
+    setTimeLeft(Math.round(base.phaseMs * p.timeMul));
+    setIntegrity(base.integrity);
+  };
+
 
   // rotating taunts
   useEffect(() => {
@@ -63,7 +101,7 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
     if (outcome !== "running" || picked !== null) return;
     const id: ReturnType<typeof setInterval> = setInterval(() => {
       setIntegrity((v) => {
-        const next = Math.max(0, v - DRAIN_PER_SEC[boss.tier] / 10);
+        const next = Math.max(0, v - tune.drainPerSec / 10);
         if (next <= 0) finish(false);
         return next;
       });
@@ -78,13 +116,15 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
       });
     }, 100);
     return () => clearInterval(id);
-  }, [outcome, picked, boss.tier, tune.timeoutHit, damage, finish]);
+  }, [outcome, picked, tune.drainPerSec, tune.timeoutHit, damage, finish]);
 
   const choose = (i: number) => {
     if (picked !== null || outcome !== "running") return;
+    startedRef.current = true;
     setPicked(i);
     if (i !== phase.answer) damage(tune.wrongHit);
   };
+
 
   const advance = () => {
     if (endedRef.current) return;
@@ -178,7 +218,38 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
             </span>
           </div>
           <p className="mt-2 font-mono text-[11px] text-destructive/80 italic truncate">&gt; {taunt}</p>
+
+          {/* difficulty selector */}
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <span className="font-display text-[9px] uppercase tracking-[0.2em] text-white/45 flex items-center gap-1">
+              <Gauge className="h-3 w-3" /> Threat level
+            </span>
+            {bossDifficulties.map((d) => (
+              <button
+                key={d.id}
+                onClick={() => pickDifficulty(d.id)}
+                disabled={locked}
+                title={d.blurb}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 font-display text-[9px] uppercase tracking-[0.16em] transition-all",
+                  d.id === difficulty
+                    ? "border-destructive/70 bg-destructive/25 text-white"
+                    : "border-white/10 bg-white/5 text-white/55 hover:bg-white/10 hover:text-white",
+                  locked && d.id !== difficulty && "opacity-35 cursor-not-allowed",
+                )}
+              >
+                {d.label}
+              </button>
+            ))}
+            <span className="font-mono text-[9px] text-white/40 ml-auto">
+              {(tune.phaseMs / 1000).toFixed(0)}s · drain {tune.drainPerSec.toFixed(1)}%/s · hit -{tune.wrongHit}%
+            </span>
+          </div>
+          {locked && (
+            <p className="mt-1 font-mono text-[9px] text-white/30">Threat level locks once the gauntlet starts.</p>
+          )}
         </div>
+
 
         {/* integrity + timer */}
         <div className="px-4 pt-3 space-y-2">
