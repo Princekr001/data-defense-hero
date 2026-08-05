@@ -50,7 +50,7 @@ const clearCheckpoint = () => {
 
 export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }: Props) {
   const base = bossTuning[boss.tier];
-  const restored = useMemo(() => readCheckpoint(boss.id), [boss.id]);
+  const restored = useMemo(() => readCheckpoint(boss.levelId), [boss.levelId]);
   const [difficulty, setDifficulty] = useState<BossDifficulty>(() => {
     if (restored?.difficulty && bossDifficulties.some((d) => d.id === restored.difficulty)) {
       return restored.difficulty;
@@ -104,7 +104,7 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
     if (outcome !== "running") return;
     try {
       const ckpt: Checkpoint = {
-        bossId: boss.id,
+        bossId: boss.levelId,
         phaseIdx,
         integrity,
         difficulty,
@@ -112,7 +112,7 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
       };
       localStorage.setItem(CKPT_KEY, JSON.stringify(ckpt));
     } catch {}
-  }, [boss.id, phaseIdx, integrity, difficulty, outcome, picked]);
+  }, [boss.levelId, phaseIdx, integrity, difficulty, outcome, picked]);
 
   // clear checkpoint once the fight resolves
   useEffect(() => {
