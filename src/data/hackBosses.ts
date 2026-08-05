@@ -598,3 +598,27 @@ export const hackBosses: HackBoss[] = [
 ];
 
 export const bossForLevel = (levelId: number) => hackBosses.find((b) => b.levelId === levelId) ?? null;
+
+/** Player-selectable difficulty. Scales countdowns, integrity drain and penalties. */
+export type BossDifficulty = "recruit" | "operator" | "blackice";
+
+export interface BossDifficultyPreset {
+  id: BossDifficulty;
+  label: string;
+  blurb: string;
+  /** multiplier on phase countdown */
+  timeMul: number;
+  /** multiplier on passive integrity drain per second */
+  drainMul: number;
+  /** multiplier on wrong / timeout penalties */
+  penaltyMul: number;
+}
+
+export const bossDifficulties: BossDifficultyPreset[] = [
+  { id: "recruit", label: "Recruit", blurb: "Longer clock, slow drain, soft hits", timeMul: 1.6, drainMul: 0.5, penaltyMul: 0.6 },
+  { id: "operator", label: "Operator", blurb: "Standard threat pressure", timeMul: 1, drainMul: 1, penaltyMul: 1 },
+  { id: "blackice", label: "Black Ice", blurb: "Half clock, fast bleed, brutal penalties", timeMul: 0.6, drainMul: 1.9, penaltyMul: 1.45 },
+];
+
+export const bossDifficultyById = (id: BossDifficulty) =>
+  bossDifficulties.find((d) => d.id === id) ?? bossDifficulties[1];
