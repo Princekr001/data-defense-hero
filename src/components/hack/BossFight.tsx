@@ -218,7 +218,38 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
             </span>
           </div>
           <p className="mt-2 font-mono text-[11px] text-destructive/80 italic truncate">&gt; {taunt}</p>
+
+          {/* difficulty selector */}
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <span className="font-display text-[9px] uppercase tracking-[0.2em] text-white/45 flex items-center gap-1">
+              <Gauge className="h-3 w-3" /> Threat level
+            </span>
+            {bossDifficulties.map((d) => (
+              <button
+                key={d.id}
+                onClick={() => pickDifficulty(d.id)}
+                disabled={locked}
+                title={d.blurb}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 font-display text-[9px] uppercase tracking-[0.16em] transition-all",
+                  d.id === difficulty
+                    ? "border-destructive/70 bg-destructive/25 text-white"
+                    : "border-white/10 bg-white/5 text-white/55 hover:bg-white/10 hover:text-white",
+                  locked && d.id !== difficulty && "opacity-35 cursor-not-allowed",
+                )}
+              >
+                {d.label}
+              </button>
+            ))}
+            <span className="font-mono text-[9px] text-white/40 ml-auto">
+              {(tune.phaseMs / 1000).toFixed(0)}s · drain {tune.drainPerSec.toFixed(1)}%/s · hit -{tune.wrongHit}%
+            </span>
+          </div>
+          {locked && (
+            <p className="mt-1 font-mono text-[9px] text-white/30">Threat level locks once the gauntlet starts.</p>
+          )}
         </div>
+
 
         {/* integrity + timer */}
         <div className="px-4 pt-3 space-y-2">
