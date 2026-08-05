@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, Skull, ShieldAlert, Activity, ChevronRight } from "lucide-react";
+import { AlertTriangle, Skull, ShieldAlert, Activity, ChevronRight, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { bossTuning, type HackBoss } from "@/data/hackBosses";
+import {
+  bossTuning,
+  bossDifficulties,
+  bossDifficultyById,
+  type BossDifficulty,
+  type HackBoss,
+} from "@/data/hackBosses";
 
 interface Props {
   boss: HackBoss;
@@ -13,20 +19,52 @@ interface Props {
 }
 
 const DRAIN_PER_SEC: Record<1 | 2 | 3, number> = { 1: 1.1, 2: 1.8, 3: 2.6 };
+const DIFF_KEY = "ddh.bossDifficulty.v1";
 
 export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }: Props) {
-  const tune = bossTuning[boss.tier];
+  const base = bossTuning[boss.tier];
+  const [difficulty, setDifficulty] = useState<BossDifficulty>(() => {
+    try {
+      const saved = localStorage.getItem(DIFF_KEY) as BossDifficulty | null;
+      if (saved && bossDifficulties.some((d) => d.id === saved)) return saved;
+    } catch {}
+    return "operator";
+  });
+  const preset = bossDifficultyById(difficulty);
+  const tune = useMemo(
+    () => ({
+      integrity: base.integrity,
+      phaseMs: Math.round(base.phaseMs * preset.timeMul),
+      wrongHit: Math.round(base.wrongHit * preset.penaltyMul),
+      timeoutHit: Math.round(base.timeoutHit * preset.penaltyMul),
+      drainPerSec: DRAIN_PER_SEC[boss.tier] * preset.drainMul,
+    }),
+    [base, preset, boss.tier],
+  );
+
   const [phaseIdx, setPhaseIdx] = useState(0);
-  const [integrity, setIntegrity] = useState<number>(tune.integrity);
+  const [integrity, setIntegrity] = useState<number>(base.integrity);
   const [timeLeft, setTimeLeft] = useState<number>(tune.phaseMs);
   const [picked, setPicked] = useState<number | null>(null);
   const [shake, setShake] = useState(false);
   const [taunt, setTaunt] = useState(boss.taunts[0]);
   const [outcome, setOutcome] = useState<"running" | "won" | "lost">("running");
   const endedRef = useRef(false);
+  const startedRef = useRef(false);
 
   const phase = boss.phases[phaseIdx];
   const critical = integrity <= 35;
+  const locked = startedRef.current || phaseIdx > 0 || picked !== null;
+
+  const pickDifficulty = (id: BossDifficulty) => {
+    if (locked) return;
+    setDifficulty(id);
+    try { localStorage.setItem(DIFF_KEY, id); } catch {}
+    const p = bossDifficultyById(id);
+    setTimeLeft(Math.round(base.phaseMs * p.timeMul));
+    setIntegrity(base.integrity);
+  };
+
 
   // rotating taunts
   useEffect(() => {
