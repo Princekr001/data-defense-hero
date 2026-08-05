@@ -101,7 +101,7 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
     if (outcome !== "running" || picked !== null) return;
     const id: ReturnType<typeof setInterval> = setInterval(() => {
       setIntegrity((v) => {
-        const next = Math.max(0, v - DRAIN_PER_SEC[boss.tier] / 10);
+        const next = Math.max(0, v - tune.drainPerSec / 10);
         if (next <= 0) finish(false);
         return next;
       });
@@ -116,13 +116,15 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
       });
     }, 100);
     return () => clearInterval(id);
-  }, [outcome, picked, boss.tier, tune.timeoutHit, damage, finish]);
+  }, [outcome, picked, tune.drainPerSec, tune.timeoutHit, damage, finish]);
 
   const choose = (i: number) => {
     if (picked !== null || outcome !== "running") return;
+    startedRef.current = true;
     setPicked(i);
     if (i !== phase.answer) damage(tune.wrongHit);
   };
+
 
   const advance = () => {
     if (endedRef.current) return;
