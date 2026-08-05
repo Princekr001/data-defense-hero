@@ -20,10 +20,41 @@ interface Props {
 
 const DRAIN_PER_SEC: Record<1 | 2 | 3, number> = { 1: 1.1, 2: 1.8, 3: 2.6 };
 const DIFF_KEY = "ddh.bossDifficulty.v1";
+const CKPT_KEY = "ddh.bossCheckpoint.v1";
+
+interface Checkpoint {
+  bossId: string | number;
+  phaseIdx: number;
+  integrity: number;
+  difficulty: BossDifficulty;
+  started: boolean;
+}
+
+const readCheckpoint = (bossId: string | number): Checkpoint | null => {
+  try {
+    const raw = localStorage.getItem(CKPT_KEY);
+    if (!raw) return null;
+    const c = JSON.parse(raw) as Checkpoint;
+    if (!c || c.bossId !== bossId) return null;
+    if (typeof c.phaseIdx !== "number" || typeof c.integrity !== "number") return null;
+    if (c.integrity <= 0) return null;
+    return c;
+  } catch {
+    return null;
+  }
+};
+
+const clearCheckpoint = () => {
+  try { localStorage.removeItem(CKPT_KEY); } catch {}
+};
 
 export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }: Props) {
   const base = bossTuning[boss.tier];
+  const restored = useMemo(() => readCheckpoint(boss.id), [boss.id]);
   const [difficulty, setDifficulty] = useState<BossDifficulty>(() => {
+    if (restored?.difficulty && bossDifficulties.some((d) => d.id === restored.difficulty)) {
+      return restored.difficulty;
+    }
     try {
       const saved = localStorage.getItem(DIFF_KEY) as BossDifficulty | null;
       if (saved && bossDifficulties.some((d) => d.id === saved)) return saved;
@@ -42,15 +73,18 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
     [base, preset, boss.tier],
   );
 
-  const [phaseIdx, setPhaseIdx] = useState(0);
-  const [integrity, setIntegrity] = useState<number>(base.integrity);
+  const [phaseIdx, setPhaseIdx] = useState(() =>
+    restored ? Math.min(restored.phaseIdx, boss.phases.length - 1) : 0,
+  );
+  const [integrity, setIntegrity] = useState<number>(() => restored?.integrity ?? base.integrity);
   const [timeLeft, setTimeLeft] = useState<number>(tune.phaseMs);
   const [picked, setPicked] = useState<number | null>(null);
   const [shake, setShake] = useState(false);
   const [taunt, setTaunt] = useState(boss.taunts[0]);
   const [outcome, setOutcome] = useState<"running" | "won" | "lost">("running");
+  const [showRestored, setShowRestored] = useState(!!restored);
   const endedRef = useRef(false);
-  const startedRef = useRef(false);
+  const startedRef = useRef(!!restored?.started);
 
   const phase = boss.phases[phaseIdx];
   const critical = integrity <= 35;
@@ -64,6 +98,34 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
     setTimeLeft(Math.round(base.phaseMs * p.timeMul));
     setIntegrity(base.integrity);
   };
+
+  // persist checkpoint while the gauntlet is live
+  useEffect(() => {
+    if (outcome !== "running") return;
+    try {
+      const ckpt: Checkpoint = {
+        bossId: boss.id,
+        phaseIdx,
+        integrity,
+        difficulty,
+        started: startedRef.current,
+      };
+      localStorage.setItem(CKPT_KEY, JSON.stringify(ckpt));
+    } catch {}
+  }, [boss.id, phaseIdx, integrity, difficulty, outcome, picked]);
+
+  // clear checkpoint once the fight resolves
+  useEffect(() => {
+    if (outcome !== "running") clearCheckpoint();
+  }, [outcome]);
+
+  // hide the "checkpoint restored" banner after a moment
+  useEffect(() => {
+    if (!showRestored) return;
+    const id = setTimeout(() => setShowRestored(false), 5000);
+    return () => clearTimeout(id);
+  }, [showRestored]);
+
 
 
   // rotating taunts
