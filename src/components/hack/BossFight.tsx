@@ -414,7 +414,7 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
               variant="outline"
               size="sm"
               className="border-white/15 text-white/70 hover:bg-white/10"
-              onClick={onAbort}
+              onClick={() => { clearCheckpoint(); onAbort(); }}
             >
               Disconnect
             </Button>
