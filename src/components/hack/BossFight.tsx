@@ -397,7 +397,37 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
               Checkpoint restored — stage {phaseIdx + 1}, integrity {Math.ceil(integrity)}%
             </p>
           )}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={exportCheckpoint}
+              className="flex items-center gap-1 rounded-full border border-white/12 bg-white/5 px-2.5 py-1 font-display text-[9px] uppercase tracking-[0.16em] text-white/60 transition-all hover:bg-white/10 hover:text-white"
+            >
+              <FileDown className="h-3 w-3" /> Export checkpoint
+            </button>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="flex items-center gap-1 rounded-full border border-white/12 bg-white/5 px-2.5 py-1 font-display text-[9px] uppercase tracking-[0.16em] text-white/60 transition-all hover:bg-white/10 hover:text-white"
+            >
+              <FileUp className="h-3 w-3" /> Import
+            </button>
+            <input ref={fileRef} type="file" accept="application/json,.json" onChange={handleFile} className="hidden" />
+          </div>
+          {ioMsg && (
+            <p
+              className={cn(
+                "mt-2 rounded border px-2 py-1 font-mono text-[9px]",
+                ioMsg.tone === "ok"
+                  ? "border-accent/40 bg-accent/10 text-accent"
+                  : "border-destructive/50 bg-destructive/10 text-destructive",
+              )}
+            >
+              {ioMsg.text}
+            </p>
+          )}
         </div>
+
 
 
 
