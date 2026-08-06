@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { UserAuthButton } from "@/components/UserAuthButton";
+import CyberSlideshow from "@/components/landing/CyberSlideshow";
 import {
   Shield, Lock, Eye, Zap, Trophy, Star, Target, Brain,
   ChevronRight, Sparkles, Users, AlertTriangle, CheckCircle2,
@@ -64,48 +65,6 @@ const ScrollRevealCard = ({ children, delay = 0, className = "" }: { children: R
     >
       {children}
     </div>
-  );
-};
-
-const ProblemSolutionSection = () => {
-  const { ref, isVisible } = useScrollReveal(0.1);
-  return (
-    <section className="py-20 px-6" ref={ref}>
-      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-        <div className={`transition-all duration-700 ease-out ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"}`}>
-          <Card className="border-destructive/20 bg-destructive/5 h-full">
-            <CardContent className="p-8">
-              <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-                <h3 className="text-xl font-bold">The Problem</h3>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                Cybercrime costs the world <span className="text-foreground font-semibold">$10.5 trillion annually</span>.
-                Yet most students lack basic cybersecurity awareness. Traditional lectures
-                fail to engage young learners, leaving them vulnerable to phishing, identity theft,
-                and data breaches in their daily digital lives.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-        <div className={`transition-all duration-700 ease-out delay-200 ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-12"}`} style={{ transitionDelay: "200ms" }}>
-          <Card className="border-accent/20 bg-accent/5 h-full">
-            <CardContent className="p-8">
-              <div className="flex items-center gap-2 mb-4">
-                <CheckCircle2 className="h-6 w-6 text-accent" />
-                <h3 className="text-xl font-bold">Our Solution</h3>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                <span className="text-foreground font-semibold">Data Defense Hero</span> transforms
-                cybersecurity education into an immersive game. Students earn XP, unlock badges,
-                and level up by completing missions that teach real-world skills — from spotting
-                phishing emails to building secure passwords.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </section>
   );
 };
 
