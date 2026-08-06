@@ -141,7 +141,7 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
       format: "ddh.bossCheckpoint",
       version: 1,
       exportedAt: new Date().toISOString(),
-      bossName: boss.name,
+      bossName: boss.handle,
       checkpoint: {
         bossId: boss.levelId,
         phaseIdx,
