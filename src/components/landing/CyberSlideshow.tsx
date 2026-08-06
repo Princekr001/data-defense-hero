@@ -48,7 +48,7 @@ const PhishingScene = () => (
     {/* dragged credential card */}
     <g>
       <animateTransform attributeName="transform" type="translate"
-        values="0 0; 150 -34; 150 -34; 0 0" keyTimes="0;0.45;0.8;1" dur="5s" repeatCount="indefinite" />
+        values="0 0; 58 -32; 58 -32; 0 0" keyTimes="0;0.45;0.8;1" dur="5s" repeatCount="indefinite" />
       <rect x="240" y="120" width="150" height="66" rx="8" fill={D} opacity="0.14" stroke={D} strokeWidth="2" />
       <text x="256" y="146" fontSize="12" fill={D} fontFamily="monospace">user@mail.com</text>
       <text x="256" y="168" fontSize="12" fill={D} fontFamily="monospace">••••••••••</text>
