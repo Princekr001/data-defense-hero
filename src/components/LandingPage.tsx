@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { UserAuthButton } from "@/components/UserAuthButton";
+import CyberSlideshow from "@/components/landing/CyberSlideshow";
 import {
   Shield, Lock, Eye, Zap, Trophy, Star, Target, Brain,
   ChevronRight, Sparkles, Users, AlertTriangle, CheckCircle2,
@@ -64,48 +65,6 @@ const ScrollRevealCard = ({ children, delay = 0, className = "" }: { children: R
     >
       {children}
     </div>
-  );
-};
-
-const ProblemSolutionSection = () => {
-  const { ref, isVisible } = useScrollReveal(0.1);
-  return (
-    <section className="py-20 px-6" ref={ref}>
-      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-        <div className={`transition-all duration-700 ease-out ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"}`}>
-          <Card className="border-destructive/20 bg-destructive/5 h-full">
-            <CardContent className="p-8">
-              <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-                <h3 className="text-xl font-bold">The Problem</h3>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                Cybercrime costs the world <span className="text-foreground font-semibold">$10.5 trillion annually</span>.
-                Yet most students lack basic cybersecurity awareness. Traditional lectures
-                fail to engage young learners, leaving them vulnerable to phishing, identity theft,
-                and data breaches in their daily digital lives.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-        <div className={`transition-all duration-700 ease-out delay-200 ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-12"}`} style={{ transitionDelay: "200ms" }}>
-          <Card className="border-accent/20 bg-accent/5 h-full">
-            <CardContent className="p-8">
-              <div className="flex items-center gap-2 mb-4">
-                <CheckCircle2 className="h-6 w-6 text-accent" />
-                <h3 className="text-xl font-bold">Our Solution</h3>
-              </div>
-              <p className="text-muted-foreground leading-relaxed">
-                <span className="text-foreground font-semibold">Data Defense Hero</span> transforms
-                cybersecurity education into an immersive game. Students earn XP, unlock badges,
-                and level up by completing missions that teach real-world skills — from spotting
-                phishing emails to building secure passwords.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </section>
   );
 };
 
@@ -183,50 +142,8 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative py-20 md:py-32 px-6">
-        {/* Background glow effects */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
-        </div>
-
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <Badge variant="outline" className="mb-6 px-4 py-1.5 text-sm border-primary/30 text-primary animate-fade-in">
-            <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-            Gamified Cybersecurity Education
-          </Badge>
-
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight mb-6 animate-fade-in">
-            Defend Your Data.{" "}
-            <span className="bg-gradient-cyber bg-clip-text text-transparent">
-              Become a Cyber Hero.
-            </span>
-          </h1>
-
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-in">
-            An interactive, gamified platform that teaches students cybersecurity
-            awareness through missions, mini-games, and real-world attack simulations.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in">
-            <Button
-              size="xl"
-              variant="cyber"
-              onClick={onStart}
-              className="group animate-pulse-glow"
-            >
-              <Zap className="h-5 w-5" />
-              Enter Hack Grid
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}>
-              Explore Features
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </section>
+      {/* Animated threat slideshow (replaces static hero + text blocks) */}
+      <CyberSlideshow onStart={onStart} />
 
       {/* Stats Bar */}
       <section className="border-y border-border/30 bg-muted/30">
@@ -241,8 +158,6 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
         </div>
       </section>
 
-      {/* Problem & Solution */}
-      <ProblemSolutionSection />
 
 
       {/* Features */}
