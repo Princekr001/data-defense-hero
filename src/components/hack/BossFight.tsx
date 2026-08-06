@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, Skull, ShieldAlert, Activity, ChevronRight, Gauge } from "lucide-react";
+import { AlertTriangle, Skull, ShieldAlert, Activity, ChevronRight, Gauge, FileDown, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -125,6 +125,88 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
     const id = setTimeout(() => setShowRestored(false), 5000);
     return () => clearTimeout(id);
   }, [showRestored]);
+
+  // ---- checkpoint export / import ----
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [ioMsg, setIoMsg] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
+
+  useEffect(() => {
+    if (!ioMsg) return;
+    const id = setTimeout(() => setIoMsg(null), 4500);
+    return () => clearTimeout(id);
+  }, [ioMsg]);
+
+  const exportCheckpoint = () => {
+    const payload = {
+      format: "ddh.bossCheckpoint",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      bossName: boss.handle,
+      checkpoint: {
+        bossId: boss.levelId,
+        phaseIdx,
+        integrity,
+        difficulty,
+        started: startedRef.current,
+      } as Checkpoint,
+    };
+    try {
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `boss-checkpoint-${boss.levelId}-${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setIoMsg({ tone: "ok", text: "Checkpoint exported as JSON." });
+    } catch {
+      setIoMsg({ tone: "err", text: "Export failed." });
+    }
+  };
+
+  const applyImported = (raw: string) => {
+    try {
+      const parsed = JSON.parse(raw);
+      const c: Checkpoint = parsed?.checkpoint ?? parsed;
+      if (!c || typeof c.phaseIdx !== "number" || typeof c.integrity !== "number") {
+        setIoMsg({ tone: "err", text: "Invalid checkpoint file." });
+        return;
+      }
+      if (String(c.bossId) !== String(boss.levelId)) {
+        setIoMsg({ tone: "err", text: "This checkpoint belongs to a different boss." });
+        return;
+      }
+      if (c.integrity <= 0) {
+        setIoMsg({ tone: "err", text: "Checkpoint is already overrun." });
+        return;
+      }
+      const diff: BossDifficulty = bossDifficulties.some((d) => d.id === c.difficulty)
+        ? c.difficulty
+        : difficulty;
+      setDifficulty(diff);
+      setPhaseIdx(Math.min(Math.max(0, Math.floor(c.phaseIdx)), boss.phases.length - 1));
+      setIntegrity(Math.min(base.integrity, Math.max(1, c.integrity)));
+      setPicked(null);
+      setOutcome("running");
+      endedRef.current = false;
+      startedRef.current = !!c.started;
+      setTimeLeft(Math.round(base.phaseMs * bossDifficultyById(diff).timeMul));
+      try { localStorage.setItem(CKPT_KEY, JSON.stringify({ ...c, difficulty: diff })); } catch {}
+      setIoMsg({ tone: "ok", text: `Checkpoint imported — stage ${Math.floor(c.phaseIdx) + 1}.` });
+    } catch {
+      setIoMsg({ tone: "err", text: "Could not read that file." });
+    }
+  };
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => applyImported(String(ev.target?.result ?? ""));
+    reader.readAsText(file);
+  };
+
 
 
 
@@ -315,7 +397,37 @@ export default function BossFight({ boss, accent, onDefeat, onOverrun, onAbort }
               Checkpoint restored — stage {phaseIdx + 1}, integrity {Math.ceil(integrity)}%
             </p>
           )}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={exportCheckpoint}
+              className="flex items-center gap-1 rounded-full border border-white/12 bg-white/5 px-2.5 py-1 font-display text-[9px] uppercase tracking-[0.16em] text-white/60 transition-all hover:bg-white/10 hover:text-white"
+            >
+              <FileDown className="h-3 w-3" /> Export checkpoint
+            </button>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="flex items-center gap-1 rounded-full border border-white/12 bg-white/5 px-2.5 py-1 font-display text-[9px] uppercase tracking-[0.16em] text-white/60 transition-all hover:bg-white/10 hover:text-white"
+            >
+              <FileUp className="h-3 w-3" /> Import
+            </button>
+            <input ref={fileRef} type="file" accept="application/json,.json" onChange={handleFile} className="hidden" />
+          </div>
+          {ioMsg && (
+            <p
+              className={cn(
+                "mt-2 rounded border px-2 py-1 font-mono text-[9px]",
+                ioMsg.tone === "ok"
+                  ? "border-accent/40 bg-accent/10 text-accent"
+                  : "border-destructive/50 bg-destructive/10 text-destructive",
+              )}
+            >
+              {ioMsg.text}
+            </p>
+          )}
         </div>
+
 
 
 
