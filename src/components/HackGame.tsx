@@ -140,6 +140,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
     try { localStorage.removeItem("ddh.hackCategory.v1"); } catch {}
     setView("grid");
     setActive(null);
+    setFallbackFrom(null);
     toast({ title: "Progress reset", description: "All hack stats and category filter cleared." });
   };
 
