@@ -66,10 +66,10 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const tierColor = (lvl: HackLevel | null) =>
     lvl ? hackTiers.find((t) => t.tier === lvl.tier)?.color ?? "#22d3ee" : "#22d3ee";
 
-  const handleSelect = (lvl: HackLevel) => {
+  const handleSelect = (lvl: HackLevel, clearFallback = true) => {
     setActive(lvl);
     setResult(null);
-    setFallbackFrom(null);
+    if (clearFallback) setFallbackFrom(null);
     setView("briefing");
   };
 
