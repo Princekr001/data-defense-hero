@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  Play, Pause, ChevronLeft, ChevronRight, Zap, ArrowRight,
+  Play, Pause, ChevronLeft, ChevronRight, Zap, ArrowRight, Target,
 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -244,6 +244,9 @@ interface Slide {
   statLabel: string;
   defense: string;
   tone: "danger" | "warning" | "purple" | "safe";
+  /** Matching in-game hack level to jump straight into for practice. */
+  levelId?: number;
+  levelName?: string;
   Scene: () => JSX.Element;
 }
 
@@ -257,6 +260,8 @@ const slides: Slide[] = [
     statLabel: "phishing mails / day",
     defense: "Check the sender domain before you ever touch a link.",
     tone: "danger",
+    levelId: 2,
+    levelName: "Trace the Intruder",
     Scene: PhishingScene,
   },
   {
@@ -268,6 +273,8 @@ const slides: Slide[] = [
     statLabel: "to crack a common password",
     defense: "Long passphrase + a manager + 2FA on every account.",
     tone: "warning",
+    levelId: 4,
+    levelName: "Corp VPN Crack",
     Scene: PasswordScene,
   },
   {
@@ -279,6 +286,8 @@ const slides: Slide[] = [
     statLabel: "annual cybercrime cost",
     defense: "Share less, use unique passwords, watch breach alerts.",
     tone: "danger",
+    levelId: 5,
+    levelName: "Corporate Breach Trace",
     Scene: BreachScene,
   },
   {
@@ -290,6 +299,8 @@ const slides: Slide[] = [
     statLabel: "a new attack launches",
     defense: "Offline backups and patched software beat the timer.",
     tone: "danger",
+    levelId: 8,
+    levelName: "ICS Intrusion Trace",
     Scene: RansomwareScene,
   },
   {
@@ -301,6 +312,8 @@ const slides: Slide[] = [
     statLabel: "man-in-the-middle capture",
     defense: "Use a VPN, stick to HTTPS, never bank on open Wi-Fi.",
     tone: "warning",
+    levelId: 1,
+    levelName: "Open WiFi Heist",
     Scene: WifiScene,
   },
   {
@@ -312,6 +325,8 @@ const slides: Slide[] = [
     statLabel: "can rebuild your identity",
     defense: "Lock profiles down and starve the social engineer.",
     tone: "purple",
+    levelId: 3,
+    levelName: "Home Router Bypass",
     Scene: OversharingScene,
   },
   {
@@ -344,7 +359,7 @@ const toneText: Record<Slide["tone"], string> = {
 const DURATION = 8000;
 
 interface Props {
-  onStart: () => void;
+  onStart: (levelId?: number) => void;
 }
 
 export default function CyberSlideshow({ onStart }: Props) {
@@ -458,7 +473,25 @@ export default function CyberSlideshow({ onStart }: Props) {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button size="lg" variant="cyber" onClick={onStart} className="group animate-pulse-glow">
+              {s.levelId ? (
+                <Button
+                  size="lg"
+                  variant="cyber"
+                  onClick={() => onStart(s.levelId)}
+                  className="group animate-pulse-glow"
+                >
+                  <Target className="h-5 w-5" />
+                  Practice: {s.levelName}
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              ) : null}
+
+              <Button
+                size="lg"
+                variant={s.levelId ? "outline" : "cyber"}
+                onClick={() => onStart()}
+                className={cn("group", !s.levelId && "animate-pulse-glow")}
+              >
                 <Zap className="h-5 w-5" />
                 Enter Hack Grid
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
