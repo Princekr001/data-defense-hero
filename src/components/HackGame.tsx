@@ -73,7 +73,8 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
       ? lvl
       : hackLevels
           .filter((l) => l.category === lvl.category && isUnlocked(l.id))
-          .sort((a, b) => b.id - a.id)[0];
+          .sort((a, b) => b.id - a.id)[0] ??
+        hackLevels.filter((l) => isUnlocked(l.id)).sort((a, b) => b.id - a.id)[0];
     if (!target) return;
     if (target.id !== lvl.id) {
       toast({
