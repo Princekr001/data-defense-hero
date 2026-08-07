@@ -281,6 +281,19 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
         <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <Card className="w-full max-w-md border-white/10 bg-black/70 text-white">
             <CardContent className="p-6 space-y-4">
+              {fallbackFrom && (
+                <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-start gap-3 animate-pulse-glow">
+                  <span className="text-lg" aria-hidden>🔒</span>
+                  <div>
+                    <p className="text-sm font-semibold text-destructive-foreground">
+                      Fallback level active
+                    </p>
+                    <p className="text-xs text-white/80 leading-relaxed">
+                      "{fallbackFrom.name}" is locked. You are practicing the nearest unlocked level: <span className="font-bold text-white">{active.name}</span>. Clear it to unlock the rest of this track.
+                    </p>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <Badge variant="outline" className="border-white/20 text-white">
                   Tier {active.tier} · {hackTiers.find((t) => t.tier === active.tier)?.name}
