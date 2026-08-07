@@ -87,9 +87,12 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
         hackLevels.filter((l) => isUnlocked(l.id)).sort((a, b) => b.id - a.id)[0];
     if (!target) return;
     if (target.id !== lvl.id) {
+      setFallbackFrom(lvl);
+      pulseHaptics([60, 80, 60]);
       toast({
-        title: `"${lvl.name}" is still locked`,
-        description: `Starting "${target.name}" — clear it to unlock the rest of this track.`,
+        title: `🔒 "${lvl.name}" is locked`,
+        description: `Falling back to the nearest unlocked level: "${target.name}". Beat it to unlock more of this track.`,
+        variant: "destructive",
       });
     }
     setActiveCategory(target.category);
