@@ -52,14 +52,24 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const [result, setResult] = useState<"success" | "fail" | null>(null);
   const [bossRun, setBossRun] = useState(0);
   const [lessonCategory, setLessonCategory] = useState<string | null>(null);
+  const [fallbackFrom, setFallbackFrom] = useState<HackLevel | null>(null);
   const { toast } = useToast();
+
+  const pulseHaptics = (pattern: number | number[] = [40, 60, 40]) => {
+    try {
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate(pattern);
+      }
+    } catch {}
+  };
 
   const tierColor = (lvl: HackLevel | null) =>
     lvl ? hackTiers.find((t) => t.tier === lvl.tier)?.color ?? "#22d3ee" : "#22d3ee";
 
-  const handleSelect = (lvl: HackLevel) => {
+  const handleSelect = (lvl: HackLevel, clearFallback = true) => {
     setActive(lvl);
     setResult(null);
+    if (clearFallback) setFallbackFrom(null);
     setView("briefing");
   };
 
@@ -77,13 +87,16 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
         hackLevels.filter((l) => isUnlocked(l.id)).sort((a, b) => b.id - a.id)[0];
     if (!target) return;
     if (target.id !== lvl.id) {
+      setFallbackFrom(lvl);
+      pulseHaptics([60, 80, 60]);
       toast({
-        title: `"${lvl.name}" is still locked`,
-        description: `Starting "${target.name}" — clear it to unlock the rest of this track.`,
+        title: `🔒 "${lvl.name}" is locked`,
+        description: `Falling back to the nearest unlocked level: "${target.name}". Beat it to unlock more of this track.`,
+        variant: "destructive",
       });
     }
     setActiveCategory(target.category);
-    handleSelect(target);
+    handleSelect(target, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialLevelId]);
 
@@ -127,6 +140,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
     try { localStorage.removeItem("ddh.hackCategory.v1"); } catch {}
     setView("grid");
     setActive(null);
+    setFallbackFrom(null);
     toast({ title: "Progress reset", description: "All hack stats and category filter cleared." });
   };
 
@@ -143,7 +157,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
       {/* HUD */}
       <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-3 sm:p-4 pointer-events-none">
         <div className="pointer-events-auto flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => { setView("grid"); setActive(null); }} className="bg-black/40 backdrop-blur border-white/10">
+          <Button variant="outline" size="sm" onClick={() => { setView("grid"); setActive(null); setFallbackFrom(null); }} className="bg-black/40 backdrop-blur border-white/10">
             <ArrowLeft className="h-4 w-4" /> Hack Grid
           </Button>
         </div>
@@ -268,6 +282,19 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
         <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <Card className="w-full max-w-md border-white/10 bg-black/70 text-white">
             <CardContent className="p-6 space-y-4">
+              {fallbackFrom && (
+                <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-start gap-3 animate-pulse-glow">
+                  <span className="text-lg" aria-hidden>🔒</span>
+                  <div>
+                    <p className="text-sm font-semibold text-destructive-foreground">
+                      Fallback level active
+                    </p>
+                    <p className="text-xs text-white/80 leading-relaxed">
+                      "{fallbackFrom.name}" is locked. You are practicing the nearest unlocked level: <span className="font-bold text-white">{active.name}</span>. Clear it to unlock the rest of this track.
+                    </p>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <Badge variant="outline" className="border-white/20 text-white">
                   Tier {active.tier} · {hackTiers.find((t) => t.tier === active.tier)?.name}
@@ -284,7 +311,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
               <p className="text-sm text-white/80 leading-relaxed">{active.briefing}</p>
               <p className="text-xs text-white/50 italic">Objective: {active.objective}</p>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1 border-white/20 text-white hover:bg-white/10" onClick={() => setView("grid")}>
+                <Button variant="outline" className="flex-1 border-white/20 text-white hover:bg-white/10" onClick={() => { setView("grid"); setFallbackFrom(null); }}>
                   Abort
                 </Button>
                 <Button variant="cyber" className="flex-1" onClick={() => setView("mission")}>
