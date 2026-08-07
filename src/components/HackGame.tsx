@@ -96,7 +96,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
       });
     }
     setActiveCategory(target.category);
-    handleSelect(target);
+    handleSelect(target, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialLevelId]);
 
