@@ -25,7 +25,12 @@ const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
 
 type View = "grid" | "briefing" | "mission" | "boss" | "result";
 
-export default function HackGame() {
+interface HackGameProps {
+  /** Optional level to open directly (e.g. jumped in from a landing-page slide). */
+  initialLevelId?: number;
+}
+
+export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const { completed, xp, isUnlocked, isComplete, completeLevel, reset } = useHackProgress();
   const [view, setView] = useState<View>("grid");
   const [activeCategory, setActiveCategory] = useState<HackCategory | "all">(() => {
@@ -57,6 +62,30 @@ export default function HackGame() {
     setResult(null);
     setView("briefing");
   };
+
+  // Deep-link: open a specific level's briefing when arriving from a slideshow slide.
+  useEffect(() => {
+    if (!initialLevelId) return;
+    const lvl = hackLevels.find((l) => l.id === initialLevelId);
+    if (!lvl) return;
+    // Locked? Practise the closest unlocked target in the same topic instead.
+    const target = isUnlocked(lvl.id)
+      ? lvl
+      : hackLevels
+          .filter((l) => l.category === lvl.category && isUnlocked(l.id))
+          .sort((a, b) => b.id - a.id)[0] ??
+        hackLevels.filter((l) => isUnlocked(l.id)).sort((a, b) => b.id - a.id)[0];
+    if (!target) return;
+    if (target.id !== lvl.id) {
+      toast({
+        title: `"${lvl.name}" is still locked`,
+        description: `Starting "${target.name}" — clear it to unlock the rest of this track.`,
+      });
+    }
+    setActiveCategory(target.category);
+    handleSelect(target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialLevelId]);
 
   const activeBoss = active ? bossForLevel(active.id) : null;
 
