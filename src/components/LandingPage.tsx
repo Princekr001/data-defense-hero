@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 interface LandingPageProps {
-  onStart: () => void;
+  onStart: (levelId?: number) => void;
 }
 
 const features = [
@@ -232,7 +232,7 @@ const LandingPage = ({ onStart }: LandingPageProps) => {
           <p className="text-muted-foreground mb-8">
             No account required. Jump into your first mission and start learning.
           </p>
-          <Button size="xl" variant="cyber" onClick={onStart} className="group animate-pulse-glow">
+          <Button size="xl" variant="cyber" onClick={() => onStart()} className="group animate-pulse-glow">
             <Shield className="h-5 w-5" />
             Start Playing Now
             <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />

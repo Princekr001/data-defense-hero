@@ -5,16 +5,24 @@ import LandingPage from "@/components/LandingPage";
 
 const Index = () => {
   const [started, setStarted] = useState(false);
+  const [launchLevelId, setLaunchLevelId] = useState<number | undefined>(undefined);
 
   if (!started) {
-    return <LandingPage onStart={() => setStarted(true)} />;
+    return (
+      <LandingPage
+        onStart={(levelId) => {
+          setLaunchLevelId(levelId);
+          setStarted(true);
+        }}
+      />
+    );
   }
 
   return (
     <div className="relative min-h-screen bg-background">
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
         <button
-          onClick={() => setStarted(false)}
+          onClick={() => { setStarted(false); setLaunchLevelId(undefined); }}
           className="pointer-events-auto text-xs font-bold tracking-wider text-white/80 hover:text-white bg-black/40 backdrop-blur border border-white/10 rounded-full px-4 py-1.5 transition"
         >
           ← DATA DEFENSE HERO
@@ -23,7 +31,7 @@ const Index = () => {
       <div className="absolute top-3 right-3 z-50">
         <UserAuthButton />
       </div>
-      <HackGame />
+      <HackGame initialLevelId={launchLevelId} />
     </div>
   );
 };
