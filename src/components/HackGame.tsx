@@ -69,6 +69,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const handleSelect = (lvl: HackLevel) => {
     setActive(lvl);
     setResult(null);
+    setFallbackFrom(null);
     setView("briefing");
   };
 
