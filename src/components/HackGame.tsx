@@ -68,15 +68,21 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
     if (!initialLevelId) return;
     const lvl = hackLevels.find((l) => l.id === initialLevelId);
     if (!lvl) return;
-    if (!isUnlocked(lvl.id)) {
+    // Locked? Practise the closest unlocked target in the same topic instead.
+    const target = isUnlocked(lvl.id)
+      ? lvl
+      : hackLevels
+          .filter((l) => l.category === lvl.category && isUnlocked(l.id))
+          .sort((a, b) => b.id - a.id)[0];
+    if (!target) return;
+    if (target.id !== lvl.id) {
       toast({
-        title: "Target still locked",
-        description: `Clear earlier missions to unlock "${lvl.name}".`,
+        title: `"${lvl.name}" is still locked`,
+        description: `Starting "${target.name}" — clear it to unlock the rest of this track.`,
       });
-      return;
     }
-    setActiveCategory(lvl.category);
-    handleSelect(lvl);
+    setActiveCategory(target.category);
+    handleSelect(target);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialLevelId]);
 
