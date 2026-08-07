@@ -52,7 +52,16 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const [result, setResult] = useState<"success" | "fail" | null>(null);
   const [bossRun, setBossRun] = useState(0);
   const [lessonCategory, setLessonCategory] = useState<string | null>(null);
+  const [fallbackFrom, setFallbackFrom] = useState<HackLevel | null>(null);
   const { toast } = useToast();
+
+  const pulseHaptics = (pattern: number | number[] = [40, 60, 40]) => {
+    try {
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate(pattern);
+      }
+    } catch {}
+  };
 
   const tierColor = (lvl: HackLevel | null) =>
     lvl ? hackTiers.find((t) => t.tier === lvl.tier)?.color ?? "#22d3ee" : "#22d3ee";
