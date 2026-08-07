@@ -156,7 +156,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
       {/* HUD */}
       <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-3 sm:p-4 pointer-events-none">
         <div className="pointer-events-auto flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => { setView("grid"); setActive(null); }} className="bg-black/40 backdrop-blur border-white/10">
+          <Button variant="outline" size="sm" onClick={() => { setView("grid"); setActive(null); setFallbackFrom(null); }} className="bg-black/40 backdrop-blur border-white/10">
             <ArrowLeft className="h-4 w-4" /> Hack Grid
           </Button>
         </div>
