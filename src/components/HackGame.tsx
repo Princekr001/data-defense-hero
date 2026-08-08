@@ -16,6 +16,7 @@ import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash
 import { useToast } from "@/hooks/use-toast";
 import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 import ScenarioScene from "@/components/lessons/ScenarioScene";
+import ScenarioReview from "@/components/hack/ScenarioReview";
 
 const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   phishing: "phishing",
@@ -23,7 +24,7 @@ const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   privacy: "privacy",
 };
 
-type View = "grid" | "briefing" | "mission" | "boss" | "result";
+type View = "grid" | "briefing" | "mission" | "boss" | "review" | "result";
 
 interface HackGameProps {
   /** Optional level to open directly (e.g. jumped in from a landing-page slide). */
@@ -117,7 +118,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
     }
     completeLevel(active.id);
     setResult("success");
-    setView("result");
+    setView("review");
     toast({ title: `Hack successful — +${active.xpReward} XP`, description: active.name });
   };
 
@@ -125,12 +126,12 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
     if (!active) return;
     completeLevel(active.id);
     setResult("success");
-    setView("result");
+    setView("review");
     toast({ title: `Boss purged — +${active.xpReward} XP`, description: active.name });
   };
   const handleFail = () => {
     setResult("fail");
-    setView("result");
+    setView("review");
   };
 
   const handleResetAll = () => {
@@ -349,6 +350,10 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
             setActive(null);
           }}
         />
+      )}
+
+      {view === "review" && active && result && (
+        <ScenarioReview level={active} outcome={result} onContinue={() => setView("result")} />
       )}
 
       {view === "result" && active && (
