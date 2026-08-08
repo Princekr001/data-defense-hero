@@ -134,6 +134,14 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
     setView("review");
   };
 
+  const handleReplay = () => {
+    if (!active) return;
+    setResult(null);
+    setBossRun((n) => n + 1);
+    setView("mission");
+    toast({ title: "Replaying level", description: active.name });
+  };
+
   const handleResetAll = () => {
     if (!window.confirm("Reset all hack progress and category stats? This cannot be undone.")) return;
     reset();
@@ -353,7 +361,12 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
       )}
 
       {view === "review" && active && result && (
-        <ScenarioReview level={active} outcome={result} onContinue={() => setView("result")} />
+        <ScenarioReview
+          level={active}
+          outcome={result}
+          onContinue={() => setView("result")}
+          onReplay={handleReplay}
+        />
       )}
 
       {view === "result" && active && (
@@ -427,8 +440,8 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
                   Back to Grid
                 </Button>
                 {result === "fail" ? (
-                  <Button variant="cyber" className="flex-1" onClick={() => setView("mission")}>
-                    <RotateCw className="h-4 w-4" /> Retry
+                  <Button variant="cyber" className="flex-1" onClick={handleReplay}>
+                    <RotateCw className="h-4 w-4" /> Replay Level
                   </Button>
                 ) : (
                   <Button variant="cyber" className="flex-1" onClick={() => { setView("grid"); setActive(null); }}>
@@ -436,6 +449,15 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
                   </Button>
                 )}
               </div>
+              {result === "success" && (
+                <Button
+                  variant="outline"
+                  className="w-full border-white/20 text-white hover:bg-white/10"
+                  onClick={handleReplay}
+                >
+                  <RotateCw className="h-4 w-4" /> Replay "{active.name}"
+                </Button>
+              )}
               <button
                 onClick={handleResetAll}
                 className="w-full text-xs text-white/40 hover:text-destructive flex items-center justify-center gap-1.5 py-1 transition-colors"

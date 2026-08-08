@@ -27,16 +27,15 @@ export function useHackProgress() {
 
   const isUnlocked = useCallback(
     (id: number) => {
-      if (id === 1) return true;
-      const level = hackLevels.find((l) => l.id === id);
-      if (!level) return false;
-      // unlock when previous level in any tier is complete; also gate tier change on previous tier full completion
-      const prev = hackLevels.find((l) => l.id === id - 1);
-      if (!prev) return true;
+      const idx = hackLevels.findIndex((l) => l.id === id);
+      if (idx <= 0) return idx === 0;
+      const level = hackLevels[idx];
+      const prev = hackLevels[idx - 1];
       if (prev.tier !== level.tier) {
-        // entering a new tier — all previous tier levels must be done
-        const prevTierLevels = hackLevels.filter((l) => l.tier === prev.tier);
-        return prevTierLevels.every((l) => state.completed.includes(l.id));
+        // entering a new tier — every level of the previous tier must be done
+        return hackLevels
+          .filter((l) => l.tier === prev.tier)
+          .every((l) => state.completed.includes(l.id));
       }
       return state.completed.includes(prev.id);
     },
