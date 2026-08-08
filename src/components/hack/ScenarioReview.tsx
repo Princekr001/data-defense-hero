@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, AlertTriangle, ChevronRight, Lightbulb } from "lucide-react";
+import { ShieldCheck, AlertTriangle, ChevronRight, Lightbulb, RotateCw } from "lucide-react";
 import type { HackLevel } from "@/data/hackTargets";
 import { reviewForLevel } from "@/data/scenarioReviews";
 
@@ -9,9 +9,10 @@ interface Props {
   level: HackLevel;
   outcome: "success" | "fail";
   onContinue: () => void;
+  onReplay?: () => void;
 }
 
-export default function ScenarioReview({ level, outcome, onContinue }: Props) {
+export default function ScenarioReview({ level, outcome, onContinue, onReplay }: Props) {
   const review = reviewForLevel(level);
 
   return (
@@ -75,9 +76,20 @@ export default function ScenarioReview({ level, outcome, onContinue }: Props) {
             </p>
           </div>
 
-          <Button variant="cyber" className="w-full" onClick={onContinue}>
-            Continue <ChevronRight className="h-4 w-4" />
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            {onReplay && (
+              <Button
+                variant="outline"
+                className="flex-1 border-white/20 text-white hover:bg-white/10"
+                onClick={onReplay}
+              >
+                <RotateCw className="h-4 w-4" /> Replay Level
+              </Button>
+            )}
+            <Button variant="cyber" className="flex-1" onClick={onContinue}>
+              Continue <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
