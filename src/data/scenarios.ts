@@ -578,4 +578,213 @@ export const gameScenarios: Scenario[] = [
     xpReward: 150,
     concept: "Physical Security"
   }
+  ,
+  {
+    id: 23,
+    title: "Read the Real Link",
+    character: "You",
+    description: "Hands-on drill: inspect the actual destination before clicking.",
+    situation: "You hover over a 'Reset your password' button in an email. The status bar shows: https://accounts.google.com.secure-login-verify.ru/reset?u=you%40mail.com . The visible text says accounts.google.com.",
+    actions: {
+      action1: { text: "Read the domain right-to-left: the real host is secure-login-verify.ru — delete the mail", type: 'safe' },
+      action2: { text: "It starts with accounts.google.com, so it is genuine — click it", type: 'risky' },
+      action3: { text: "Click it but do not type a password, just look at the page", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. The real domain is the last two labels before the first single slash. Everything left of it can be faked.",
+      concept: "URL Parsing: read domains right-to-left, ignore subdomain padding.",
+      tips: [
+        "Real host = the part just before the first single '/'",
+        "Anything before it (accounts.google.com.) is attacker-controlled text",
+        "Long URLs with %40, @ or punycode (xn--) are strong red flags",
+        "Type the site yourself instead of clicking"
+      ]
+    },
+    category: 'phishing',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "URL Inspection"
+  },
+  {
+    id: 24,
+    title: "The Permission Audit",
+    character: "You",
+    description: "Practical task: review what an installed app can actually access.",
+    situation: "A free flashlight app on your phone requests: Camera, Contacts, Microphone, Precise Location (always), and SMS. You already installed it last month.",
+    actions: {
+      action1: { text: "Revoke every permission except Camera, then uninstall if the app breaks or nags", type: 'safe' },
+      action2: { text: "Leave it — it already works and revoking might break the flashlight", type: 'risky' },
+      action3: { text: "Set Location to 'While using' and keep Contacts/SMS on for convenience", type: 'risky' }
+    },
+    feedback: {
+      correct: "Right. Grant only what the core function needs. A flashlight needs the camera flash — nothing else.",
+      concept: "Least Privilege on Devices: permissions are data taps, audit them monthly.",
+      tips: [
+        "Android: Settings > Privacy > Permission manager; iOS: Settings > Privacy & Security",
+        "SMS access can read your OTP codes",
+        "'Always' location builds a full movement history",
+        "Uninstall apps you have not opened in 60 days"
+      ]
+    },
+    category: 'privacy',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "Permission Hygiene"
+  },
+  {
+    id: 25,
+    title: "Breach Response in 10 Minutes",
+    character: "You",
+    description: "Practical drill: your password showed up in a breach dump.",
+    situation: "A breach notification says your email and password from a shopping site were leaked in plaintext. You reused a similar password on your email and one bank login. You have 10 minutes before class.",
+    actions: {
+      action1: { text: "Change the email password first, enable 2FA there, then the bank, then the shop", type: 'safe' },
+      action2: { text: "Change the shopping site password — that is where the leak happened", type: 'risky' },
+      action3: { text: "Add a '2' to the end of your old password everywhere", type: 'risky' }
+    },
+    feedback: {
+      correct: "Exactly. Email is the master key: it can reset every other account. Secure it first, then financial, then the rest.",
+      concept: "Incident Triage: fix accounts in order of blast radius.",
+      tips: [
+        "Order: email > banking > social > everything else",
+        "Also revoke active sessions and app passwords",
+        "Password patterns (adding digits) are trivially cracked",
+        "Check haveibeenpwned.com for other exposures"
+      ]
+    },
+    category: 'password',
+    difficulty: 'expert',
+    xpReward: 200,
+    concept: "Breach Response"
+  },
+  {
+    id: 26,
+    title: "The OTP Call",
+    character: "You",
+    description: "Live pressure test: someone is on the phone while a code arrives.",
+    situation: "Your phone rings: 'Delivery department — we need the 6-digit code we just sent to confirm your parcel.' A real SMS arrives: 'Code 481920. Never share this code. Login attempt from Kyiv.'",
+    actions: {
+      action1: { text: "Hang up, read the SMS text itself, and change the password for that account", type: 'safe' },
+      action2: { text: "Read only the first 3 digits so the parcel isn't cancelled", type: 'risky' },
+      action3: { text: "Share the code — the caller already knew your name and address", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. The SMS itself told you it was a login attempt, not a delivery. No legitimate service ever asks for your OTP.",
+      concept: "Vishing + OTP theft: the code is the last lock — never hand it over.",
+      tips: [
+        "Always read the OTP message body, not just the digits",
+        "Knowing your name/address proves nothing — that data is cheap",
+        "Partial codes still help attackers narrow brute-force",
+        "Move to app-based or hardware 2FA where possible"
+      ]
+    },
+    category: 'social',
+    difficulty: 'expert',
+    xpReward: 200,
+    concept: "OTP Protection"
+  },
+  {
+    id: 27,
+    title: "Wi-Fi Field Check",
+    character: "You",
+    description: "Practical task: choose and harden a connection at a cafe.",
+    situation: "Three networks appear: 'CafeAroma_Guest' (WPA2, password on receipt), 'CafeAroma Free WiFi' (open, strongest signal), 'Free_Public_WiFi' (open). You must submit an assignment with your college login.",
+    actions: {
+      action1: { text: "Use your phone hotspot, or CafeAroma_Guest with a VPN after confirming the name at the counter", type: 'safe' },
+      action2: { text: "Take the strongest open network — HTTPS protects you anyway", type: 'risky' },
+      action3: { text: "Use the open network but only after switching to incognito mode", type: 'risky' }
+    },
+    feedback: {
+      correct: "Right. Open networks with lookalike names are classic evil-twin setups. Verify the SSID at the counter, prefer tethering, and tunnel with a VPN.",
+      concept: "Evil Twin APs: signal strength means proximity, not legitimacy.",
+      tips: [
+        "Attackers copy the venue name and boost power to win clients",
+        "Incognito hides history locally — it does not encrypt traffic",
+        "Turn off auto-join for open networks",
+        "A VPN protects DNS and metadata that HTTPS still leaks"
+      ]
+    },
+    category: 'network',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "Safe Connectivity"
+  },
+  {
+    id: 28,
+    title: "Verify the Invoice",
+    character: "You",
+    description: "Practical process drill: money is about to move.",
+    situation: "Your club's regular vendor emails an invoice from the usual address, but with new bank details and 'please pay today, our old account is frozen'. Reply-To is set to vendor.accounts@gmail.com.",
+    actions: {
+      action1: { text: "Call the vendor on the number you already have on file and confirm the change verbally", type: 'safe' },
+      action2: { text: "Reply to the email asking them to confirm the new account", type: 'risky' },
+      action3: { text: "Pay a small test amount first to check the account works", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. Out-of-band verification with a known-good number is the only reliable control against invoice fraud.",
+      concept: "Business Email Compromise: verify bank-detail changes on a separate channel.",
+      tips: [
+        "A mismatched Reply-To is a hijack indicator",
+        "Replying just talks to the attacker",
+        "Urgency + payment change = fraud pattern",
+        "Require two-person approval for account detail changes"
+      ]
+    },
+    category: 'scam',
+    difficulty: 'expert',
+    xpReward: 200,
+    concept: "Payment Verification"
+  },
+  {
+    id: 29,
+    title: "The Backup Test",
+    character: "You",
+    description: "Hands-on: prove your backup actually works before you need it.",
+    situation: "Ransomware hits a classmate's laptop. You have cloud sync turned on for your project folder and an external drive that stays plugged in 24/7. You have never restored a file.",
+    actions: {
+      action1: { text: "Keep one offline copy unplugged plus versioned cloud backup, and restore a test file today", type: 'safe' },
+      action2: { text: "Cloud sync is enough — files are always uploaded", type: 'risky' },
+      action3: { text: "Rely on the external drive since it copies everything automatically", type: 'risky' }
+    },
+    feedback: {
+      correct: "Right. Ransomware encrypts anything it can write to — including synced folders and always-connected drives. Offline + versioned + tested is the rule.",
+      concept: "3-2-1 Backups: 3 copies, 2 media, 1 offline, all tested.",
+      tips: [
+        "Sync propagates encryption to the cloud copy",
+        "Enable file version history so you can roll back",
+        "Unplug the external drive between backups",
+        "An untested backup is only a hope, not a plan"
+      ]
+    },
+    category: 'malware',
+    difficulty: 'intermediate',
+    xpReward: 175,
+    concept: "Data Recovery"
+  },
+  {
+    id: 30,
+    title: "Scan the QR at the Parking Meter",
+    character: "You",
+    description: "Practical field decision with a physical attack surface.",
+    situation: "A QR sticker on the parking meter opens a payment page. Your browser preview shows 'parking-city-pay.co' and the page asks for card number, CVV and your phone's OTP. The sticker edge is slightly peeling over another print.",
+    actions: {
+      action1: { text: "Stop — a sticker over a sticker plus an unknown domain means quishing; pay at the machine or the official app", type: 'safe' },
+      action2: { text: "Pay quickly — the page has the city logo and HTTPS padlock", type: 'risky' },
+      action3: { text: "Enter card details but skip the OTP field", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. Overlaid QR stickers are a cheap, high-yield attack. Padlocks and logos cost the attacker nothing.",
+      concept: "Quishing: verify the physical medium and the domain, not the design.",
+      tips: [
+        "Check for stickers layered over original print",
+        "HTTPS means encrypted, not trustworthy",
+        "Legit parking systems never need CVV plus OTP on a random domain",
+        "Use the official app or card reader on the machine"
+      ]
+    },
+    category: 'scam',
+    difficulty: 'expert',
+    xpReward: 200,
+    concept: "Physical Phishing"
+  }
 ];
