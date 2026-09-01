@@ -527,6 +527,18 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
         </div>
       )}
 
+      {view === "certificate" && (
+        <CompletionCertificate
+          playerName={certName}
+          onNameChange={setCertName}
+          xp={xp}
+          levelsCleared={completed.length}
+          totalLevels={hackLevels.length}
+          mastery={mastery}
+          onClose={() => { setView("grid"); setActive(null); }}
+        />
+      )}
+
       <CategoryLessonDialog
         open={!!lessonCategory}
         onOpenChange={(v) => { if (!v) setLessonCategory(null); }}
