@@ -507,6 +507,15 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
                   <RotateCw className="h-4 w-4" /> Replay "{active.name}"
                 </Button>
               )}
+              {allCleared && (
+                <Button
+                  variant="cyber"
+                  className="w-full animate-pulse-glow"
+                  onClick={() => setView("certificate")}
+                >
+                  <Award className="h-4 w-4" /> Claim your Hero Certificate
+                </Button>
+              )}
               <button
                 onClick={handleResetAll}
                 className="w-full text-xs text-white/40 hover:text-destructive flex items-center justify-center gap-1.5 py-1 transition-colors"
