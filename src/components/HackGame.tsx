@@ -175,7 +175,10 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
     if (!window.confirm("Reset all hack progress and category stats? This cannot be undone.")) return;
     reset();
     setActiveCategory("all");
-    try { localStorage.removeItem("ddh.hackCategory.v1"); } catch {}
+    try {
+      localStorage.removeItem("ddh.hackCategory.v1");
+      localStorage.removeItem("ddh.certAwarded.v1");
+    } catch {}
     setView("grid");
     setActive(null);
     setFallbackFrom(null);
