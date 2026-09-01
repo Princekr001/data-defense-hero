@@ -56,7 +56,31 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const [bossRun, setBossRun] = useState(0);
   const [lessonCategory, setLessonCategory] = useState<string | null>(null);
   const [fallbackFrom, setFallbackFrom] = useState<HackLevel | null>(null);
+  const [certName, setCertName] = useState<string>(() => {
+    try { return localStorage.getItem("ddh.certName.v1") ?? ""; } catch { return ""; }
+  });
   const { toast } = useToast();
+
+  const allCleared = completed.length >= hackLevels.length;
+
+  useEffect(() => {
+    try { localStorage.setItem("ddh.certName.v1", certName); } catch {}
+  }, [certName]);
+
+  // Final reward: the first time every mission is cleared, hand out the certificate.
+  useEffect(() => {
+    if (!allCleared) return;
+    let seen = false;
+    try { seen = localStorage.getItem("ddh.certAwarded.v1") === "1"; } catch {}
+    if (seen) return;
+    try { localStorage.setItem("ddh.certAwarded.v1", "1"); } catch {}
+    setView("certificate");
+    toast({
+      title: "🏅 All missions cleared",
+      description: "Your Data Defense Hero certificate and rank badge are ready.",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allCleared]);
 
   const pulseHaptics = (pattern: number | number[] = [40, 60, 40]) => {
     try {
