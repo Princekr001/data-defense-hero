@@ -12,12 +12,13 @@ import FirewallBypass from "./hackGames/FirewallBypass";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash2, PlayCircle } from "lucide-react";
+import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash2, PlayCircle, Award } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 import ScenarioScene from "@/components/lessons/ScenarioScene";
 import ScenarioReview from "@/components/hack/ScenarioReview";
 import MasteryPanel from "@/components/hack/MasteryPanel";
+import CompletionCertificate from "@/components/hack/CompletionCertificate";
 
 const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   phishing: "phishing",
@@ -25,7 +26,7 @@ const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   privacy: "privacy",
 };
 
-type View = "grid" | "briefing" | "mission" | "boss" | "review" | "result";
+type View = "grid" | "briefing" | "mission" | "boss" | "review" | "result" | "certificate";
 
 interface HackGameProps {
   /** Optional level to open directly (e.g. jumped in from a landing-page slide). */
@@ -55,7 +56,31 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const [bossRun, setBossRun] = useState(0);
   const [lessonCategory, setLessonCategory] = useState<string | null>(null);
   const [fallbackFrom, setFallbackFrom] = useState<HackLevel | null>(null);
+  const [certName, setCertName] = useState<string>(() => {
+    try { return localStorage.getItem("ddh.certName.v1") ?? ""; } catch { return ""; }
+  });
   const { toast } = useToast();
+
+  const allCleared = completed.length >= hackLevels.length;
+
+  useEffect(() => {
+    try { localStorage.setItem("ddh.certName.v1", certName); } catch {}
+  }, [certName]);
+
+  // Final reward: the first time every mission is cleared, hand out the certificate.
+  useEffect(() => {
+    if (!allCleared) return;
+    let seen = false;
+    try { seen = localStorage.getItem("ddh.certAwarded.v1") === "1"; } catch {}
+    if (seen) return;
+    try { localStorage.setItem("ddh.certAwarded.v1", "1"); } catch {}
+    setView("certificate");
+    toast({
+      title: "🏅 All missions cleared",
+      description: "Your Data Defense Hero certificate and rank badge are ready.",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allCleared]);
 
   const pulseHaptics = (pattern: number | number[] = [40, 60, 40]) => {
     try {
@@ -150,7 +175,10 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
     if (!window.confirm("Reset all hack progress and category stats? This cannot be undone.")) return;
     reset();
     setActiveCategory("all");
-    try { localStorage.removeItem("ddh.hackCategory.v1"); } catch {}
+    try {
+      localStorage.removeItem("ddh.hackCategory.v1");
+      localStorage.removeItem("ddh.certAwarded.v1");
+    } catch {}
     setView("grid");
     setActive(null);
     setFallbackFrom(null);
@@ -179,6 +207,15 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
           <span className="font-mono text-white tracking-tight">{xp} XP</span>
           <span className="text-white/40">·</span>
           <span className="text-white/70">{completed.length}/{hackLevels.length}</span>
+          {allCleared && (
+            <button
+              onClick={() => setView("certificate")}
+              className="ml-2 flex items-center gap-1 rounded-full border border-yellow-400/50 bg-yellow-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-yellow-300 hover:bg-yellow-400/20"
+              title="View your certificate"
+            >
+              <Award className="h-3 w-3" /> Certificate
+            </button>
+          )}
           <button onClick={handleResetAll} className="ml-2 opacity-60 hover:opacity-100" title="Reset all progress">
             <RotateCw className="h-3 w-3" />
           </button>
@@ -470,6 +507,15 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
                   <RotateCw className="h-4 w-4" /> Replay "{active.name}"
                 </Button>
               )}
+              {allCleared && (
+                <Button
+                  variant="cyber"
+                  className="w-full animate-pulse-glow"
+                  onClick={() => setView("certificate")}
+                >
+                  <Award className="h-4 w-4" /> Claim your Hero Certificate
+                </Button>
+              )}
               <button
                 onClick={handleResetAll}
                 className="w-full text-xs text-white/40 hover:text-destructive flex items-center justify-center gap-1.5 py-1 transition-colors"
@@ -479,6 +525,18 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {view === "certificate" && (
+        <CompletionCertificate
+          playerName={certName}
+          onNameChange={setCertName}
+          xp={xp}
+          levelsCleared={completed.length}
+          totalLevels={hackLevels.length}
+          mastery={mastery}
+          onClose={() => { setView("grid"); setActive(null); }}
+        />
       )}
 
       <CategoryLessonDialog
