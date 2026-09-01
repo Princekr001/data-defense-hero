@@ -207,6 +207,15 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
           <span className="font-mono text-white tracking-tight">{xp} XP</span>
           <span className="text-white/40">·</span>
           <span className="text-white/70">{completed.length}/{hackLevels.length}</span>
+          {allCleared && (
+            <button
+              onClick={() => setView("certificate")}
+              className="ml-2 flex items-center gap-1 rounded-full border border-yellow-400/50 bg-yellow-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-yellow-300 hover:bg-yellow-400/20"
+              title="View your certificate"
+            >
+              <Award className="h-3 w-3" /> Certificate
+            </button>
+          )}
           <button onClick={handleResetAll} className="ml-2 opacity-60 hover:opacity-100" title="Reset all progress">
             <RotateCw className="h-3 w-3" />
           </button>
