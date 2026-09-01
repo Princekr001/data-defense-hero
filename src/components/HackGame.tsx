@@ -18,6 +18,7 @@ import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 import ScenarioScene from "@/components/lessons/ScenarioScene";
 import ScenarioReview from "@/components/hack/ScenarioReview";
 import MasteryPanel from "@/components/hack/MasteryPanel";
+import CompletionCertificate from "@/components/hack/CompletionCertificate";
 
 const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   phishing: "phishing",
