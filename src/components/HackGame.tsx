@@ -19,6 +19,8 @@ import ScenarioScene from "@/components/lessons/ScenarioScene";
 import ScenarioReview from "@/components/hack/ScenarioReview";
 import MasteryPanel from "@/components/hack/MasteryPanel";
 import CompletionCertificate from "@/components/hack/CompletionCertificate";
+import EvidenceBoard from "@/components/hack/EvidenceBoard";
+import { evidenceForLevel } from "@/data/evidenceCases";
 
 const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   phishing: "phishing",
@@ -26,7 +28,7 @@ const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   privacy: "privacy",
 };
 
-type View = "grid" | "briefing" | "mission" | "boss" | "review" | "result" | "certificate";
+type View = "grid" | "briefing" | "evidence" | "mission" | "boss" | "review" | "result" | "certificate";
 
 interface HackGameProps {
   /** Optional level to open directly (e.g. jumped in from a landing-page slide). */
@@ -372,13 +374,22 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
                 <Button variant="outline" className="flex-1 border-white/20 text-white hover:bg-white/10" onClick={() => { setView("grid"); setFallbackFrom(null); }}>
                   Abort
                 </Button>
-                <Button variant="cyber" className="flex-1" onClick={() => setView("mission")}>
-                  <Zap className="h-4 w-4" /> Begin Hack
+                <Button variant="cyber" className="flex-1" onClick={() => setView("evidence")}>
+                  <Zap className="h-4 w-4" /> Review Evidence
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {view === "evidence" && active && (
+        <EvidenceBoard
+          evidenceCase={evidenceForLevel(active.id, active.category)}
+          accent={tierColor(active)}
+          onContinue={() => setView("mission")}
+          onAbort={() => setView("briefing")}
+        />
       )}
 
       {view === "mission" && active && (
