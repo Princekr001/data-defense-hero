@@ -383,6 +383,15 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
         </div>
       )}
 
+      {view === "evidence" && active && (
+        <EvidenceBoard
+          evidenceCase={evidenceForLevel(active.id, active.category)}
+          accent={tierColor(active)}
+          onContinue={() => setView("mission")}
+          onAbort={() => setView("briefing")}
+        />
+      )}
+
       {view === "mission" && active && (
         <div className="absolute inset-0 z-30 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none">
           <Card className="w-full sm:max-w-md border-white/10 bg-black/80 text-white pointer-events-auto rounded-b-none sm:rounded-lg animate-slide-in-right">
