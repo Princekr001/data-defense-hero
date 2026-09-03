@@ -374,8 +374,8 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
                 <Button variant="outline" className="flex-1 border-white/20 text-white hover:bg-white/10" onClick={() => { setView("grid"); setFallbackFrom(null); }}>
                   Abort
                 </Button>
-                <Button variant="cyber" className="flex-1" onClick={() => setView("mission")}>
-                  <Zap className="h-4 w-4" /> Begin Hack
+                <Button variant="cyber" className="flex-1" onClick={() => setView("evidence")}>
+                  <Zap className="h-4 w-4" /> Review Evidence
                 </Button>
               </div>
             </CardContent>
