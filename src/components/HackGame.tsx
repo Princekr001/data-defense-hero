@@ -26,7 +26,7 @@ const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   privacy: "privacy",
 };
 
-type View = "grid" | "briefing" | "mission" | "boss" | "review" | "result" | "certificate";
+type View = "grid" | "briefing" | "evidence" | "mission" | "boss" | "review" | "result" | "certificate";
 
 interface HackGameProps {
   /** Optional level to open directly (e.g. jumped in from a landing-page slide). */
