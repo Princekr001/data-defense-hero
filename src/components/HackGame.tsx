@@ -19,6 +19,8 @@ import ScenarioScene from "@/components/lessons/ScenarioScene";
 import ScenarioReview from "@/components/hack/ScenarioReview";
 import MasteryPanel from "@/components/hack/MasteryPanel";
 import CompletionCertificate from "@/components/hack/CompletionCertificate";
+import EvidenceBoard from "@/components/hack/EvidenceBoard";
+import { evidenceForLevel } from "@/data/evidenceCases";
 
 const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   phishing: "phishing",
