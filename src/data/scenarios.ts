@@ -787,4 +787,420 @@ export const gameScenarios: Scenario[] = [
     xpReward: 200,
     concept: "Physical Phishing"
   }
+  ,{
+    id: 31,
+    title: "Target 2013: The HVAC Vendor Door",
+    character: "You (SOC analyst, retail)",
+    description: "Based on the 2013 Target breach — 40M cards stolen via a third-party vendor.",
+    situation: "An HVAC maintenance contractor asks for remote access to submit invoices. Their account would sit on the same flat network as the store point-of-sale systems. They want it today so billing isn't delayed.",
+    actions: {
+      action1: { text: "Grant access, but only to an isolated billing portal on a segmented network, with MFA and time-limited credentials", type: 'safe' },
+      action2: { text: "Give them a standard vendor account on the corporate network — it's just invoicing", type: 'risky' },
+      action3: { text: "Share an existing shared vendor login so nothing new has to be provisioned", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. In 2013 attackers stole an HVAC vendor's credentials, pivoted across a flat network and planted RAM-scraping malware on POS terminals — 40M cards and ~$18.5M in settlements.",
+      concept: "Third-party risk + network segmentation: a vendor account must never reach payment systems.",
+      tips: [
+        "Segment payment/OT networks away from corporate and vendor zones",
+        "MFA and least privilege on every third-party account",
+        "Time-box vendor access and review it quarterly",
+        "Monitor east-west traffic, not just the perimeter"
+      ]
+    },
+    category: 'network',
+    difficulty: 'expert',
+    xpReward: 220,
+    concept: "Supply Chain Breach"
+  },
+  {
+    id: 32,
+    title: "WannaCry 2017: The Unpatched Ward",
+    character: "You (hospital IT)",
+    description: "Based on WannaCry, which hit 80 NHS trusts and 200k machines in 150 countries.",
+    situation: "A vulnerability in SMBv1 has a patch released two months ago. 300 clinical workstations still run it because 'the imaging software vendor hasn't certified the patch'. Ransomware exploiting it is spreading in the wild today.",
+    actions: {
+      action1: { text: "Emergency-patch what you can, disable SMBv1, and isolate the rest in a segmented VLAN with blocked port 445 until vendor sign-off", type: 'safe' },
+      action2: { text: "Wait for the vendor to certify the patch — breaking clinical software is riskier", type: 'risky' },
+      action3: { text: "Rely on the antivirus signature update to catch the worm", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. WannaCry spread by worming over SMBv1 with no user action. Compensating controls — disable the protocol, block 445, segment — buy time when patching is blocked.",
+      concept: "Patch management: when you can't patch, compensate. Never just wait.",
+      tips: [
+        "Legacy protocols (SMBv1, Telnet, FTP) should be off by default",
+        "Compensating controls: segmentation, firewall rules, allow-listing",
+        "Offline, tested backups defeat ransomware extortion",
+        "Track vendor certification SLAs contractually"
+      ]
+    },
+    category: 'malware',
+    difficulty: 'expert',
+    xpReward: 220,
+    concept: "Patch & Compensating Controls"
+  },
+  {
+    id: 33,
+    title: "Equifax 2017: The Known CVE",
+    character: "You (application owner)",
+    description: "Based on the Equifax breach — 147M records via an unpatched Apache Struts flaw.",
+    situation: "A critical RCE in a web framework your public dispute portal uses was announced 68 days ago. Your asset inventory is incomplete, and the scanner didn't flag this server because its certificate expired so inspection failed silently.",
+    actions: {
+      action1: { text: "Patch immediately, then fix the root causes: complete asset inventory, alert on scanner/cert failures, and monitor egress for bulk data transfer", type: 'safe' },
+      action2: { text: "Patch the server and close the ticket — the gap is handled", type: 'risky' },
+      action3: { text: "Put a WAF rule in front of it and schedule patching next quarter", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. Equifax patched too late, could not see the asset, and an expired cert blinded inspection for 19 months — 147M records and a $700M settlement.",
+      concept: "You cannot protect what you cannot inventory. Silent control failures are breaches waiting to happen.",
+      tips: [
+        "Maintain an authoritative asset and software inventory (SBOM)",
+        "Alert when a security control stops reporting",
+        "Critical internet-facing CVEs: patch in days, not quarters",
+        "Detect unusual outbound bulk data flows"
+      ]
+    },
+    category: 'network',
+    difficulty: 'expert',
+    xpReward: 220,
+    concept: "Vulnerability Management"
+  },
+  {
+    id: 34,
+    title: "Colonial Pipeline 2021: One Legacy VPN",
+    character: "You (identity admin, critical infrastructure)",
+    description: "Based on the 2021 ransomware shutdown of the largest US fuel pipeline.",
+    situation: "An audit finds a decommissioned-but-live VPN account with no MFA, whose password appears in a public breach dump. Turning it off might break an unknown legacy integration.",
+    actions: {
+      action1: { text: "Disable the account now, force MFA on all remote access, and hunt for prior logins from unfamiliar IPs", type: 'safe' },
+      action2: { text: "Rotate the password but leave the account enabled without MFA", type: 'risky' },
+      action3: { text: "Leave it until you can prove nothing depends on it", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. DarkSide entered Colonial through exactly this: a legacy VPN account with a reused password and no MFA. Fuel supply for the US East Coast stopped for days; $4.4M ransom paid.",
+      concept: "Dormant credentials are live attack paths. MFA on every remote access route, no exceptions.",
+      tips: [
+        "Quarterly review and disable of dormant accounts",
+        "Check corporate credentials against breach corpora",
+        "MFA is mandatory for VPN, RDP and admin portals",
+        "Threat-hunt historic logs after finding an exposed credential"
+      ]
+    },
+    category: 'password',
+    difficulty: 'expert',
+    xpReward: 220,
+    concept: "Credential Hygiene"
+  },
+  {
+    id: 35,
+    title: "Twitter 2020: The Helpdesk Call",
+    character: "You (internal support agent)",
+    description: "Based on the July 2020 Twitter breach — 130 high-profile accounts hijacked via vishing.",
+    situation: "A caller says they're from the IT team handling a VPN migration, knows your team lead's name and your shift pattern, and asks you to log into a 'new' internal SSO page they'll send so your access isn't lost.",
+    actions: {
+      action1: { text: "Hang up, never enter credentials on a link sent to you, and report the call to security via the internal channel", type: 'safe' },
+      action2: { text: "Log in — they knew internal details only staff would know", type: 'risky' },
+      action3: { text: "Ask a few verification questions, then log in if the answers sound right", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. Attackers phoned employees, harvested credentials on a cloned SSO page, reached admin tooling and tweeted a Bitcoin scam from Obama, Musk and Apple accounts.",
+      concept: "Vishing: internal knowledge is cheap to gather (LinkedIn, leaks). Never authenticate on an inbound-supplied link.",
+      tips: [
+        "Call back on a directory number — never a number the caller gives",
+        "Phishing-resistant MFA (FIDO2 keys) defeats cloned login pages",
+        "Restrict and log admin tooling access",
+        "Report social engineering attempts even if you didn't fall for them"
+      ]
+    },
+    category: 'social',
+    difficulty: 'expert',
+    xpReward: 220,
+    concept: "Vishing / Social Engineering"
+  },
+  {
+    id: 36,
+    title: "Uber 2022: MFA Fatigue at Midnight",
+    character: "You (contractor)",
+    description: "Based on the 2022 Uber breach via MFA push bombing plus WhatsApp social engineering.",
+    situation: "It's 00:40. Your phone has buzzed with 14 MFA push approvals in ten minutes. A WhatsApp message from 'Uber IT' says the notifications will stop as soon as you accept one.",
+    actions: {
+      action1: { text: "Deny every prompt, change your password from a known-good device, and report the incident immediately", type: 'safe' },
+      action2: { text: "Approve one so you can sleep — it's probably a system glitch", type: 'risky' },
+      action3: { text: "Ignore the prompts and deal with it in the morning", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. Repeated pushes mean someone already has your password. One accidental approval gave the Uber attacker a VPN foothold, then a PowerShell script with hardcoded admin secrets.",
+      concept: "MFA fatigue: an unexpected prompt is an alarm, not an inconvenience.",
+      tips: [
+        "Use number matching or FIDO2 keys instead of simple push approval",
+        "Unrequested MFA prompt = your password is compromised; rotate it",
+        "Never trust IT contact over consumer messaging apps",
+        "Never hardcode admin secrets in scripts — use a vault"
+      ]
+    },
+    category: 'password',
+    difficulty: 'expert',
+    xpReward: 220,
+    concept: "MFA Fatigue Attack"
+  },
+  {
+    id: 37,
+    title: "MGM 2023: The Reset That Cost $100M",
+    character: "You (service desk)",
+    description: "Based on the 2023 casino breach where attackers social-engineered a password reset.",
+    situation: "A caller claiming to be a senior engineer, whose LinkedIn details all check out, says they're locked out before a board demo and needs an MFA reset in the next five minutes.",
+    actions: {
+      action1: { text: "Follow the identity-proofing process — manager approval or in-band verification — no matter the urgency claimed", type: 'safe' },
+      action2: { text: "Reset it; their details match LinkedIn and the demo is critical", type: 'risky' },
+      action3: { text: "Reset MFA but leave a note for review tomorrow", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. Scattered Spider used a ten-minute helpdesk call to reset MFA at MGM. Slot machines and hotel systems went dark for days; ~$100M impact.",
+      concept: "Urgency is the attack. Identity-proofing procedures exist precisely for high-pressure calls.",
+      tips: [
+        "Require video or manager verification for MFA resets",
+        "Publicly available details are not identity proof",
+        "Log and randomly audit every reset",
+        "Empower staff to say 'no' to executives"
+      ]
+    },
+    category: 'social',
+    difficulty: 'expert',
+    xpReward: 220,
+    concept: "Helpdesk Social Engineering"
+  },
+  {
+    id: 38,
+    title: "SolarWinds 2020: The Signed Update",
+    character: "You (platform engineer)",
+    description: "Based on the SUNBURST supply-chain compromise affecting ~18,000 organisations.",
+    situation: "A monitoring agent with domain-wide privileges pushes a signed auto-update. Afterwards it starts making DNS requests to a domain it has never contacted, on a 12-day delay.",
+    actions: {
+      action1: { text: "Treat the anomalous egress as an incident: isolate, verify build provenance, and restrict the agent's privileges and outbound destinations", type: 'safe' },
+      action2: { text: "Ignore it — the update is digitally signed by the vendor", type: 'risky' },
+      action3: { text: "Whitelist the new domain so monitoring alerts stop firing", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. SUNBURST was signed, legitimate-looking, and dormant for two weeks before beaconing. Trusted software can be the intrusion.",
+      concept: "Zero trust for software: signature proves origin, not safety. Behaviour monitoring catches what signatures miss.",
+      tips: [
+        "Baseline normal egress per application; alert on new destinations",
+        "Least privilege for management agents",
+        "Require build provenance / SBOM from vendors",
+        "Stage vendor updates before fleet-wide rollout"
+      ]
+    },
+    category: 'malware',
+    difficulty: 'expert',
+    xpReward: 240,
+    concept: "Supply Chain / Zero Trust"
+  },
+  {
+    id: 39,
+    title: "Marriott: Four Years Undetected",
+    character: "You (data governance lead)",
+    description: "Based on the Starwood/Marriott breach — 339M guest records, exposed for ~4 years.",
+    situation: "You're acquiring a company. Due diligence budget is tight and the deal team wants to merge networks on day one to save cost. Nobody has run a compromise assessment on the target.",
+    actions: {
+      action1: { text: "Require a compromise assessment and keep the networks separate until the target's environment is validated", type: 'safe' },
+      action2: { text: "Merge immediately — integration delays cost more than the risk", type: 'risky' },
+      action3: { text: "Merge, but run a vulnerability scan sometime after cutover", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. Marriott inherited an already-compromised Starwood environment; intruders sat undetected for years. The UK ICO fined Marriott £18.4M.",
+      concept: "M&A cyber due diligence: you inherit the acquired company's intruders along with its assets.",
+      tips: [
+        "Compromise assessment before network integration",
+        "Encrypt and minimise stored personal data — including passport numbers",
+        "Regulators judge detection time, not just prevention",
+        "Set a breach-notification clock: GDPR gives 72 hours"
+      ]
+    },
+    category: 'privacy',
+    difficulty: 'expert',
+    xpReward: 220,
+    concept: "M&A Cyber Due Diligence"
+  },
+  {
+    id: 40,
+    title: "Log4Shell: The Line in the Logs",
+    character: "You (incident responder)",
+    description: "Based on CVE-2021-44228, a trivially exploitable RCE in a ubiquitous logging library.",
+    situation: "A critical RCE lands in a logging library embedded deep inside dozens of your apps and appliances. Exploit strings are already appearing in your web logs, and you can't tell which systems bundle the library.",
+    actions: {
+      action1: { text: "Build an SBOM-driven inventory, patch or mitigate by exposure order, block outbound LDAP/RMI egress, and hunt for exploit strings in logs", type: 'safe' },
+      action2: { text: "Wait for each vendor to publish a patched release before doing anything", type: 'risky' },
+      action3: { text: "Only patch your own code — third-party appliances are the vendor's problem", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct. Log4Shell was exploitable with a single crafted string. Egress blocking of LDAP/RMI stopped the callback stage while inventory and patching caught up.",
+      concept: "Dependency risk: your attack surface includes every library your suppliers ship.",
+      tips: [
+        "Maintain SBOMs for internal and vendor software",
+        "Restrict outbound connections from servers by default",
+        "Prioritise internet-facing systems first",
+        "Assume exploitation and hunt, don't just patch"
+      ]
+    },
+    category: 'malware',
+    difficulty: 'expert',
+    xpReward: 240,
+    concept: "Dependency / SBOM Risk"
+  },
+  {
+    id: 41,
+    title: "Cert Check: The CIA Triad",
+    character: "Exam Mode",
+    description: "Certification-style question (Security+ / CC domain: security concepts).",
+    situation: "A ransomware attack encrypts a hospital's patient records. Staff cannot open any files, but investigators confirm no data was copied out and no records were altered. Which element of the CIA triad was primarily impacted?",
+    actions: {
+      action1: { text: "Availability — the data exists and is intact but cannot be accessed when needed", type: 'safe' },
+      action2: { text: "Confidentiality — ransomware is by definition a data-disclosure event", type: 'risky' },
+      action3: { text: "Integrity — encryption changes the bytes, so the data was modified", type: 'risky' }
+    },
+    feedback: {
+      correct: "Availability. No exfiltration means confidentiality held; reversible encryption with a valid backup means integrity is recoverable. The loss is timely access.",
+      concept: "CIA triad: Confidentiality = disclosure, Integrity = unauthorised change, Availability = access when needed.",
+      tips: [
+        "Double-extortion ransomware also breaks confidentiality — check for exfiltration",
+        "Backups and redundancy are availability controls",
+        "Hashing and digital signatures protect integrity",
+        "Encryption and access control protect confidentiality"
+      ]
+    },
+    category: 'network',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "CIA Triad"
+  },
+  {
+    id: 42,
+    title: "Cert Check: Risk Treatment",
+    character: "Exam Mode",
+    description: "Certification-style question (risk management domain).",
+    situation: "A company assesses a risk with a potential annual loss of $50,000. The control costs $70,000 a year. Instead, they buy a cyber-insurance policy covering the loss. Which risk-treatment strategy is this?",
+    actions: {
+      action1: { text: "Risk transference — the financial impact is shifted to a third party", type: 'safe' },
+      action2: { text: "Risk avoidance — the loss will no longer occur", type: 'risky' },
+      action3: { text: "Risk mitigation — insurance reduces the likelihood of the event", type: 'risky' }
+    },
+    feedback: {
+      correct: "Transference. Insurance moves financial consequence to another party; it does not reduce likelihood, and the risk still exists.",
+      concept: "Four treatments: Avoid (stop the activity), Mitigate (reduce), Transfer (insure/outsource), Accept (document and monitor).",
+      tips: [
+        "ALE = SLE x ARO; never spend more on a control than the ALE",
+        "Insurance rarely covers reputational damage or regulatory fines",
+        "Accepted risk must be formally signed off by the risk owner",
+        "Residual risk is what remains after treatment"
+      ]
+    },
+    category: 'network',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "Risk Management"
+  },
+  {
+    id: 43,
+    title: "Cert Check: Incident Response Order",
+    character: "Exam Mode",
+    description: "Certification-style question (NIST SP 800-61 incident response lifecycle).",
+    situation: "Malware is confirmed active on a finance workstation and is beaconing out. Following the standard incident-response lifecycle, what is the correct next action?",
+    actions: {
+      action1: { text: "Contain — isolate the host from the network while preserving volatile evidence, then eradicate and recover", type: 'safe' },
+      action2: { text: "Power the machine off immediately to stop the malware", type: 'risky' },
+      action3: { text: "Reimage the machine right away to restore the user's productivity", type: 'risky' }
+    },
+    feedback: {
+      correct: "Containment comes after detection and before eradication. Pulling power destroys memory-resident evidence; reimaging first destroys the whole investigation.",
+      concept: "Lifecycle: Preparation → Detection & Analysis → Containment, Eradication & Recovery → Post-incident (lessons learned).",
+      tips: [
+        "Network-isolate rather than power off, to keep RAM artefacts",
+        "Maintain chain of custody for anything that may go legal",
+        "Eradicate root cause, not just the visible payload",
+        "Lessons-learned within two weeks while memory is fresh"
+      ]
+    },
+    category: 'malware',
+    difficulty: 'intermediate',
+    xpReward: 160,
+    concept: "Incident Response"
+  },
+  {
+    id: 44,
+    title: "Cert Check: Symmetric or Asymmetric?",
+    character: "Exam Mode",
+    description: "Certification-style question (cryptography domain).",
+    situation: "You must send a 4 GB encrypted archive to a partner you've never exchanged keys with, and prove that it came from you. Which approach is correct?",
+    actions: {
+      action1: { text: "Encrypt the file with a symmetric key (AES), encrypt that key with the partner's public key, and sign the hash with your private key", type: 'safe' },
+      action2: { text: "Encrypt the whole 4 GB file with the partner's public RSA key", type: 'risky' },
+      action3: { text: "Email an AES key first, then send the encrypted file separately", type: 'risky' }
+    },
+    feedback: {
+      correct: "That is hybrid (envelope) encryption — symmetric for bulk speed, asymmetric for key exchange, signature for non-repudiation.",
+      concept: "Asymmetric crypto is slow and size-limited; it exchanges keys and signs. Symmetric crypto does the bulk work.",
+      tips: [
+        "Encrypt with the recipient's public key; sign with your private key",
+        "Signing a hash gives integrity, authenticity and non-repudiation",
+        "Never transmit a key over the same channel as the data",
+        "Prefer AES-256-GCM (authenticated encryption) over raw AES-CBC"
+      ]
+    },
+    category: 'privacy',
+    difficulty: 'expert',
+    xpReward: 180,
+    concept: "Cryptography Fundamentals"
+  },
+  {
+    id: 45,
+    title: "Cert Check: Access Control Model",
+    character: "Exam Mode",
+    description: "Certification-style question (identity and access management domain).",
+    situation: "A hospital wants access decided by clearance and data labels enforced by the system, where users cannot re-share files they can read. Which access-control model applies?",
+    actions: {
+      action1: { text: "Mandatory Access Control (MAC) — the system enforces labels and clearances; owners cannot delegate", type: 'safe' },
+      action2: { text: "Discretionary Access Control (DAC) — the file owner decides who else may read it", type: 'risky' },
+      action3: { text: "Role-Based Access Control (RBAC) — permissions attach to job roles", type: 'risky' }
+    },
+    feedback: {
+      correct: "MAC. The system, not the data owner, enforces the decision, which is exactly what 'cannot re-share' requires.",
+      concept: "DAC = owner decides. MAC = system labels decide. RBAC = role decides. ABAC = attributes/context decide.",
+      tips: [
+        "RBAC is the most common enterprise model — clean and auditable",
+        "ABAC adds context: device, location, time, risk score",
+        "Least privilege and separation of duties apply to every model",
+        "Recertify access quarterly to fight privilege creep"
+      ]
+    },
+    category: 'privacy',
+    difficulty: 'intermediate',
+    xpReward: 160,
+    concept: "Access Control Models"
+  },
+  {
+    id: 46,
+    title: "Cert Check: Reading a Vulnerability Report",
+    character: "Exam Mode",
+    description: "Certification-style question (security operations / vulnerability management).",
+    situation: "A scanner reports 'Critical: Apache 2.2 remote code execution' on a host. Investigation shows the host runs a patched Apache 2.4 and the version banner is stale. How do you classify and handle this?",
+    actions: {
+      action1: { text: "False positive — validate, document the evidence, tune the scanner signature, and keep the finding auditable", type: 'safe' },
+      action2: { text: "True positive — the scanner is authoritative, so schedule emergency patching", type: 'risky' },
+      action3: { text: "Delete the finding so it stops appearing in reports", type: 'risky' }
+    },
+    feedback: {
+      correct: "False positive. Banner-based detection is unauthenticated guesswork; validate against the actual package version, then tune — but never silently delete evidence.",
+      concept: "False positive = alert with no real issue. False negative = the dangerous one: a real issue with no alert.",
+      tips: [
+        "Authenticated scans dramatically cut false positives",
+        "Document validation so auditors can follow the decision",
+        "Prioritise with CVSS plus exploitability and asset value",
+        "Track false-negative risk with penetration testing"
+      ]
+    },
+    category: 'network',
+    difficulty: 'expert',
+    xpReward: 180,
+    concept: "Vulnerability Triage"
+  }
 ];
