@@ -334,6 +334,14 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
                 );
               })}
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="pointer-events-auto bg-black/40 backdrop-blur border-white/15 text-white hover:bg-white/10"
+              onClick={() => setView("casefiles")}
+            >
+              <BookOpen className="h-4 w-4" /> Case Files
+            </Button>
             <p className="pointer-events-none text-white/60 text-[11px] sm:text-xs bg-black/30 backdrop-blur px-3 py-1 rounded-full border border-white/5">
               <Target className="inline h-3 w-3 mr-1" />
               Click a glowing node or press Tab to navigate · Enter to start
