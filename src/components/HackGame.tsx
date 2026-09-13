@@ -12,7 +12,7 @@ import FirewallBypass from "./hackGames/FirewallBypass";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash2, PlayCircle, Award } from "lucide-react";
+import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash2, PlayCircle, Award, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 import ScenarioScene from "@/components/lessons/ScenarioScene";
@@ -21,6 +21,8 @@ import MasteryPanel from "@/components/hack/MasteryPanel";
 import CompletionCertificate from "@/components/hack/CompletionCertificate";
 import EvidenceBoard from "@/components/hack/EvidenceBoard";
 import { evidenceForLevel } from "@/data/evidenceCases";
+import CaseFilesPanel, { CaseDetail } from "@/components/hack/CaseFilesPanel";
+import { caseForCategory, clearReviewedCases, loadReviewedCases, saveReviewedCases } from "@/data/caseFiles";
 
 const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   phishing: "phishing",
@@ -28,7 +30,7 @@ const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   privacy: "privacy",
 };
 
-type View = "grid" | "briefing" | "evidence" | "mission" | "boss" | "review" | "result" | "certificate";
+type View = "grid" | "briefing" | "evidence" | "mission" | "boss" | "review" | "casefiles" | "missioncase" | "result" | "certificate";
 
 interface HackGameProps {
   /** Optional level to open directly (e.g. jumped in from a landing-page slide). */
@@ -58,6 +60,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const [bossRun, setBossRun] = useState(0);
   const [lessonCategory, setLessonCategory] = useState<string | null>(null);
   const [fallbackFrom, setFallbackFrom] = useState<HackLevel | null>(null);
+  const [studyCase, setStudyCase] = useState(false);
   const [certName, setCertName] = useState<string>(() => {
     try { return localStorage.getItem("ddh.certName.v1") ?? ""; } catch { return ""; }
   });
@@ -181,6 +184,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
       localStorage.removeItem("ddh.hackCategory.v1");
       localStorage.removeItem("ddh.certAwarded.v1");
     } catch {}
+    clearReviewedCases();
     setView("grid");
     setActive(null);
     setFallbackFrom(null);
@@ -330,6 +334,14 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
                 );
               })}
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="pointer-events-auto bg-black/40 backdrop-blur border-white/15 text-white hover:bg-white/10"
+              onClick={() => setView("casefiles")}
+            >
+              <BookOpen className="h-4 w-4" /> Case Files
+            </Button>
             <p className="pointer-events-none text-white/60 text-[11px] sm:text-xs bg-black/30 backdrop-blur px-3 py-1 rounded-full border border-white/5">
               <Target className="inline h-3 w-3 mr-1" />
               Click a glowing node or press Tab to navigate · Enter to start
@@ -424,9 +436,59 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
         <ScenarioReview
           level={active}
           outcome={result}
-          onContinue={() => setView("result")}
+          onContinue={() => {
+            setStudyCase(false);
+            setView(caseForCategory(active.category, active.id) ? "missioncase" : "result");
+          }}
           onReplay={handleReplay}
         />
+      )}
+
+      {view === "missioncase" && active && (() => {
+        const file = caseForCategory(active.category, active.id);
+        if (!file) return null;
+        const finish = () => {
+          const next = loadReviewedCases();
+          if (!next.includes(file.id)) saveReviewedCases([...next, file.id]);
+          setView("result");
+        };
+        return (
+          <div className="absolute inset-0 z-40 overflow-y-auto bg-black/85 backdrop-blur-md p-4 animate-fade-in">
+            {studyCase ? (
+              <CaseDetail
+                file={file}
+                accent={tierColor(active)}
+                onBack={() => setStudyCase(false)}
+                onReviewed={finish}
+                backLabel="Back"
+                continueLabel="Continue"
+              />
+            ) : (
+              <Card className="mx-auto w-full max-w-md border-white/10 bg-black/75 text-white">
+                <CardContent className="p-6 space-y-4 text-center">
+                  <div className="text-4xl">📁</div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.25em] text-white/40">This actually happened</div>
+                    <h2 className="font-display text-xl font-bold uppercase tracking-[0.05em] mt-1">{file.title}</h2>
+                  </div>
+                  <p className="text-sm text-white/70 leading-relaxed">{file.description}</p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1 border-white/20 text-white hover:bg-white/10" onClick={() => setView("result")}>
+                      Skip
+                    </Button>
+                    <Button variant="cyber" className="flex-1" onClick={() => setStudyCase(true)}>
+                      Study the case <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        );
+      })()}
+
+      {view === "casefiles" && (
+        <CaseFilesPanel accent={tierColor(active)} onClose={() => setView("grid")} />
       )}
 
       {view === "result" && active && (
