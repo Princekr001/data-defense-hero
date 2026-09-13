@@ -60,6 +60,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const [bossRun, setBossRun] = useState(0);
   const [lessonCategory, setLessonCategory] = useState<string | null>(null);
   const [fallbackFrom, setFallbackFrom] = useState<HackLevel | null>(null);
+  const [studyCase, setStudyCase] = useState(false);
   const [certName, setCertName] = useState<string>(() => {
     try { return localStorage.getItem("ddh.certName.v1") ?? ""; } catch { return ""; }
   });
