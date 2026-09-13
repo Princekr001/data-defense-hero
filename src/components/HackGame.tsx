@@ -21,6 +21,8 @@ import MasteryPanel from "@/components/hack/MasteryPanel";
 import CompletionCertificate from "@/components/hack/CompletionCertificate";
 import EvidenceBoard from "@/components/hack/EvidenceBoard";
 import { evidenceForLevel } from "@/data/evidenceCases";
+import CaseFilesPanel, { CaseDetail } from "@/components/hack/CaseFilesPanel";
+import { caseForCategory, clearReviewedCases, loadReviewedCases, saveReviewedCases } from "@/data/caseFiles";
 
 const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   phishing: "phishing",
