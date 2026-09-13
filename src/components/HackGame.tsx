@@ -184,6 +184,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
       localStorage.removeItem("ddh.hackCategory.v1");
       localStorage.removeItem("ddh.certAwarded.v1");
     } catch {}
+    clearReviewedCases();
     setView("grid");
     setActive(null);
     setFallbackFrom(null);
