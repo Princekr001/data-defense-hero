@@ -9,10 +9,25 @@ interface Attempt {
   losses: number;
 }
 
+/** One point on the progress timeline, logged after every level attempt. */
+export interface TimelineEntry {
+  /** epoch ms */
+  t: number;
+  levelId: number;
+  levelName: string;
+  category: HackCategory;
+  won: boolean;
+  /** cumulative XP right after this attempt */
+  xp: number;
+  /** overall mastery (0-100) right after this attempt */
+  mastery: number;
+}
+
 interface State {
   completed: number[];
   xp: number;
   attempts?: Record<number, Attempt>;
+  history?: TimelineEntry[];
 }
 
 export interface CategoryMastery {
