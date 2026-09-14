@@ -120,7 +120,17 @@ export function useHackProgress() {
       attempts[id] = won
         ? { ...prev, wins: prev.wins + 1 }
         : { ...prev, losses: prev.losses + 1 };
-      return { ...s, attempts };
+      const lvl = hackLevels.find((l) => l.id === id);
+      const entry: TimelineEntry = {
+        t: Date.now(),
+        levelId: id,
+        levelName: lvl?.name ?? `Level ${id}`,
+        category: (lvl?.category ?? "phishing") as HackCategory,
+        won,
+        xp: s.xp,
+        mastery: overallMastery(s.completed, attempts),
+      };
+      return { ...s, attempts, history: [...(s.history ?? []), entry].slice(-60) };
     });
   }, []);
 
