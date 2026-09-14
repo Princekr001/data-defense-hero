@@ -53,6 +53,42 @@ export type Database = {
         }
         Relationships: []
       }
+      hack_leaderboard: {
+        Row: {
+          certificates: number
+          created_at: string
+          hacker_name: string
+          id: string
+          levels_cleared: number
+          mastery: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          certificates?: number
+          created_at?: string
+          hacker_name?: string
+          id?: string
+          levels_cleared?: number
+          mastery?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          certificates?: number
+          created_at?: string
+          hacker_name?: string
+          id?: string
+          levels_cleared?: number
+          mastery?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
