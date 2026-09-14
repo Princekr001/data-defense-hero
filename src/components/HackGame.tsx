@@ -18,6 +18,7 @@ import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 import ScenarioScene from "@/components/lessons/ScenarioScene";
 import ScenarioReview from "@/components/hack/ScenarioReview";
 import MasteryPanel from "@/components/hack/MasteryPanel";
+import ProgressTimeline from "@/components/hack/ProgressTimeline";
 import CompletionCertificate from "@/components/hack/CompletionCertificate";
 import EvidenceBoard from "@/components/hack/EvidenceBoard";
 import { evidenceForLevel } from "@/data/evidenceCases";
