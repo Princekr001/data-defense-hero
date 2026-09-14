@@ -251,13 +251,14 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
       {/* Overlays */}
       {view === "grid" && (
         <>
-          <div className="absolute top-16 left-3 z-20 pointer-events-none">
+          <div className="absolute top-16 left-3 z-20 pointer-events-none max-h-[calc(100vh-5rem)] overflow-y-auto space-y-3 pr-1">
             <MasteryPanel
               mastery={mastery}
               weakest={weakest}
               activeCategory={activeCategory}
               onFocusCategory={(c) => setActiveCategory(c)}
             />
+            <ProgressTimeline history={history} />
           </div>
           {/* Keyboard-accessible level list — visible only when focused */}
           <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 focus-within:flex hidden flex-wrap items-center justify-center gap-1.5 max-w-[min(100vw,640px)] bg-black/60 backdrop-blur border border-white/10 rounded-lg p-2">
