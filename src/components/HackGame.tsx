@@ -39,7 +39,7 @@ interface HackGameProps {
 }
 
 export default function HackGame({ initialLevelId }: HackGameProps = {}) {
-  const { completed, xp, isUnlocked, isComplete, completeLevel, recordAttempt, mastery, weakest, reset } = useHackProgress();
+  const { completed, xp, isUnlocked, isComplete, completeLevel, recordAttempt, mastery, weakest, history, reset } = useHackProgress();
   const [view, setView] = useState<View>("grid");
   const [activeCategory, setActiveCategory] = useState<HackCategory | "all">(() => {
     try {
