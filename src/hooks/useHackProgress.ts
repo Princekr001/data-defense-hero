@@ -170,10 +170,13 @@ export function useHackProgress() {
     [mastery],
   );
 
-  const reset = useCallback(() => setState({ completed: [], xp: 0, attempts: {} }), []);
+  const reset = useCallback(() => setState({ completed: [], xp: 0, attempts: {}, history: [] }), []);
+
+  const history = useMemo<TimelineEntry[]>(() => state.history ?? [], [state.history]);
 
   return {
     ...state,
+    history,
     isUnlocked,
     isComplete,
     completeLevel,
