@@ -45,7 +45,7 @@ export default function DailyChallenge({ target, claimed, streak, reward, msLeft
       </div>
 
       <p className="text-sm font-semibold text-white leading-tight">{target.name}</p>
-      <p className="text-[11px] text-white/55 line-clamp-2">{target.brief ?? target.category}</p>
+      <p className="text-[11px] text-white/55 line-clamp-2">{target.objective}</p>
 
       <div className="flex items-center justify-between text-[11px]">
         <span className="flex items-center gap-1 text-yellow-300">
