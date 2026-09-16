@@ -530,6 +530,22 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
         <CaseFilesPanel accent={tierColor(active)} onClose={() => setView("grid")} />
       )}
 
+      {view === "leaderboard" && (
+        <LeaderboardPanel
+          accent={tierColor(active)}
+          defaultName={certName}
+          myStats={{
+            xp: xp + daily.bonusXp,
+            mastery: mastery.length
+              ? Math.round(mastery.reduce((s, m) => s + m.mastery, 0) / mastery.length)
+              : 0,
+            certificates: allCleared ? 1 : 0,
+            levelsCleared: completed.length,
+          }}
+          onClose={() => setView("grid")}
+        />
+      )}
+
       {view === "result" && active && (
         <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
           <Card className={`w-full max-w-md border bg-black/80 text-white ${result === "success" ? "border-accent/50" : "border-destructive/50"}`}>
