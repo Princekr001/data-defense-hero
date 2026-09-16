@@ -204,6 +204,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
       localStorage.removeItem("ddh.certAwarded.v1");
     } catch {}
     clearReviewedCases();
+    daily.reset();
     setView("grid");
     setActive(null);
     setFallbackFrom(null);
