@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useHackProgress } from "@/hooks/useHackProgress";
 import { hackLevels, hackTiers, hackCategories } from "@/data/hackTargets";
 import type { HackCategory, HackLevel } from "@/data/hackTargets";
