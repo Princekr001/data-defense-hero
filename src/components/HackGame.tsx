@@ -278,6 +278,14 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
               activeCategory={activeCategory}
               onFocusCategory={(c) => setActiveCategory(c)}
             />
+            <DailyChallenge
+              target={daily.target}
+              claimed={daily.claimed}
+              streak={daily.streak}
+              reward={daily.reward}
+              msLeft={daily.msLeft}
+              onPlay={(lvl) => handleSelect(lvl)}
+            />
             <ProgressTimeline history={history} />
           </div>
           {/* Keyboard-accessible level list — visible only when focused */}
