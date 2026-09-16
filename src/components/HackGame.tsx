@@ -43,6 +43,8 @@ interface HackGameProps {
 
 export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const { completed, xp, isUnlocked, isComplete, completeLevel, recordAttempt, mastery, weakest, history, reset } = useHackProgress();
+  const dailyCandidates = useMemo(() => hackLevels.filter((l) => isUnlocked(l.id)), [isUnlocked]);
+  const daily = useDailyChallenge(dailyCandidates);
   const [view, setView] = useState<View>("grid");
   const [activeCategory, setActiveCategory] = useState<HackCategory | "all">(() => {
     try {
