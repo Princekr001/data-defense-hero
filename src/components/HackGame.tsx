@@ -155,15 +155,28 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
     }
     completeLevel(active.id);
     recordAttempt(active.id, true);
+    claimDaily(active.id);
     setResult("success");
     setView("review");
     toast({ title: `Hack successful — +${active.xpReward} XP`, description: active.name });
+  };
+
+  /** Award the daily bonus when the cleared level is today's rotating target. */
+  const claimDaily = (levelId: number) => {
+    const bonus = daily.completeLevel(levelId);
+    if (!bonus) return;
+    pulseHaptics([30, 50, 30, 50, 60]);
+    toast({
+      title: `🔥 Daily challenge complete — +${bonus} bonus XP`,
+      description: "Come back tomorrow for a new target and a bigger streak reward.",
+    });
   };
 
   const handleBossDefeat = () => {
     if (!active) return;
     completeLevel(active.id);
     recordAttempt(active.id, true);
+    claimDaily(active.id);
     setResult("success");
     setView("review");
     toast({ title: `Boss purged — +${active.xpReward} XP`, description: active.name });
