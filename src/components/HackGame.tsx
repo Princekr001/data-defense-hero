@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useHackProgress } from "@/hooks/useHackProgress";
 import { hackLevels, hackTiers, hackCategories } from "@/data/hackTargets";
 import type { HackCategory, HackLevel } from "@/data/hackTargets";
@@ -12,7 +12,7 @@ import FirewallBypass from "./hackGames/FirewallBypass";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash2, PlayCircle, Award, BookOpen } from "lucide-react";
+import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash2, PlayCircle, Award, BookOpen, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 import ScenarioScene from "@/components/lessons/ScenarioScene";
@@ -24,6 +24,9 @@ import EvidenceBoard from "@/components/hack/EvidenceBoard";
 import { evidenceForLevel } from "@/data/evidenceCases";
 import CaseFilesPanel, { CaseDetail } from "@/components/hack/CaseFilesPanel";
 import { caseForCategory, clearReviewedCases, loadReviewedCases, saveReviewedCases } from "@/data/caseFiles";
+import LeaderboardPanel from "@/components/hack/LeaderboardPanel";
+import DailyChallenge from "@/components/hack/DailyChallenge";
+import { useDailyChallenge } from "@/hooks/useDailyChallenge";
 
 const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   phishing: "phishing",
@@ -31,7 +34,7 @@ const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   privacy: "privacy",
 };
 
-type View = "grid" | "briefing" | "evidence" | "mission" | "boss" | "review" | "casefiles" | "missioncase" | "result" | "certificate";
+type View = "grid" | "briefing" | "evidence" | "mission" | "boss" | "review" | "casefiles" | "missioncase" | "result" | "certificate" | "leaderboard";
 
 interface HackGameProps {
   /** Optional level to open directly (e.g. jumped in from a landing-page slide). */
@@ -40,6 +43,8 @@ interface HackGameProps {
 
 export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const { completed, xp, isUnlocked, isComplete, completeLevel, recordAttempt, mastery, weakest, history, reset } = useHackProgress();
+  const dailyCandidates = useMemo(() => hackLevels.filter((l) => isUnlocked(l.id)), [isUnlocked]);
+  const daily = useDailyChallenge(dailyCandidates);
   const [view, setView] = useState<View>("grid");
   const [activeCategory, setActiveCategory] = useState<HackCategory | "all">(() => {
     try {
@@ -150,15 +155,28 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
     }
     completeLevel(active.id);
     recordAttempt(active.id, true);
+    claimDaily(active.id);
     setResult("success");
     setView("review");
     toast({ title: `Hack successful — +${active.xpReward} XP`, description: active.name });
+  };
+
+  /** Award the daily bonus when the cleared level is today's rotating target. */
+  const claimDaily = (levelId: number) => {
+    const bonus = daily.completeLevel(levelId);
+    if (!bonus) return;
+    pulseHaptics([30, 50, 30, 50, 60]);
+    toast({
+      title: `🔥 Daily challenge complete — +${bonus} bonus XP`,
+      description: "Come back tomorrow for a new target and a bigger streak reward.",
+    });
   };
 
   const handleBossDefeat = () => {
     if (!active) return;
     completeLevel(active.id);
     recordAttempt(active.id, true);
+    claimDaily(active.id);
     setResult("success");
     setView("review");
     toast({ title: `Boss purged — +${active.xpReward} XP`, description: active.name });
@@ -186,6 +204,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
       localStorage.removeItem("ddh.certAwarded.v1");
     } catch {}
     clearReviewedCases();
+    daily.reset();
     setView("grid");
     setActive(null);
     setFallbackFrom(null);
@@ -258,6 +277,14 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
               weakest={weakest}
               activeCategory={activeCategory}
               onFocusCategory={(c) => setActiveCategory(c)}
+            />
+            <DailyChallenge
+              target={daily.target}
+              claimed={daily.claimed}
+              streak={daily.streak}
+              reward={daily.reward}
+              msLeft={daily.msLeft}
+              onPlay={(lvl) => handleSelect(lvl)}
             />
             <ProgressTimeline history={history} />
           </div>
@@ -336,14 +363,24 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
                 );
               })}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="pointer-events-auto bg-black/40 backdrop-blur border-white/15 text-white hover:bg-white/10"
-              onClick={() => setView("casefiles")}
-            >
-              <BookOpen className="h-4 w-4" /> Case Files
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="pointer-events-auto bg-black/40 backdrop-blur border-white/15 text-white hover:bg-white/10"
+                onClick={() => setView("casefiles")}
+              >
+                <BookOpen className="h-4 w-4" /> Case Files
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="pointer-events-auto bg-black/40 backdrop-blur border-yellow-400/40 text-yellow-200 hover:bg-yellow-400/10"
+                onClick={() => setView("leaderboard")}
+              >
+                <Crown className="h-4 w-4" /> Leaderboard
+              </Button>
+            </div>
             <p className="pointer-events-none text-white/60 text-[11px] sm:text-xs bg-black/30 backdrop-blur px-3 py-1 rounded-full border border-white/5">
               <Target className="inline h-3 w-3 mr-1" />
               Click a glowing node or press Tab to navigate · Enter to start
@@ -491,6 +528,22 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
 
       {view === "casefiles" && (
         <CaseFilesPanel accent={tierColor(active)} onClose={() => setView("grid")} />
+      )}
+
+      {view === "leaderboard" && (
+        <LeaderboardPanel
+          accent={tierColor(active)}
+          defaultName={certName}
+          myStats={{
+            xp: xp + daily.bonusXp,
+            mastery: mastery.length
+              ? Math.round(mastery.reduce((s, m) => s + m.mastery, 0) / mastery.length)
+              : 0,
+            certificates: allCleared ? 1 : 0,
+            levelsCleared: completed.length,
+          }}
+          onClose={() => setView("grid")}
+        />
       )}
 
       {view === "result" && active && (
