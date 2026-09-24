@@ -667,10 +667,10 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
         <CompletionCertificate
           playerName={certName}
           onNameChange={setCertName}
-          xp={xp}
+          xp={xp + daily.bonusXp}
           levelsCleared={completed.length}
           totalLevels={hackLevels.length}
-          mastery={mastery}
+          mastery={boostedMastery}
           onClose={() => { setView("grid"); setActive(null); }}
         />
       )}
