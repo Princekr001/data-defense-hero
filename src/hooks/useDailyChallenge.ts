@@ -16,7 +16,21 @@ interface DailyState {
   streak: number;
   lastClaimDay: string | null;
   bonusXp: number;
+  /** Bonus mastery points earned per category from daily clears. */
+  masteryBonus?: Record<string, number>;
 }
+
+const CODENAMES = ["Nightshade", "Glasswall", "Redline", "Ghost Relay", "Iron Veil", "Zero Hour", "Blackout", "Cold Trace", "Silent Key", "Neon Siege"];
+const MODIFIERS = [
+  "Attacker is already inside — act fast.",
+  "Logs are partially wiped — read carefully.",
+  "A decoy alert is running in parallel.",
+  "The SOC is short-staffed tonight — you're alone.",
+  "Executive target — the stakes are doubled.",
+];
+
+/** Mastery points granted for a daily clear (grows with streak, max +10). */
+export const masteryRewardFor = (streak: number) => 4 + Math.min(streak, 6);
 
 const hashDay = (day: string) => {
   let h = 0;
@@ -52,6 +66,7 @@ export function useDailyChallenge(candidates: HackLevel[]) {
       streak: saved?.lastClaimDay === prevDayStamp() ? saved.streak : 0,
       lastClaimDay: saved?.lastClaimDay ?? null,
       bonusXp: saved?.bonusXp ?? 0,
+      masteryBonus: saved?.masteryBonus ?? {},
     };
   });
 
@@ -94,6 +109,10 @@ export function useDailyChallenge(candidates: HackLevel[]) {
   );
 
   const reward = rewardFor(state.streak);
+  const masteryReward = masteryRewardFor(state.streak);
+  const h = hashDay(state.day);
+  const codename = `Operation ${CODENAMES[h % CODENAMES.length]}`;
+  const modifier = MODIFIERS[(h >> 3) % MODIFIERS.length];
 
   /** Call after a win. Returns the bonus XP granted, or 0 when it wasn't today's target. */
   const completeLevel = useCallback(
@@ -102,13 +121,13 @@ export function useDailyChallenge(candidates: HackLevel[]) {
       const today = dayStamp();
       const streak = state.lastClaimDay === prevDayStamp() ? state.streak + 1 : 1;
       const gained = rewardFor(streak - 1);
-      setState((s) => ({
-        ...s,
-        claimed: true,
-        streak,
-        lastClaimDay: today,
-        bonusXp: s.bonusXp + gained,
-      }));
+      const mGain = masteryRewardFor(streak - 1);
+      const cat = hackLevels.find((l) => l.id === levelId)?.category ?? "phishing";
+      setState((s) => {
+        const mb = { ...(s.masteryBonus ?? {}) };
+        mb[cat] = Math.min(30, (mb[cat] ?? 0) + mGain);
+        return { ...s, claimed: true, streak, lastClaimDay: today, bonusXp: s.bonusXp + gained, masteryBonus: mb };
+      });
       return gained;
     },
     [state.claimed, state.levelId, state.lastClaimDay, state.streak],
@@ -130,6 +149,7 @@ export function useDailyChallenge(candidates: HackLevel[]) {
         streak: 0,
         lastClaimDay: null,
         bonusXp: 0,
+        masteryBonus: {},
       }),
     [],
   );
@@ -140,6 +160,10 @@ export function useDailyChallenge(candidates: HackLevel[]) {
     streak: state.streak,
     bonusXp: state.bonusXp,
     reward,
+    masteryReward,
+    masteryBonus: state.masteryBonus ?? {},
+    codename,
+    modifier,
     msLeft,
     completeLevel,
     reset,

@@ -45,6 +45,10 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
   const { completed, xp, isUnlocked, isComplete, completeLevel, recordAttempt, mastery, weakest, history, reset } = useHackProgress();
   const dailyCandidates = useMemo(() => hackLevels.filter((l) => isUnlocked(l.id)), [isUnlocked]);
   const daily = useDailyChallenge(dailyCandidates);
+  const boostedMastery = useMemo(
+    () => mastery.map((m) => ({ ...m, mastery: Math.min(100, m.mastery + (daily.masteryBonus[m.category] ?? 0)) })),
+    [mastery, daily.masteryBonus],
+  );
   const [view, setView] = useState<View>("grid");
   const [activeCategory, setActiveCategory] = useState<HackCategory | "all">(() => {
     try {
@@ -163,11 +167,12 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
 
   /** Award the daily bonus when the cleared level is today's rotating target. */
   const claimDaily = (levelId: number) => {
+    const mGain = daily.masteryReward;
     const bonus = daily.completeLevel(levelId);
     if (!bonus) return;
     pulseHaptics([30, 50, 30, 50, 60]);
     toast({
-      title: `🔥 Daily challenge complete — +${bonus} bonus XP`,
+      title: `🔥 ${daily.codename} complete — +${bonus} XP, +${mGain}% mastery`,
       description: "Come back tomorrow for a new target and a bigger streak reward.",
     });
   };
@@ -273,7 +278,7 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
         <>
           <div className="absolute top-16 left-3 z-20 pointer-events-none max-h-[calc(100vh-5rem)] overflow-y-auto space-y-3 pr-1">
             <MasteryPanel
-              mastery={mastery}
+              mastery={boostedMastery}
               weakest={weakest}
               activeCategory={activeCategory}
               onFocusCategory={(c) => setActiveCategory(c)}
@@ -283,6 +288,9 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
               claimed={daily.claimed}
               streak={daily.streak}
               reward={daily.reward}
+              masteryReward={daily.masteryReward}
+              codename={daily.codename}
+              modifier={daily.modifier}
               msLeft={daily.msLeft}
               onPlay={(lvl) => handleSelect(lvl)}
             />
@@ -536,8 +544,8 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
           defaultName={certName}
           myStats={{
             xp: xp + daily.bonusXp,
-            mastery: mastery.length
-              ? Math.round(mastery.reduce((s, m) => s + m.mastery, 0) / mastery.length)
+            mastery: boostedMastery.length
+              ? Math.round(boostedMastery.reduce((s, m) => s + m.mastery, 0) / boostedMastery.length)
               : 0,
             certificates: allCleared ? 1 : 0,
             levelsCleared: completed.length,
@@ -659,10 +667,10 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
         <CompletionCertificate
           playerName={certName}
           onNameChange={setCertName}
-          xp={xp}
+          xp={xp + daily.bonusXp}
           levelsCleared={completed.length}
           totalLevels={hackLevels.length}
-          mastery={mastery}
+          mastery={boostedMastery}
           onClose={() => { setView("grid"); setActive(null); }}
         />
       )}
