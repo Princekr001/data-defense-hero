@@ -8,6 +8,9 @@ interface Props {
   claimed: boolean;
   streak: number;
   reward: number;
+  masteryReward: number;
+  codename: string;
+  modifier: string;
   msLeft: number;
   onPlay: (lvl: HackLevel) => void;
 }
@@ -20,7 +23,7 @@ const fmt = (ms: number) => {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
-export default function DailyChallenge({ target, claimed, streak, reward, msLeft, onPlay }: Props) {
+export default function DailyChallenge({ target, claimed, streak, reward, masteryReward, codename, modifier, msLeft, onPlay }: Props) {
   const [left, setLeft] = useState(msLeft);
 
   useEffect(() => setLeft(msLeft), [msLeft]);
@@ -44,12 +47,14 @@ export default function DailyChallenge({ target, claimed, streak, reward, msLeft
         </span>
       </div>
 
-      <p className="text-sm font-semibold text-white leading-tight">{target.name}</p>
+      <p className="text-sm font-semibold text-orange-200 leading-tight">{codename}</p>
+      <p className="text-[11px] text-white/80">Target: {target.name}</p>
       <p className="text-[11px] text-white/55 line-clamp-2">{target.objective}</p>
+      <p className="text-[10px] font-mono text-orange-300/80">⚠ {modifier}</p>
 
       <div className="flex items-center justify-between text-[11px]">
         <span className="flex items-center gap-1 text-yellow-300">
-          <Gift className="h-3 w-3" /> +{reward} bonus XP
+          <Gift className="h-3 w-3" /> +{reward} XP · +{masteryReward}% mastery
         </span>
         {streak > 0 && (
           <span className="text-orange-300 font-mono">🔥 {streak}-day streak</span>
