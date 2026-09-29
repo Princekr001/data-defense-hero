@@ -7,9 +7,10 @@ export interface CaseFile extends Scenario {
   kind: CaseKind;
 }
 
-/** IDs 31-40 are real-incident cases, 41-46 are certification-style questions. */
+/** IDs 31-40 are real-incident cases, 41-46 are certification-style questions, 47-56 are practical how-to cases. */
 const INCIDENT_IDS = [31, 32, 33, 34, 35, 36, 37, 38, 39, 40];
 const CERT_IDS = [41, 42, 43, 44, 45, 46];
+const PRACTICAL_IDS = [47, 48, 49, 50, 51, 52, 53, 54, 55, 56];
 
 const pick = (ids: number[], kind: CaseKind): CaseFile[] =>
   ids
