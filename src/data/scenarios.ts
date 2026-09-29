@@ -1202,5 +1202,285 @@ export const gameScenarios: Scenario[] = [
     difficulty: 'expert',
     xpReward: 180,
     concept: "Vulnerability Triage"
+  },
+  {
+    id: 47,
+    title: "Recover a Hacked Account",
+    character: "Priya Nair",
+    description: "Priya's email account was just taken over — password changed, recovery email swapped.",
+    situation: "Priya gets a 'your password was changed' alert she didn't trigger. The attacker already changed the recovery email. Her bank and social accounts all reset passwords through this inbox. What is the correct recovery sequence?",
+    actions: {
+      action1: { text: "Use the provider's account-recovery form, then reset the password, sign out all sessions, and enable 2FA", type: 'safe' },
+      action2: { text: "Keep trying the old password and hope the attacker logs out", type: 'risky' },
+      action3: { text: "Create a brand-new email and abandon the old one immediately", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct — recovery first, then lockdown. Abandoning the account leaves the attacker in control of every service tied to it.",
+      concept: "Account takeover response: recover, reset, revoke sessions, then harden — in that order.",
+      tips: [
+        "Step 1: Go to the provider's official recovery page (type the URL yourself) and prove ownership",
+        "Step 2: Set a new unique password from a password manager",
+        "Step 3: Use 'sign out all devices/sessions' to kick the attacker out",
+        "Step 4: Turn on 2FA with an authenticator app, not SMS",
+        "Step 5: Check forwarding rules and recovery addresses the attacker may have added",
+        "Step 6: Reset passwords on every account that used this email for recovery"
+      ]
+    },
+    category: 'password',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "Account Recovery"
+  },
+  {
+    id: 48,
+    title: "Lost Phone, Full Life",
+    character: "Diego Ramos",
+    description: "Diego's phone was stolen from his bag — unlocked apps, saved cards, everything.",
+    situation: "Diego's phone is gone. It had his banking app, saved passwords, and photos. He still has his laptop. What should he do in the first hour?",
+    actions: {
+      action1: { text: "Use Find My Device to lock and locate it, then remotely wipe if unrecoverable, and change key passwords", type: 'safe' },
+      action2: { text: "Wait a day to see if someone returns it before doing anything", type: 'risky' },
+      action3: { text: "Just call the phone company to block the SIM and do nothing else", type: 'risky' }
+    },
+    feedback: {
+      correct: "Right — speed matters. Lock, locate, wipe, then rotate credentials. Blocking the SIM alone leaves the device data wide open.",
+      concept: "Device loss response: contain the device first, then the accounts, then the number.",
+      tips: [
+        "Step 1: From a laptop, open Find My Device (Google) or Find My (Apple) and mark the phone lost",
+        "Step 2: Remotely lock it with a message and a contact number on the lock screen",
+        "Step 3: If it doesn't turn up quickly, trigger a remote wipe",
+        "Step 4: Change passwords for email, banking and cloud accounts",
+        "Step 5: Call your carrier to block the SIM (prevents SMS 2FA hijack)",
+        "Step 6: Report the IMEI to police and your insurer"
+      ]
+    },
+    category: 'privacy',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "Device Loss Response"
+  },
+  {
+    id: 49,
+    title: "The Flashlight That Reads Messages",
+    character: "Aisha Bello",
+    description: "Aisha is about to install a flashlight app that wants a suspicious list of permissions.",
+    situation: "A free flashlight app requests access to contacts, SMS, microphone, and precise location. It has 4.8 stars and 10 million downloads. Aisha just wants a flashlight. What should she do?",
+    actions: {
+      action1: { text: "Deny the install — use the phone's built-in flashlight and audit other apps' permissions", type: 'safe' },
+      action2: { text: "Install it — 10 million downloads means it must be safe", type: 'risky' },
+      action3: { text: "Install it but deny permissions later if it misbehaves", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct — a flashlight needs zero permissions. High download counts are gamed constantly; permission scope is the real signal.",
+      concept: "Permission minimalism: an app should only ask for what its function requires.",
+      tips: [
+        "Step 1: Before installing, read the permission list — ask 'does this function need this?'",
+        "Step 2: Prefer built-in OS features over third-party utilities",
+        "Step 3: In Settings → Privacy → Permission manager, review what existing apps can reach",
+        "Step 4: Revoke anything not needed (a game doesn't need your microphone)",
+        "Step 5: Uninstall apps you haven't opened in months",
+        "Step 6: Only install from official stores, and check the developer name"
+      ]
+    },
+    category: 'privacy',
+    difficulty: 'beginner',
+    xpReward: 100,
+    concept: "App Permission Auditing"
+  },
+  {
+    id: 50,
+    title: "The Found USB Drive",
+    character: "Tom Becker",
+    description: "Tom finds a USB stick labeled '2026 Salaries' in the office parking lot.",
+    situation: "The drive is unlabeled except for the tempting text. Tom is curious whether it belongs to a coworker. Plugging it in would take ten seconds. What's the safe move?",
+    actions: {
+      action1: { text: "Hand it to IT/security without plugging it in — lost drives are a classic malware drop", type: 'safe' },
+      action2: { text: "Plug it into his work laptop just to see who owns it", type: 'risky' },
+      action3: { text: "Plug it into his personal laptop instead, since that's not work property", type: 'risky' }
+    },
+    feedback: {
+      correct: "Exactly right — 'USB drop attacks' are a real penetration-testing technique, and curious labels like 'Salaries' are bait. Any port, any machine, same risk.",
+      concept: "Unknown media = untrusted media. Malware can auto-run the moment a drive is mounted.",
+      tips: [
+        "Step 1: Never plug in found storage — curiosity is the exploit",
+        "Step 2: Give it to IT or security; they have isolated machines for this",
+        "Step 3: If you already plugged it in, disconnect from the network immediately",
+        "Step 4: Report it — fast reporting limits the blast radius",
+        "Step 5: Run a full antivirus scan and change passwords typed since",
+        "Step 6: At home, disable auto-run features for removable media"
+      ]
+    },
+    category: 'malware',
+    difficulty: 'beginner',
+    xpReward: 100,
+    concept: "Removable Media Threats"
+  },
+  {
+    id: 51,
+    title: "The Ransomware-Proof Backup",
+    character: "Lena Fischer",
+    description: "Lena's laptop holds her thesis, family photos, and freelance work — all in one place.",
+    situation: "A friend's laptop just got encrypted by ransomware and they lost everything. Lena realises her only 'backup' is a USB drive permanently plugged into her laptop. How should she set up real backups?",
+    actions: {
+      action1: { text: "Follow 3-2-1: 3 copies, 2 different media, 1 offsite/cloud — with the drive disconnected after backups", type: 'safe' },
+      action2: { text: "Keep the USB drive plugged in so backups stay current automatically", type: 'risky' },
+      action3: { text: "Email herself the most important files once a month", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct — a permanently connected drive gets encrypted right along with the laptop. The 3-2-1 rule with an offline copy is the standard defence.",
+      concept: "3-2-1 backups: 3 copies, 2 media types, 1 offsite — and at least one copy offline.",
+      tips: [
+        "Step 1: Turn on automatic cloud backup (versioned, so old copies survive)",
+        "Step 2: Add a local backup to an external drive on a schedule",
+        "Step 3: Unplug the drive when the backup finishes — offline = untouchable",
+        "Step 4: Test a restore once a month; an untested backup is a hope, not a plan",
+        "Step 5: Protect the cloud backup account with a unique password and 2FA",
+        "Step 6: Keep ransomware recovery in mind: never pay, restore instead"
+      ]
+    },
+    category: 'malware',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "Backup Strategy"
+  },
+  {
+    id: 52,
+    title: "The Delivery Text Scam",
+    character: "Ravi Patel",
+    description: "Ravi gets a text: 'Your package is held. Pay ₹99 redelivery fee: pkg-redeliver-track.com'.",
+    situation: "Ravi actually is expecting a package, which makes the text feel real. The link asks for card details. He's busy and the fee is tiny. What should he do?",
+    actions: {
+      action1: { text: "Ignore the link, check the real tracking number on the courier's official app or site", type: 'safe' },
+      action2: { text: "Pay the ₹99 — it's a small amount and the package matters", type: 'risky' },
+      action3: { text: "Reply to the text asking if it's legitimate", type: 'risky' }
+    },
+    feedback: {
+      correct: "Right — the tiny fee is the hook; the real prize is your card number. Scammers time these texts because most people are always expecting some package.",
+      concept: "Smishing (SMS phishing): urgency + small ask + lookalike domain. Verify through the official app, never the link.",
+      tips: [
+        "Step 1: Don't tap links in unexpected texts — even for tiny amounts",
+        "Step 2: Open the courier's official app or type their website yourself",
+        "Step 3: Paste your real tracking number there to check status",
+        "Step 4: Report the text as spam/phishing and delete it",
+        "Step 5: If you already paid, call your bank, freeze the card, and dispute the charge",
+        "Step 6: Watch your statements for small 'test' charges over the next weeks"
+      ]
+    },
+    category: 'phishing',
+    difficulty: 'beginner',
+    xpReward: 100,
+    concept: "Smishing Defense"
+  },
+  {
+    id: 53,
+    title: "The Oversharing Vacation",
+    character: "Mia Thompson",
+    description: "Mia is posting live vacation stories — boarding pass, hotel, 'away for 2 weeks!'.",
+    situation: "Her profile is public. The boarding-pass photo shows the booking code and barcode, and her posts announce an empty home. A friend warns her. What's the safe approach?",
+    actions: {
+      action1: { text: "Post after the trip, hide document details, and switch the profile to private", type: 'safe' },
+      action2: { text: "Keep posting live — her followers are mostly friends anyway", type: 'risky' },
+      action3: { text: "Delete the boarding-pass photo but keep announcing the empty house", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct — boarding-pass barcodes can expose booking details, and live 'away' posts are a burglary invitation. Share the memories after you're home.",
+      concept: "Oversharing creates two risks: identity data leaks and physical-world targeting.",
+      tips: [
+        "Step 1: Never photograph tickets, passes, IDs or documents — barcodes are data",
+        "Step 2: Post vacation content after you return, not during",
+        "Step 3: Set profiles to private and prune followers you don't know",
+        "Step 4: Turn off precise location tagging on posts",
+        "Step 5: Google yourself occasionally to see what strangers can find",
+        "Step 6: Review old posts and delete anything with personal details"
+      ]
+    },
+    category: 'social',
+    difficulty: 'beginner',
+    xpReward: 100,
+    concept: "Social Media Hygiene"
+  },
+  {
+    id: 54,
+    title: "The Gaming Account Trade",
+    character: "Kai Nakamura",
+    description: "Kai is offered rare skins in exchange for 'just verifying' his game login on a trade site.",
+    situation: "A player in chat offers Kai limited-edition skins. The trade site looks professional and asks him to log in with his game account 'to verify ownership'. His account has years of progress and a saved card. What should he do?",
+    actions: {
+      action1: { text: "Refuse — real trades happen inside the game's official system, never on external login pages", type: 'safe' },
+      action2: { text: "Log in on the trade site — the skins are worth it and the site looks legit", type: 'risky' },
+      action3: { text: "Give the player his password directly so they can 'do the trade for him'", type: 'risky' }
+    },
+    feedback: {
+      correct: "Exactly — this is credential harvesting with a gaming skin. Official platforms never ask you to log in on third-party trade sites.",
+      concept: "Gaming scams target account value: skins, progress and saved payment methods.",
+      tips: [
+        "Step 1: Only trade through the game's built-in, official trading system",
+        "Step 2: Never enter game credentials on external sites — check the URL obsessively",
+        "Step 3: Enable 2FA on the game account and the email behind it",
+        "Step 4: Remove saved cards from game accounts; re-enter per purchase",
+        "Step 5: If you already logged in on a fake site, change the password immediately",
+        "Step 6: Report the scammer in-game to protect other players"
+      ]
+    },
+    category: 'gaming',
+    difficulty: 'beginner',
+    xpReward: 100,
+    concept: "Gaming Account Security"
+  },
+  {
+    id: 55,
+    title: "The Smart Camera in the Hallway",
+    character: "Omar Haddad",
+    description: "Omar's new cheap security camera still has the default password 'admin123'.",
+    situation: "The camera works out of the box, so Omar never opened its settings. A news story mentions that thousands of cameras with default passwords are being streamed on a public website. What should he do?",
+    actions: {
+      action1: { text: "Change the default password, update the firmware, and turn off remote access he doesn't need", type: 'safe' },
+      action2: { text: "Nothing — who would bother watching his hallway?", type: 'risky' },
+      action3: { text: "Unplug it only when guests visit and plug it back in after", type: 'risky' }
+    },
+    feedback: {
+      correct: "Right — default credentials are published online, and botnets scan for them constantly. 'Nobody would bother' is wrong: the scanning is fully automated.",
+      concept: "IoT security: every smart device is a small computer with a default password attackers already know.",
+      tips: [
+        "Step 1: Change the default password on day one — before connecting it to Wi-Fi if possible",
+        "Step 2: Check for and install firmware updates; enable auto-update if offered",
+        "Step 3: Disable remote access / cloud viewing you don't use",
+        "Step 4: Put smart devices on a guest network, separate from your computers",
+        "Step 5: Turn off UPnP on the router so devices can't open their own ports",
+        "Step 6: Before buying, check if the brand has a history of security updates"
+      ]
+    },
+    category: 'network',
+    difficulty: 'intermediate',
+    xpReward: 150,
+    concept: "IoT Device Hardening"
+  },
+  {
+    id: 56,
+    title: "The 'IT Department' Phone Call",
+    character: "Grace Okafor",
+    description: "Grace gets a call from 'Microsoft Support' saying her computer is sending viruses.",
+    situation: "The caller sounds professional, knows her name, and says her machine is infected. He asks her to install a remote-access tool so he can 'fix it', and mentions a small service fee. What should Grace do?",
+    actions: {
+      action1: { text: "Hang up — Microsoft never cold-calls about infections — then run her own antivirus scan", type: 'safe' },
+      action2: { text: "Let him connect briefly since he seems to know what he's talking about", type: 'risky' },
+      action3: { text: "Ask him to prove he's from Microsoft by telling her more about her computer", type: 'risky' }
+    },
+    feedback: {
+      correct: "Correct — tech-support scams rely on cold calls. Real companies don't monitor your machine or call you. Remote-access tools hand over total control.",
+      concept: "Vishing (voice phishing): authority + urgency + a request for remote access or payment.",
+      tips: [
+        "Step 1: Hang up — legitimate tech companies never cold-call about infections",
+        "Step 2: Never install software at a caller's request",
+        "Step 3: Never read out codes or passwords to anyone who called you",
+        "Step 4: If worried, run your own antivirus scan from software you installed",
+        "Step 5: If you gave access, disconnect from the internet, uninstall the tool, change passwords",
+        "Step 6: Report the number to your national fraud hotline"
+      ]
+    },
+    category: 'scam',
+    difficulty: 'beginner',
+    xpReward: 100,
+    concept: "Tech Support Scams"
   }
 ];
