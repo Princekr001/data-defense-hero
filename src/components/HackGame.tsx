@@ -12,7 +12,7 @@ import FirewallBypass from "./hackGames/FirewallBypass";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash2, PlayCircle, Award, BookOpen, Crown } from "lucide-react";
+import { ArrowLeft, Trophy, Zap, RotateCw, ChevronRight, Terminal, Target, Trash2, PlayCircle, Award, BookOpen, Crown, HeartHandshake } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CategoryLessonDialog from "@/components/lessons/CategoryLessonDialog";
 import ScenarioScene from "@/components/lessons/ScenarioScene";
@@ -27,6 +27,7 @@ import { caseForCategory, clearReviewedCases, loadReviewedCases, saveReviewedCas
 import LeaderboardPanel from "@/components/hack/LeaderboardPanel";
 import DailyChallenge from "@/components/hack/DailyChallenge";
 import { useDailyChallenge } from "@/hooks/useDailyChallenge";
+import SafetyCoach from "@/components/hack/SafetyCoach";
 
 const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   phishing: "phishing",
@@ -34,7 +35,7 @@ const HACK_CAT_MAP: Record<string, "phishing" | "password" | "privacy"> = {
   privacy: "privacy",
 };
 
-type View = "grid" | "briefing" | "evidence" | "mission" | "boss" | "review" | "casefiles" | "missioncase" | "result" | "certificate" | "leaderboard";
+type View = "grid" | "briefing" | "evidence" | "mission" | "boss" | "review" | "casefiles" | "missioncase" | "result" | "certificate" | "leaderboard" | "safetycoach";
 
 interface HackGameProps {
   /** Optional level to open directly (e.g. jumped in from a landing-page slide). */
@@ -388,6 +389,14 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
               >
                 <Crown className="h-4 w-4" /> Leaderboard
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="pointer-events-auto bg-black/40 backdrop-blur border-primary/40 text-primary hover:bg-primary/10"
+                onClick={() => setView("safetycoach")}
+              >
+                <HeartHandshake className="h-4 w-4" /> Safety Coach
+              </Button>
             </div>
             <p className="pointer-events-none text-white/60 text-[11px] sm:text-xs bg-black/30 backdrop-blur px-3 py-1 rounded-full border border-white/5">
               <Target className="inline h-3 w-3 mr-1" />
@@ -553,6 +562,8 @@ export default function HackGame({ initialLevelId }: HackGameProps = {}) {
           onClose={() => setView("grid")}
         />
       )}
+
+      {view === "safetycoach" && <SafetyCoach onClose={() => setView("grid")} />}
 
       {view === "result" && active && (
         <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
